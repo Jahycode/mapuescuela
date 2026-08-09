@@ -1,0 +1,37 @@
+# ===== Credenciales y configuración local (NUNCA al repo) =====
+.env
+*.local.properties
+application-local.properties
+
+# ===== Archivos subidos por usuarios (comprobantes = datos bancarios de personas) =====
+uploads/
+comprobantes/
+web/static/uploads/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# ===== Java / Gradle =====
+build/
+.gradle/
+bin/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# ===== IDEs =====
+.idea/
+.vscode/
+*.iml
+
+# ===== SO =====
+Thumbs.db
+.DS_Store
+
+# ===== Videos de entregas (se envían aparte, pesan mucho) =====
+videos/
+*.mp4

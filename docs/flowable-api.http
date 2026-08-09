@@ -1,0 +1,119 @@
+# "Torpedo" de la API REST de Flowable adaptado al proceso ventaMapuescuela.
+# Basado en el ApiRestFlowable.http del ejemplo del curso (INP-complementario-socios).
+# Se usa con la extensión "REST Client" de VS Code (humao.rest-client).
+
+### Variables globales
+@authorization = Basic rest-admin:test
+@baseUrl = http://localhost:8080/flowable-rest
+
+### 0) Salud del motor
+GET {{baseUrl}}/service/management/engine
+Authorization: {{authorization}}
+Accept: application/json
+
+### 1) Desplegar el modelo BPMN
+POST {{baseUrl}}/service/repository/deployments
+Authorization: {{authorization}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="file"; filename="venta-mapuescuela.bpmn"
+Content-Type: application/xml
+
+< ../bpmn/venta-mapuescuela.bpmn
+------Boundary--
+
+### 2) Ver definiciones desplegadas (confirmar que ventaMapuescuela existe)
+GET {{baseUrl}}/service/repository/process-definitions?key=ventaMapuescuela
+Authorization: {{authorization}}
+Accept: application/json
+
+### 3) Iniciar una instancia (lo que hará la web en cada checkout)
+# businessKey = número de pedido → permite encontrar la instancia desde la app
+POST {{baseUrl}}/service/runtime/process-instances
+Authorization: {{authorization}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "processDefinitionKey": "ventaMapuescuela",
+  "businessKey": "PED-0001",
+  "variables": [
+    { "name": "pedidoId",         "type": "integer", "value": 1 },
+    { "name": "clienteNombre",    "value": "Juan Pérez" },
+    { "name": "clienteEmail",     "value": "juan@example.com" },
+    { "name": "montoTotal",       "type": "integer", "value": 15000 },
+    { "name": "modalidadEntrega", "value": "RETIRO" },
+    { "name": "plazoPago",        "value": "PT2M" }
+  ]
+}
+# ↑ plazoPago PT2M solo para demos; en producción PT24H (viene de configuración)
+
+### 4) Ver instancias en ejecución
+GET {{baseUrl}}/service/runtime/process-instances
+Authorization: {{authorization}}
+Accept: application/json
+
+### 5) Tareas activas de una instancia (¿dónde está el token?)
+@processInstanceId = PEGAR-ID-AQUI
+GET {{baseUrl}}/service/runtime/tasks?processInstanceId={{processInstanceId}}
+Authorization: {{authorization}}
+Accept: application/json
+
+### 6) Completar "Adjuntar comprobante" (la web lo hace cuando el cliente sube el archivo)
+@taskId = PEGAR-TASKID-AQUI
+POST {{baseUrl}}/service/runtime/tasks/{{taskId}}
+Authorization: {{authorization}}
+Content-Type: application/json
+
+{ "action": "complete" }
+
+### 7) Completar "Revisar comprobante" APROBANDO
+POST {{baseUrl}}/service/runtime/tasks/{{taskId}}
+Authorization: {{authorization}}
+Content-Type: application/json
+
+{
+  "action": "complete",
+  "variables": [
+    { "name": "esAprobado", "type": "boolean", "value": true }
+  ]
+}
+
+### 7b) Completar "Revisar comprobante" RECHAZANDO
+POST {{baseUrl}}/service/runtime/tasks/{{taskId}}
+Authorization: {{authorization}}
+Content-Type: application/json
+
+{
+  "action": "complete",
+  "variables": [
+    { "name": "esAprobado",    "type": "boolean", "value": false },
+    { "name": "motivoRechazo", "value": "El monto transferido no coincide" }
+  ]
+}
+
+### 8) Variables de la instancia
+GET {{baseUrl}}/service/runtime/process-instances/{{processInstanceId}}/variables
+Authorization: {{authorization}}
+Accept: application/json
+
+### 9) Historial de actividades (el recorrido del token — evidencia para las demos)
+GET {{baseUrl}}/service/history/historic-activity-instances?processInstanceId={{processInstanceId}}&sort=startTime&order=asc
+Authorization: {{authorization}}
+Accept: application/json
+
+### 10) Timers programados (ver el job del plazo de 24h esperando)
+GET {{baseUrl}}/service/management/timer-jobs
+Authorization: {{authorization}}
+Accept: application/json
+
+### 11) External worker jobs pendientes (lo que consumirá el worker)
+GET {{baseUrl}}/service/runtime/external-worker-jobs
+Authorization: {{authorization}}
+Accept: application/json
+
+### 12) Jobs muertos (deadletter) y reintento
+GET {{baseUrl}}/service/management/deadletter-jobs
+Authorization: {{authorization}}
+Accept: application/json
