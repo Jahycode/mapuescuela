@@ -10,7 +10,7 @@ publicación en Instagram, coordinación por WhatsApp y registro en cuaderno.</d
       <design:description><![CDATA[Proceso de venta manual actual de Mapuescuela, previo a la automatización:
 
 publicación en Instagram, coordinación por WhatsApp y registro en cuaderno.]]></design:description>
-      <design:modificationdate><![CDATA[2026-08-11T01:09:33.380Z]]></design:modificationdate>
+      <design:modificationdate><![CDATA[2026-08-11T02:26:23.042Z]]></design:modificationdate>
     </extensionElements>
     <userTask id="FormTask_5" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
       <extensionElements>
@@ -63,7 +63,7 @@ publicación en Instagram, coordinación por WhatsApp y registro en cuaderno.]]>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </userTask>
-    <exclusiveGateway id="Exclusive_Databased_Gateway_11" name="¿Pago?">
+    <exclusiveGateway id="Exclusive_Databased_Gateway_11" name="¿Pago?" default="SequenceFlow_25">
       <extensionElements>
         <design:stencilid><![CDATA[Exclusive_Databased_Gateway]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
@@ -134,9 +134,11 @@ perdida</flowable:element-name>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vars:equals(sePago,true)}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="SequenceFlow_25" name="No" sourceRef="Exclusive_Databased_Gateway_11" targetRef="EndNoneEvent_23">
       <extensionElements>
+        <flowable:is-default-flow><![CDATA[true]]></flowable:is-default-flow>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
@@ -173,7 +175,7 @@ perdida</flowable:element-name>
       <bpmndi:BPMNShape bpmnElement="Exclusive_Databased_Gateway_11" id="BPMNShape_Exclusive_Databased_Gateway_11">
         <omgdc:Bounds height="40.0" width="40.0" x="1245.0" y="256.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="41.0" x="1244.2" y="300.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="41.0" x="1244.5" y="300.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="startnoneevent1" id="BPMNShape_startnoneevent1">
@@ -185,7 +187,7 @@ perdida</flowable:element-name>
       <bpmndi:BPMNShape bpmnElement="EndNoneEvent_21" id="BPMNShape_EndNoneEvent_21">
         <omgdc:Bounds height="28.0" width="28.0" x="1676.0" y="262.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="36.0" width="59.0" x="1658.6" y="294.0"></omgdc:Bounds>
+          <omgdc:Bounds height="36.0" width="59.0" x="1660.5" y="294.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="EndNoneEvent_23" id="BPMNShape_EndNoneEvent_23">
