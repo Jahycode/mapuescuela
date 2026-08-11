@@ -17,8 +17,11 @@
 
 | # | Compromiso | Responsable | Estado |
 |---|---|---|---|
-| 1 | Repositorio GitHub público creado y compartido al profesor | Valentín | ☐ |
-| 2 | Modelo de venta dibujado en Flowable Design (key `ventaMapuescuela`) | Valentín | ☐ |
+| 1 | Repositorio GitHub público creado y compartido al profesor | Valentín | ✅ |
+| 2 | Modelo TO-BE dibujado en Flowable Design (key `ventaMapuescuela`) | Valentín | ✅ |
+| 2b | Modelo AS-IS (proceso manual actual) — exigido por la rúbrica | Valentín | ☐ |
+| 2c | Formularios de las user tasks en Flowable | Valentín | ☐ |
+| 2d | Endpoint REST simple (avance de web services) | Valentín | ☐ |
 | 3 | Modelo desplegado en Flowable vía API REST (evidencia: deployment 201) | Valentín | ☐ |
 | 4 | Instancia demo iniciada y user tasks recorridas vía API (torpedo) | Valentín | ☐ |
 | 5 | Video técnico de la entrega 1 (modelo + despliegue + instancia) | Valentín | ☐ |
@@ -34,3 +37,10 @@
 - Diccionario de elementos, variables, topics y mapeo de los 9 estados del pedido.
 - 8 decisiones de arquitectura documentadas.
 - Torpedo de la API REST de Flowable adaptado al proceso (`docs/flowable-api.http`).
+- **Modelo TO-BE completo dibujado en Flowable Design** (app `Mapuescuela`, modelo
+  `ventaMapuescuela`, paleta Flowable Work BPMN): evento de inicio en el checkout, tarea humana de
+  adjuntar comprobante con **boundary timer interruptor** parametrizado (`${plazoPago}`), revisión
+  del comprobante, gateway de aprobación, descuento de inventario, preparación y ramas de entrega
+  (retiro / despacho por voluntario / despacho por courier). 6 desenlaces diferenciados.
+- Revisión de la rúbrica de la Evaluación 1: se detectan requisitos adicionales no contemplados
+  inicialmente (modelo AS-IS, formularios en Flowable, avance de web services, dos videos).
