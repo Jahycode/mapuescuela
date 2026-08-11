@@ -1,3 +1,6 @@
+# ===== Notas y apuntes personales (no forman parte de la entrega) =====
+_notas/
+
 # ===== Credenciales y configuración local (NUNCA al repo) =====
 .env
 *.local.properties
