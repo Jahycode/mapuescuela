@@ -1,74 +1,60 @@
-# Mapuescuela — Sistema de Ventas con BPMN + Flowable
+# Mapuescuela — Sistema de ventas con BPMN + Flowable
 
-Proyecto de **servicio disciplinar** de la asignatura *Integración de Plataformas* (Iplacex).
+Proyecto de servicio disciplinar del ramo *Integración de Plataformas* (Iplacex).
 
-**Caso real:** [Mapuescuela](https://www.instagram.com/mapuescuela) es una agrupación sin fines de
-lucro que apoya a niños, niñas y jóvenes en situación de deserción escolar. Se financia, en parte,
-vendiendo artículos usados donados por la comunidad (libros, muebles, juguetes). Hoy esa venta es
-manual; este proyecto construye un **MVP funcional** para publicar el catálogo y gestionar las
-compras, con el **proceso de venta modelado en BPMN y automatizado con Flowable**.
+[Mapuescuela](https://www.instagram.com/mapuescuela) es una agrupación sin fines de lucro que apoya a
+niños y jóvenes en situación de deserción escolar. Parte de su financiamiento viene de vender
+artículos usados que le donan: libros, muebles, juguetes. Hoy venden por Instagram y WhatsApp, y
+anotan todo en un cuaderno. Lo que estoy construyendo es un MVP para publicar el catálogo y manejar
+las compras, con el **proceso de venta modelado en BPMN y corriendo en Flowable**.
 
-## Arquitectura
+## Cómo está armado
 
-Sigue el patrón de referencia del curso (web → Flowable REST → external workers → web service Java):
+Sigo el patrón que enseña el curso: la web llama a Flowable, Flowable publica trabajos automáticos, y
+un worker los toma y llama al web service Java.
 
 ```
-┌────────────────┐  inicia proceso /       ┌─────────────────────┐
-│  web/          │  completa user tasks    │  FLOWABLE           │
-│  Python        │ ───────── REST ───────▶ │  (motor BPMN)       │
-│  FastAPI       │                         │  :8080/flowable-rest│
-└──────┬─────────┘                         └──────────┬──────────┘
-       │                                              │ external worker jobs
-       │ catálogo / pedidos                           │ (por topic)
-       ▼                                   ┌──────────▼──────────┐
-┌────────────────┐                         │  worker/            │
-│  SQL SERVER    │ ◀── CRUD de dominio ─── │  External Worker    │
-│  (negocio)     │      vía ws-pedidos     │  → llama ws-pedidos │
-└────────────────┘                         └──────────┬──────────┘
-       ▲                                              │
-       └───────────────┌────────────────┐ ◀──────────┘
-                       │  ws-pedidos/   │
-                       │  Java (JAX-RS  │   ← Web Service REST en Java
-                       │  Jersey) :9090 │     (contenido core del curso)
-                       └────────────────┘
+   web/ (Python)  ──── REST ────▶  FLOWABLE  ────▶  worker/  ────▶  ws-pedidos/ (Java)
+        │                          (motor BPMN)                            │
+        │                                                                  ▼
+        └──────────────── consulta catálogo y pedidos ────────────▶   SQL Server
 ```
 
-- **El motor es la fuente de la verdad del flujo:** cada pedido guarda su `processInstanceId` y el
-  estado se deriva de la instancia de proceso (en qué actividad está el token).
-- Las tareas automáticas del proceso son **External Worker Tasks** (por topic); el worker invoca al
-  web service Java, que es quien escribe los hechos de negocio en la base de datos.
+Dos ideas que ordenan todo el diseño:
 
-## Estructura del repositorio (mono-repo)
+- **El motor es la fuente de la verdad.** Cada pedido guarda el id de su instancia y el estado se lo
+  pregunto a Flowable, en vez de llevar un estado propio en paralelo.
+- **Las tareas automáticas son external workers.** El motor publica el trabajo y el worker lo toma.
+  Eso me deja escribir el worker en Python aunque el motor sea Java.
 
-| Carpeta | Contenido |
+## Qué hay en cada carpeta
+
+| Carpeta | Qué contiene |
 |---|---|
-| `bpmn/` | Modelo BPMN del proceso de venta + diccionario de elementos |
-| `web/` | Aplicación web (Python + FastAPI): catálogo, carrito, checkout, seguimiento, panel |
-| `ws-pedidos/` | Web service REST de dominio (Java + Jersey + Gradle) |
-| `worker/` | External Worker (consume topics del proceso e invoca al WS) |
-| `docs/` | Decisiones de arquitectura (ADRs) y guía de la API REST de Flowable |
-| `actas/` | Actas de reuniones / bitácora semanal de avances |
+| `bpmn/` | Los modelos BPMN del proceso de venta (el actual y el automatizado) |
+| `web/` | La aplicación web: catálogo, carrito, checkout, seguimiento y panel del voluntario |
+| `ws-pedidos/` | El web service REST en Java, que es lo que exige el curso |
+| `worker/` | El external worker que consume los trabajos del motor |
+| `docs/` | Mis decisiones de arquitectura y la guía de la API REST de Flowable |
+| `actas/` | Bitácora de avances |
 
-## Proceso de negocio (resumen)
+## El proceso en una línea
 
-Venta de un artículo: el cliente compra desde el catálogo → el sistema genera el pedido e informa
-los datos bancarios → el cliente tiene **24 horas** para transferir y adjuntar el comprobante (si no,
-el pedido **se cancela automáticamente** por un temporizador BPMN) → un voluntario **revisa el
-comprobante** y aprueba o rechaza → si aprueba, se **descuenta el inventario** y el pedido pasa a
-preparación → se entrega por **retiro** (Padre Hurtado) o **despacho** → el pedido finaliza.
+El cliente compra desde el catálogo, tiene 24 horas para transferir y subir el comprobante (si no, el
+pedido se cancela solo), un voluntario revisa el pago, se descuenta el inventario y el pedido se
+entrega por retiro o por despacho.
 
-Detalle completo del modelo: [`bpmn/README.md`](bpmn/README.md).
+El detalle está en [`bpmn/README.md`](bpmn/README.md).
 
-## Roadmap de entregas
+## Plan de entregas
 
-| Entrega | Alcance |
+| Entrega | Qué tiene que estar listo |
 |---|---|
-| **1** | Modelo BPMN en Flowable Design + despliegue al motor + instancia demo recorriendo user tasks |
-| **2** | Camino feliz completo: checkout → comprobante → revisión → worker descuenta stock (WS Java) |
-| **3** | Timer 24 h + rechazo + anti-sobreventa + retiro/despacho + catálogo y panel usables |
-| **Examen** | Migración a Flowable open source, pulido y demostración de los 3 escenarios |
+| **1** | Los dos modelos BPMN, el proceso desplegado en el motor y una instancia recorriendo tareas |
+| **2** | Camino feliz completo: checkout → comprobante → revisión → el worker descuenta stock |
+| **3** | El timer, el rechazo, el quiebre de stock, retiro/despacho y el catálogo usable |
+| **Examen** | Migración a Flowable open source y demostración de los tres escenarios |
 
 ## Autor
 
-Valentín González — trabajo individual (autorizado por el profesor).
-Desarrollado con apoyo de IA, entendiendo y validando cada decisión (según lineamientos del curso).
+Valentín González. Trabajo individual, autorizado por el profesor.

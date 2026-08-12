@@ -1,102 +1,63 @@
-# Decisiones de arquitectura (ADRs)
+# Decisiones de arquitectura
 
-Registro de las decisiones importantes del proyecto, con su justificación. Formato corto:
-contexto → decisión → consecuencias.
+Acá voy anotando las decisiones importantes del proyecto y por qué las tomé, para no tener que
+acordarme de todo después cuando me toque explicarlas.
 
 ---
 
-## ADR-001 · Arquitectura espejo del patrón de referencia del curso
+### ADR-001 · Arquitectura espejo del patrón del curso
 
-**Contexto.** El curso publica un ejemplo oficial (repo `INP-complementario-socios`) con el patrón:
-aplicación web → API REST de Flowable (iniciar instancias, completar user tasks) → tareas
-automáticas como *External Worker tasks* → worker que invoca a un web service Java de dominio.
+Aplicaré lo visto en el repositorio de GitHub que envió el profesor, con algunas modificaciones:
+Python → Flowable REST → worker → ws-pedidos en Java. Así quedo alineado con lo que el curso enseña
+y evalúa, y me sirve de referencia directa cada vez que me trabe con algo.
 
-**Decisión.** Replicar ese patrón: `web/` (Python) ↔ Flowable REST ↔ `worker/` ↔ `ws-pedidos/` (Java).
+### ADR-002 · Solo REST, sin SOAP
 
-**Consecuencias.** Alineación total con lo que el curso enseña y evalúa; el ejemplo del profesor
-sirve de referencia directa ante cualquier duda técnica.
+El profesor autorizó en clase usar solo REST, porque este es un servicio disciplinar y SOAP es
+bastante más complejo. Entonces todos mis servicios van a ser REST. SOAP lo dejo solo como
+comparación en la documentación, para mostrar que entiendo la diferencia.
 
-## ADR-002 · Solo REST (sin SOAP)
+### ADR-003 · Las tareas automáticas van como external workers
 
-**Contexto.** El material de la Unidad 2 cubre SOAP y REST. El profesor indicó en clase que, al ser
-servicio disciplinar, basta con REST ("es mucho más sencillo") y autorizó no usar SOAP.
+Flowable ofrece varias formas de automatizar un paso, pero el profesor dijo que el mecanismo del
+curso es el external worker, así que voy con ese. La gracia es que el motor publica un trabajo y lo
+consume un programa aparte: eso me permite escribir el worker en Python aunque el motor sea Java, y
+si el worker se cae el proceso no se rompe, los trabajos quedan esperando.
 
-**Decisión.** Todos los servicios del proyecto son REST/JSON. SOAP se aborda solo a nivel de
-análisis comparativo en la documentación (protocolo vs estilo, XML/WSDL vs JSON, casos de uso).
+Los topics de cada tarea los tengo documentados en `bpmn/README.md`, para no repetir la misma
+información en dos partes y que después no me queden desincronizadas.
 
-**Consecuencias.** Menos complejidad; se elimina un componente completo (servicio de notificaciones
-SOAP del ejemplo de la Unidad 3).
+### ADR-004 · La web en Python y el web service en Java
 
-## ADR-003 · Tareas automáticas como External Worker tasks
+El curso deja libre la tecnología de la interfaz y la base de datos, pero exige que los web services
+sean en Java. Como en Python y SQL Server avanzo mucho más rápido, hago la web ahí y dejo Java
+solamente para el ws-pedidos, que es donde el curso lo pide. Me queda una parte en Java chica y bien
+delimitada, y de paso una integración real entre tres plataformas distintas, que es de lo que se
+trata el ramo.
 
-**Contexto.** Flowable permite automatizar pasos con JavaDelegates (requieren Java embebido),
-ScriptTasks (Groovy/JS) o External Worker tasks (el motor publica *jobs* por topic y un proceso
-externo los consume). El profesor indicó en clase que el mecanismo del curso es el external worker.
+### ADR-005 · SQL Server para el negocio
 
-**Decisión.** Las 4 tareas automáticas del proceso son External Worker tasks con topics
-(`cancelarPedidoVencido`, `registrarRechazo`, `descontarInventario`, `cancelarPorStock`).
+La base de datos quedó a libre elección y SQL Server es la que mejor manejo, así que los datos del
+negocio van ahí. Para la base del motor de Flowable voy a intentar lo mismo; si me consume más de un
+día configurarlo, me paso a MySQL siguiendo la guía del curso y sigo avanzando. Poder revisar el
+motor desde SSMS me sirve harto para depurar y para mostrar evidencia en los videos.
 
-**Consecuencias.** El modelo queda desacoplado del lenguaje de implementación; el worker corre como
-proceso aparte y ante caída no bloquea al motor (los jobs esperan). Requiere levantar el worker para
-que las instancias avancen por esos pasos.
+### ADR-006 · El motor es la fuente de la verdad
 
-## ADR-004 · Web en Python/FastAPI; web service de dominio en Java
+El profesor fue explícito en esto: la fuente de la verdad pasa a ser el motor. Entonces guardo el id
+de la instancia en mi tabla de pedidos y el estado se lo pregunto al motor, en vez de llevar un
+estado propio en paralelo. Así no termino con dos versiones de la verdad que se desincronizan.
 
-**Contexto.** Regla del curso: interfaces de usuario y persistencia pueden hacerse "con la
-tecnología que más acomode" (el autor domina Python y SQL Server); los **web services son contenido
-core y deben ser Java**.
+### ADR-007 · Modelo con la licencia, entrego en open source
 
-**Decisión.** `web/` en Python + FastAPI (catálogo, carrito, checkout, seguimiento con token, panel
-del voluntario). `ws-pedidos/` en Java + JAX-RS/Jersey + Gradle (mismo stack del ejemplo del curso),
-exponiendo las operaciones de negocio que el proceso orquesta (descuento de inventario, cancelación,
-registro de decisiones). El worker invoca al WS Java; la web consulta catálogo/pedidos.
+Modelo en Flowable Design porque el convenio con Iplacex me da acceso, pero la entrega final tiene
+que correr sobre la versión open source: Mapuescuela no puede pagar una licencia. Ya revisé que el
+XML que exporto no use nada exclusivo de la versión pagada, así que la migración no debería darme
+sorpresas al final.
 
-**Consecuencias.** Se cumple el requisito de Java exactamente donde el curso lo exige, con una
-superficie Java pequeña y bien delimitada; la productividad del resto del sistema queda en el stack
-más fuerte del autor. Integración real entre tres plataformas (Python ↔ Flowable ↔ Java).
+### ADR-008 · Sin login de clientes
 
-## ADR-005 · SQL Server para el negocio; motor con plan B
-
-**Contexto.** El profesor dejó la base de datos a libre elección. El autor domina SQL Server.
-
-**Decisión.** `MAPUESCUELA_DB` en SQL Server 2022 (negocio). Para la BD del motor de Flowable se
-intenta también SQL Server (dialecto soportado oficialmente); si la configuración consume más de un
-día, plan B: MariaDB/MySQL siguiendo la guía paso a paso del curso.
-
-**Consecuencias.** Depuración del motor con SSMS (tablas `ACT_RU_*`: ver el timer programado, dónde
-está el token) — evidencia valiosa para las demostraciones.
-
-## ADR-006 · El motor es la fuente de la verdad del flujo
-
-**Contexto.** Indicación explícita del profesor: "acá la fuente de la verdad pasa a ser el motor…
-en la BD guardas el id de la instancia y le consultas al motor en qué paso está".
-
-**Decisión.** La tabla `pedido` guarda `process_instance_id`. El estado visible se **deriva** de la
-instancia (tareas activas / histórico). En la BD solo se materializan hechos de negocio
-irreversibles (stock descontado, cancelado con motivo, datos de despacho).
-
-**Consecuencias.** No hay doble fuente de verdad ni estados desincronizados. La UI sigue el modelo
-mental de "bandeja de tareas". Prueba ácida: con el motor apagado, ninguna compra puede avanzar.
-
-## ADR-007 · Modelar en Flowable Design (licencia); entregar sobre open source
-
-**Contexto.** Convenio Iplacex-Flowable da acceso a la versión licenciada. El curso exige que la
-solución final sea utilizable por el emprendedor sin costos de licencia.
-
-**Decisión.** Prototipado y modelado en Flowable Design; la solución final corre sobre
-`flowable-rest` **open source** (WAR en Tomcat). La migración está planificada como fase (no como
-imprevisto) en las últimas semanas.
-
-**Consecuencias.** Aprendizaje rápido con la herramienta guiada + entrega sin costo de licencia.
-
-## ADR-008 · Sin login de clientes; seguimiento por URL con token
-
-**Contexto.** Los emprendedores del programa son microempresarios: una persona opera todo (dicho por
-el profesor). El enunciado no pide cuentas de cliente, y el profesor recomendó no gastar tiempo en
-accesos con credenciales.
-
-**Decisión.** El cliente compra sin registrarse y sigue su pedido vía `/pedido/{numero}?t={token}`.
-El panel del voluntario/emprendedor tiene un único acceso simple.
-
-**Consecuencias.** Se elimina gestión de usuarios, roles y recuperación de contraseñas; el foco
-queda en el proceso.
+El enunciado no pide cuentas de cliente y el profesor recomendó no gastar tiempo en accesos con
+contraseña, porque estos emprendedores son una sola persona operando todo. El cliente compra sin
+registrarse y sigue su pedido con un link con token. Me ahorro usuarios, roles y recuperación de
+contraseñas, y ese tiempo se me va en el proceso, que es lo que evalúan.

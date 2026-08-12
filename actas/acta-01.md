@@ -1,46 +1,43 @@
-# Acta 01 — Inicio del proyecto y planificación
+# Acta 01 — Arranque del proyecto
 
-- **Fecha:** sábado 09 de agosto de 2026
-- **Asistentes:** Valentín González (trabajo individual, autorizado por el profesor)
-- **Modalidad:** sesión de trabajo asíncrona
+- **Fecha:** sábado 9 de agosto de 2026
+- **Participa:** Valentín González (trabajo individual, autorizado por el profesor)
 
-## Temas tratados
+## Qué hice en esta sesión
 
-1. Análisis del caso Mapuescuela (enunciado completo) y de la clase introductoria del profesor.
-2. Estudio del repositorio de ejemplo del curso (`INP-complementario-socios`) para adoptar su patrón
-   de integración: web ↔ Flowable REST ↔ external workers ↔ web service Java.
-3. Definición de la arquitectura y registro de decisiones en `docs/DECISIONES.md` (ADR-001 a 008).
-4. Diseño del proceso de venta en BPMN (elementos, variables, topics, estados) — `bpmn/README.md`.
-5. Creación del mono-repo con la estructura de carpetas por componente.
+Partí leyendo el enunciado completo del caso Mapuescuela y volviendo a la clase grabada del profesor
+para sacar las reglas del ramo: los web services tienen que ser en Java, las entregas son rebanadas
+ejecutables y no unidades sueltas, hay que llevar actas, y el motor pasa a ser la fuente de la verdad
+del flujo.
 
-## Compromisos (para la Entrega 1 — martes 12/08)
+Después revisé el repositorio de ejemplo que compartió el profesor (`INP-complementario-socios`) para
+entender el patrón que usa el curso: la web llama a Flowable por REST, las tareas automáticas son
+external workers con topic, y el worker termina llamando a un web service Java. Decidí replicar ese
+patrón cambiando PHP por Python, que es donde avanzo más rápido.
 
-| # | Compromiso | Responsable | Estado |
-|---|---|---|---|
-| 1 | Repositorio GitHub público creado y compartido al profesor | Valentín | ✅ |
-| 2 | Modelo TO-BE dibujado en Flowable Design (key `ventaMapuescuela`) | Valentín | ✅ |
-| 2b | Modelo AS-IS (proceso manual actual) — exigido por la rúbrica | Valentín | ☐ |
-| 2c | Formularios de las user tasks en Flowable | Valentín | ☐ |
-| 2d | Endpoint REST simple (avance de web services) | Valentín | ☐ |
-| 3 | Modelo desplegado en Flowable vía API REST (evidencia: deployment 201) | Valentín | ☐ |
-| 4 | Instancia demo iniciada y user tasks recorridas vía API (torpedo) | Valentín | ☐ |
-| 5 | Video técnico de la entrega 1 (modelo + despliegue + instancia) | Valentín | ☐ |
-| 6 | Video para el emprendedor (qué hará el sistema, sin tecnicismos) | Valentín | ☐ |
-| 7 | Tag `entrega-1` en el repositorio | Valentín | ☐ |
+Con eso armé el repositorio, dejé las carpetas por componente y escribí las decisiones de
+arquitectura en `docs/DECISIONES.md` para no tener que acordarme después del porqué de cada cosa.
 
-## Avances de la sesión
+Terminé la sesión dibujando el modelo del proceso automatizado en Flowable Design: el inicio en el
+checkout, la tarea de adjuntar el comprobante con el temporizador de 24 horas, la revisión del pago,
+el descuento de inventario y las ramas de entrega.
 
-- Mono-repo estructurado (bpmn/, web/, ws-pedidos/, worker/, docs/, actas/).
-- Modelo BPMN de referencia completo (`bpmn/venta-mapuescuela.bpmn`) con: 6 user tasks, 4 external
-  worker tasks, boundary timer interruptor de 24 h parametrizado, 4 gateways exclusivos con flujos
-  default seguros y 5 eventos de fin diferenciados.
-- Diccionario de elementos, variables, topics y mapeo de los 9 estados del pedido.
-- 8 decisiones de arquitectura documentadas.
-- Torpedo de la API REST de Flowable adaptado al proceso (`docs/flowable-api.http`).
-- **Modelo TO-BE completo dibujado en Flowable Design** (app `Mapuescuela`, modelo
-  `ventaMapuescuela`, paleta Flowable Work BPMN): evento de inicio en el checkout, tarea humana de
-  adjuntar comprobante con **boundary timer interruptor** parametrizado (`${plazoPago}`), revisión
-  del comprobante, gateway de aprobación, descuento de inventario, preparación y ramas de entrega
-  (retiro / despacho por voluntario / despacho por courier). 6 desenlaces diferenciados.
-- Revisión de la rúbrica de la Evaluación 1: se detectan requisitos adicionales no contemplados
-  inicialmente (modelo AS-IS, formularios en Flowable, avance de web services, dos videos).
+## Lo que revisé de la rúbrica
+
+Leyendo la pauta de la Evaluación 1 me di cuenta de que faltaban cosas que no tenía contempladas: el
+modelo AS-IS del proceso actual, los formularios en Flowable, un avance de web services y **dos**
+videos, no uno.
+
+## Compromisos para la Entrega 1 (martes 12/08)
+
+| # | Compromiso | Estado al cierre de la sesión |
+|---|---|---|
+| 1 | Repositorio en GitHub, público y compartido al profesor | ✅ |
+| 2 | Modelo TO-BE dibujado en Flowable Design | ✅ |
+| 3 | Modelo AS-IS del proceso manual actual | ☐ |
+| 4 | Formularios de las tareas humanas | ☐ |
+| 5 | Endpoint REST simple como avance de web services | ☐ |
+| 6 | Proceso desplegado en el motor vía API REST | ☐ |
+| 7 | Instancia de prueba recorriendo las tareas | ☐ |
+| 8 | Video técnico y video para la emprendedora | ☐ |
+| 9 | Tag `entrega-1` en el repositorio | ☐ |

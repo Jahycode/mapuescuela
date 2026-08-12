@@ -1,119 +1,118 @@
-# Modelo BPMN — Proceso de Venta Mapuescuela
+# Modelo BPMN del proceso de venta
 
-Archivo: [`venta-mapuescuela.bpmn`](venta-mapuescuela.bpmn) · `process id="ventaMapuescuela"` · ejecutable en Flowable.
+Acá está documentado el modelo que corre en Flowable: qué hace cada paso, qué variables usa y qué
+topics tiene que atender el worker. Es mi referencia de trabajo, así que este sí lo dejo detallado.
 
-## Vista general del flujo
+| Archivo | Qué es |
+|---|---|
+| [`ventaMapuescuela.bpmn`](ventaMapuescuela.bpmn) | El proceso automatizado (TO-BE). Es el que se despliega |
+| [`ventaManualAsIs.bpmn`](ventaManualAsIs.bpmn) | Cómo venden hoy (AS-IS). Solo documenta, no se ejecuta |
+
+## El flujo
 
 ```
 (●) Pedido creado
- │
- ▼
-[👤 Adjuntar comprobante] ──⏰ 24h vence──▶ [⚙ cancelarPedidoVencido] ──▶ (◉) Cancelado por vencimiento
- │ comprobante subido
- ▼
-[👤 Revisar comprobante]
- ▼
-<✕ ¿Pago aprobado?>
- ├─ NO (default) ──▶ [⚙ registrarRechazo] ──▶ (◉) Cancelado por rechazo
- └─ SÍ ──▶ [⚙ descontarInventario]
-            ▼
-          <✕ ¿Stock disponible?>
-            ├─ NO (default) ──▶ [⚙ cancelarPorStock] ──▶ (◉) Cancelado por falta de stock
-            └─ SÍ ──▶ [👤 Preparar pedido]
-                       ▼
-                     <✕ ¿Modalidad?>
-                       ├─ RETIRO ──▶ [👤 Listo p/ retiro] ─▶ [👤 Registrar retiro] ─┐
-                       └─ DESPACHO (default) ──▶ [👤 Registrar despacho] ───────────┤
-                                                                                    ▼
-                                                                          (◉) Pedido finalizado
+     │
+     ▼
+[👤 Adjuntar comprobante] ──⏰ 24 h──▶ [⚙ Cancelar pedido] ──▶ (◉) Pedido cancelado por vencimiento
+     │
+     ▼
+[👤 Revisar comprobante de pago]
+     │
+     ▼
+ <✕ ¿Pago aprobado?>
+     ├─ No (default) ─▶ [⚙ Registrar rechazo] ─▶ [⚙ Notificar cliente] ─▶ (◉) Pedido cancelado
+     │
+     └─ Sí ─▶ [⚙ Descontar inventario]
+                  │
+                  ▼
+              <✕ ¿Había stock?>
+                  ├─ No (default) ─▶ [⚙ Notificar falta de stock] ─▶ (◉) Cancelado por falta de stock
+                  │
+                  └─ Sí ─▶ [👤 Preparar pedido]
+                              │
+                              ▼
+                          <✕ ¿Modalidad de entrega?>
+                              ├─ Retiro ─▶ [👤 Marcar listo] ─▶ [👤 Registrar retiro] ─▶ (◉) Pedido retirado
+                              │
+                              └─ Despacho (default) ─▶ [👤 Gestionar despacho]
+                                                            │
+                                                            ▼
+                                                        <✕ ¿Voluntario o courier?>
+                                                            ├─ Courier ─▶ [👤 Registrar datos de envío] ─▶ (◉) Despachado por courier
+                                                            └─ Voluntario (default) ─▶ [👤 Registrar despacho] ─▶ (◉) Despachado por voluntario
 ```
 
-`👤` = tarea humana (user task) · `⚙` = external worker task (automática) · `✕` = gateway exclusivo · `⏰` = boundary timer interruptor
+`👤` tarea humana · `⚙` external worker (automática) · `✕` gateway exclusivo · `⏰` boundary timer interruptor
 
-## Diccionario de elementos
+En total: **8 tareas humanas, 5 automáticas, 4 gateways y 6 finales distintos**.
 
-| Id | Nombre | Tipo BPMN | Responsable | Efecto de negocio |
-|---|---|---|---|---|
-| `startPedidoCreado` | Pedido creado (checkout) | Start Event (none) | Web (cliente) | Nace la instancia; el pedido ya existe en BD con sus ítems |
-| `utAdjuntarComprobante` | Adjuntar comprobante | User Task | Cliente (vía web) | Espera del pago; estado *Pendiente de pago* |
-| `timerPlazoPago` | Plazo de pago vencido | **Interrupting Boundary Timer Event** (`timeDuration = ${plazoPago}`) | Motor | A las 24 h elimina la tarea y desvía a cancelación |
-| `ewCancelarVencido` | Cancelar por vencimiento | Service Task `external-worker` topic `cancelarPedidoVencido` | Worker | Pedido → *Cancelado* (stock intacto: nunca se descontó) |
-| `utRevisarComprobante` | Revisar comprobante | User Task | Voluntario | Decide con `esAprobado` (+ `motivoRechazo`); estado *Pago en revisión* |
-| `gwAprobado` | ¿Pago aprobado? | Exclusive Gateway (default → rechazo) | Motor | Bifurca según `esAprobado` |
-| `ewRegistrarRechazo` | Registrar rechazo y notificar | Service Task `external-worker` topic `registrarRechazo` | Worker | *Pago rechazado* → *Cancelado* + notificación |
-| `ewDescontarInventario` | Descontar inventario | Service Task `external-worker` topic `descontarInventario` | Worker → WS Java | *Pago aprobado*; descuento atómico (`UPDATE ... WHERE stock >= cantidad`); produce `stockOk` |
-| `gwStock` | ¿Stock disponible? | Exclusive Gateway (default → sin stock) | Motor | Caso borde de artículos únicos |
-| `ewCancelarPorStock` | Cancelar por falta de stock | Service Task `external-worker` topic `cancelarPorStock` | Worker | *Cancelado* + notificación de devolución |
-| `utPrepararPedido` | Preparar pedido | User Task | Voluntario | Estado *En preparación* |
-| `gwModalidad` | ¿Modalidad de entrega? | Exclusive Gateway (default → despacho) | Motor | Según `modalidadEntrega` |
-| `utMarcarListoRetiro` | Listo para retiro | User Task | Voluntario | Estado *Listo para retiro* |
-| `utRegistrarRetiro` | Registrar retiro | User Task | Voluntario | El cliente retiró en Padre Hurtado |
-| `utRegistrarDespacho` | Registrar despacho | User Task | Voluntario | Estado *Enviado*: courier + N° seguimiento + fecha |
-| `gwUnionEntrega` | Entrega gestionada | Exclusive Gateway (unión) | Motor | Une los caminos alternativos (llega solo uno; **no** es paralelo) |
-| `endFinalizado` / `endCancelado*` | Fines diferenciados | End Events | Motor | 4 desenlaces distinguibles en el histórico |
+## Por qué cada final es distinto
+
+Podría haber cerrado todo en un solo círculo, pero los dejé separados a propósito: en el historial
+del motor puedo distinguir si un pedido terminó bien, si se venció, si lo rechazaron o si no había
+stock. Eso me sirve para el seguimiento del cliente y para las demostraciones.
 
 ## Variables del proceso
 
 | Variable | Tipo | Quién la escribe | Cuándo |
 |---|---|---|---|
-| `pedidoId` | int | Web | Al iniciar la instancia |
-| `clienteNombre`, `clienteEmail` | string | Web | Al iniciar |
-| `montoTotal` | int | Web | Al iniciar |
-| `modalidadEntrega` | string (`RETIRO`\|`DESPACHO`) | Web | Al iniciar (el cliente la eligió en el checkout) |
-| `plazoPago` | string ISO-8601 (`PT24H` / `PT2M` en demo) | Web (desde config) | Al iniciar — **parametrizado para poder demostrar el vencimiento** |
-| `esAprobado` | boolean | Voluntario (al completar revisión) | Decisión del pago |
-| `motivoRechazo` | string | Voluntario | Solo si rechaza |
-| `stockOk` | boolean | Worker `descontarInventario` | Resultado del descuento |
+| `pedidoId` | número | La web | Al iniciar la instancia |
+| `clienteNombre`, `clienteEmail` | texto | La web | Al iniciar |
+| `montoTotal` | número | La web | Al iniciar |
+| `modalidadEntrega` | `RETIRO` o `DESPACHO` | La web | Al iniciar (el cliente eligió en el checkout) |
+| `plazoPago` | duración ISO-8601 | La web | Al iniciar. `PT24H` real, `PT2M` para demostrar el vencimiento sin esperar un día |
+| `esAprobado` | booleano | El voluntario | Al revisar el comprobante |
+| `motivoRechazo` | texto | El voluntario | Solo si rechaza |
+| `stockOk` | booleano | El worker | Al terminar de descontar inventario |
+| `tipoDespacho` | `VOLUNTARIO` o `COURIER` | El voluntario | Al gestionar el despacho |
 
-## Topics de external workers
+## Topics que tiene que atender el worker
 
-| Topic | Qué hace el worker | A quién llama |
+| Topic | Qué hace | Devuelve |
 |---|---|---|
-| `cancelarPedidoVencido` | Cancela pedido (motivo vencimiento) + notifica | `ws-pedidos` |
-| `registrarRechazo` | Marca rechazo, cancela + notifica | `ws-pedidos` |
-| `descontarInventario` | Descuento condicional atómico por línea; devuelve `stockOk` | `ws-pedidos` |
-| `cancelarPorStock` | Cancela (motivo sin stock) + notifica | `ws-pedidos` |
+| `cancelarPedidoVencido` | Cancela el pedido porque se acabó el plazo | — |
+| `registrarRechazo` | Deja registrado que el pago fue rechazado y por qué | — |
+| `notificarCliente` | Le avisa al cliente que su pedido se canceló | — |
+| `descontarInventario` | Baja el stock del artículo | `stockOk` |
+| `notificarFaltaStock` | Le avisa al cliente que el artículo ya no estaba y hay que devolverle | — |
 
-## Estados del pedido (derivados del motor)
+> El descuento de stock tiene que ser **una sola operación atómica** en la base de datos
+> (`UPDATE producto SET stock = stock - 1 WHERE id = ? AND stock > 0`), y `stockOk` es simplemente si
+> afectó alguna fila. Si consulto primero y descuento después, vuelve el problema de dos clientes
+> comprando lo mismo al mismo tiempo.
 
-El motor es la **fuente de la verdad** del flujo: la BD guarda el `processInstanceId` y el estado se
-deriva de dónde está el token (consulta a `runtime/tasks` / `history/historic-activity-instances`):
+## Los tres escenarios que voy a demostrar
 
-| Estado del enunciado | Se deriva de |
-|---|---|
-| Pendiente de pago | Token en `utAdjuntarComprobante` |
-| Pago en revisión | Token en `utRevisarComprobante` |
-| Pago rechazado | Histórico pasó por `ewRegistrarRechazo` |
-| Pago aprobado | Histórico pasó por `ewDescontarInventario` |
-| En preparación | Token en `utPrepararPedido` |
-| Listo para retiro | Token en `utRegistrarRetiro` (ya se marcó listo) |
-| Enviado | Histórico pasó por `utRegistrarDespacho` |
-| Finalizado | Instancia terminó en `endFinalizado` |
-| Cancelado | Instancia terminó en cualquiera de los 3 fines de cancelación (con su motivo) |
+**1. Camino feliz.** El pedido nace en el checkout y queda esperando el comprobante, con el timer
+programado. El cliente lo sube, el timer se cancela solo, el voluntario aprueba, el worker descuenta
+el stock y el pedido se entrega. Termina en retiro o en despacho.
 
-## Los 3 escenarios de demostración (recorrido del token)
+**2. Se vence el plazo.** Nadie sube el comprobante. Cuando se cumple `plazoPago`, el timer elimina
+la tarea y manda el pedido a cancelación. No hay que devolver stock **porque nunca se descontó**: el
+stock solo baja cuando se aprueba el pago.
 
-1. **Camino feliz:** el token nace en el checkout → espera en *Adjuntar comprobante* (el timer queda
-   programado) → el cliente sube el comprobante (el timer se elimina solo) → espera en *Revisar* →
-   voluntario aprueba → el worker descuenta stock (`stockOk=true`) → *Preparar* → retiro o despacho
-   → **Pedido finalizado**.
-2. **Vencimiento (24 h):** el token espera en *Adjuntar comprobante* y nadie sube nada → al cumplirse
-   `plazoPago`, el **boundary timer interruptor** elimina la tarea y lleva el token por
-   `ewCancelarVencido` → **Cancelado por vencimiento**. No se libera stock **porque nunca se
-   descontó** (regla del caso: el stock solo baja al aprobar el pago).
-3. **Rechazo:** el voluntario completa la revisión con `esAprobado=false` → el gateway (cuyo flujo
-   **default** es el rechazo, a prueba de variables faltantes) lleva el token por
-   `ewRegistrarRechazo` → **Cancelado por rechazo**, con notificación del motivo al cliente.
+**3. Rechazo.** El voluntario revisa y rechaza. Como el flujo default del gateway es justamente el
+rechazo, aunque la variable llegara vacía el pedido nunca se aprobaría por accidente.
 
-## Decisiones de modelado (resumen — detalle en `docs/DECISIONES.md`)
+## Decisiones de modelado
 
-- **Sin pools/lanes:** el motor de Flowable no los ejecuta (indicación del profesor); los roles se
-  gestionan en la aplicación. El diagrama queda 100 % ejecutable.
-- **Boundary timer interruptor** y no un paso "esperar 24 h" en el flujo: el proceso avanza apenas
-  llega el comprobante; el timer solo actúa si se cumple el plazo.
-- **Gateways con flujo default hacia el camino seguro** (rechazo / sin stock / despacho): si una
-  variable llega nula, el proceso nunca aprueba ni entrega por accidente.
-- **La unión de retiro/despacho es un gateway exclusivo**, no paralelo: llega un solo camino;
-  cerrar con paralelo dejaría la instancia esperando un token que jamás llegará (deadlock).
-- **Los CRUD (productos, categorías, usuarios) no son procesos BPMN**: no tienen coordinación,
-  esperas ni decisiones de negocio — son mantenedores de la aplicación (criterio del enunciado).
+**Sin pools ni lanes.** El motor de Flowable no los ejecuta — lo dijo el profesor en clase — así que
+los roles los manejo en la aplicación. El diagrama queda 100 % ejecutable.
+
+**Un timer pegado a la tarea, no un paso de "esperar 24 horas".** Si hubiera puesto una espera en el
+flujo, el proceso se quedaría parado las 24 horas aunque el cliente pague en cinco minutos. Con el
+boundary timer, el proceso avanza apenas llega el comprobante y el timer se cancela solo.
+
+**Los flujos default apuntan siempre al camino seguro** (rechazar, no hay stock, despachar). Si una
+variable llegara nula, el proceso nunca va a aprobar un pago ni entregar un producto por accidente.
+
+**Cada rama de entrega termina en su propio final,** sin unirlas antes. Si las hubiera cerrado con un
+gateway paralelo, la instancia quedaría esperando eternamente un token que nunca va a llegar.
+
+**Los CRUD no son procesos BPMN.** Mantener productos, categorías o usuarios no tiene coordinación ni
+esperas ni decisiones de negocio: son mantenedores de la aplicación. El enunciado lo pide así.
+
+## Comparación con el proceso actual
+
+Las mejoras del TO-BE respecto al AS-IS están en [`AS-IS-vs-TO-BE.md`](AS-IS-vs-TO-BE.md).
