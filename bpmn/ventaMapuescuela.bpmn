@@ -6,7 +6,7 @@
       <design:stencilid><![CDATA[BPMNDiagram]]></design:stencilid>
       <design:creationdate><![CDATA[2026-08-10T01:15:13.233Z]]></design:creationdate>
       <design:description><![CDATA[Sistema de gestión de ventas de artículos donados]]></design:description>
-      <design:modificationdate><![CDATA[2026-08-12T01:15:59.387Z]]></design:modificationdate>
+      <design:modificationdate><![CDATA[2026-08-12T02:36:15.207Z]]></design:modificationdate>
     </extensionElements>
     <userTask id="FormTask_1" name="Adjuntar comprobante de transferencia" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
       <extensionElements>
@@ -170,12 +170,12 @@
         <timeDuration>${plazoPago}</timeDuration>
       </timerEventDefinition>
     </boundaryEvent>
-    <sequenceFlow id="SequenceFlow_10" sourceRef="FormTask_1" targetRef="FormTask_9">
+    <sequenceFlow id="SequenceFlow_51" sourceRef="IntermediateTimerEventBoundary_9" targetRef="ServiceTask_41">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
     </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_43" sourceRef="FormTask_1" targetRef="ServiceTask_41">
+    <sequenceFlow id="SequenceFlow_10" sourceRef="FormTask_1" targetRef="FormTask_9">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
@@ -410,9 +410,9 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="IntermediateTimerEventBoundary_9" id="BPMNShape_IntermediateTimerEventBoundary_9">
-        <omgdc:Bounds height="30.0" width="30.0" x="569.0" y="118.0"></omgdc:Bounds>
+        <omgdc:Bounds height="30.0" width="30.0" x="569.0" y="38.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="85.0" x="542.783030499194" y="153.97506489302987"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="85.0" x="534.8659830345566" y="19.875240551341207"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_48" id="BPMNEdge_SequenceFlow_48" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
@@ -484,6 +484,10 @@
         <omgdi:waypoint x="434.5" y="93.0"></omgdi:waypoint>
         <omgdi:waypoint x="534.0" y="93.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_51" id="BPMNEdge_SequenceFlow_51" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
+        <omgdi:waypoint x="584.0" y="38.0"></omgdi:waypoint>
+        <omgdi:waypoint x="584.0" y="-24.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_40" id="BPMNEdge_SequenceFlow_40" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="1693.755824189182" y="73.0"></omgdi:waypoint>
         <omgdi:waypoint x="1693.755824189182" y="-25.158354964343317"></omgdi:waypoint>
@@ -519,10 +523,6 @@
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_10" id="BPMNEdge_SequenceFlow_10" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="634.0" y="93.0"></omgdi:waypoint>
         <omgdi:waypoint x="684.0" y="93.0"></omgdi:waypoint>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_43" id="BPMNEdge_SequenceFlow_43" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="584.0" y="53.0"></omgdi:waypoint>
-        <omgdi:waypoint x="584.0" y="-24.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_32" id="BPMNEdge_SequenceFlow_32" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="14.0" flowable:targetDockerY="14.0">
         <omgdi:waypoint x="1593.7470798666595" y="-197.24899701137437"></omgdi:waypoint>

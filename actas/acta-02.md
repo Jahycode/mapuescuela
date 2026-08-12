@@ -55,6 +55,33 @@ modelos.
 Cerré dejando ambos modelos con la validación limpia y corrigiendo la documentación del repositorio,
 que en algunas partes describía un modelo anterior al que terminé dibujando.
 
+## El proceso corriendo, y un bug que solo apareció al ejecutarlo
+
+Levanté el motor de Flowable open source en Docker y desplegué el modelo por la API REST. Inicié una
+instancia de prueba con el plazo de pago en 2 minutos en vez de 24 horas, para poder demostrar el
+vencimiento sin esperar un día.
+
+El timer disparó solo, sin que yo tocara nada. Pero al revisar el historial de actividades me
+encontré con que **el recorrido se cortaba justo en el temporizador**: nunca llegaba a cancelar el
+pedido. Revisando el XML descubrí la causa: la flecha hacia *Cancelar pedido* nacía en la tarea y no
+en el temporizador.
+
+Eso tenía dos consecuencias. La primera es que al vencerse el plazo el token no tenía por dónde
+seguir y la instancia moría en silencio. La segunda es peor: la tarea quedaba con dos flechas de
+salida sin gateway, que en BPMN es una bifurcación paralela implícita — o sea que al subir el
+comprobante, el pedido se habría ido a revisión **y** a cancelación al mismo tiempo.
+
+Lo corregí redibujando la flecha desde el temporizador, volví a desplegar y repetí la prueba. Esta
+vez el recorrido llegó completo hasta la tarea de cancelación.
+
+**Lo que me llevo de esto:** la validación de Flowable Design no detectó el error, el panel estaba
+limpio y el diagrama se veía bien. Un modelo que valida no es lo mismo que un modelo que funciona, y
+la única forma de saberlo fue ejecutarlo de verdad.
+
+Al final el token quedó detenido en *Cancelar pedido*, que es una tarea de external worker: el motor
+publica el trabajo y espera que un programa externo lo tome. Ese programa lo construyo en la próxima
+entrega, así que ese es el punto exacto donde termina el alcance de esta.
+
 ## Cómo quedó el proceso
 
 8 tareas humanas, 5 automáticas como external workers, 4 gateways exclusivos, un temporizador de 24
@@ -67,9 +94,9 @@ venció, lo rechazaron o se quedó sin stock.
 |---|---|---|
 | 1 | Modelo AS-IS | ✅ |
 | 2 | Modelo TO-BE con validación limpia | ✅ |
-| 3 | Motor Flowable levantado en local | ☐ |
-| 4 | Proceso desplegado vía API REST | ☐ |
-| 5 | Instancia de prueba recorriendo las tareas | ☐ |
+| 3 | Motor Flowable levantado en local | ✅ |
+| 4 | Proceso desplegado vía API REST | ✅ |
+| 5 | Instancia de prueba recorriendo las tareas | ✅ |
 | 6 | Formularios de las tareas humanas | ☐ |
 | 7 | Endpoint REST como avance de web services | ☐ |
 | 8 | Video técnico y video para la emprendedora | ☐ |

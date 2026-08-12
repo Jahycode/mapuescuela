@@ -109,7 +109,8 @@ Authorization: {{authorization}}
 Accept: application/json
 
 ### 11) External worker jobs pendientes (lo que consumirá el worker)
-GET {{baseUrl}}/service/runtime/external-worker-jobs
+# Ojo: este endpoint NO cuelga de /service, va en su propia API
+GET {{baseUrl}}/external-job-api/jobs
 Authorization: {{authorization}}
 Accept: application/json
 
