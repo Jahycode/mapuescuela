@@ -6,7 +6,7 @@
       <design:stencilid><![CDATA[BPMNDiagram]]></design:stencilid>
       <design:creationdate><![CDATA[2026-08-10T01:15:13.233Z]]></design:creationdate>
       <design:description><![CDATA[Sistema de gestión de ventas de artículos donados]]></design:description>
-      <design:modificationdate><![CDATA[2026-08-11T02:20:06.937Z]]></design:modificationdate>
+      <design:modificationdate><![CDATA[2026-08-12T01:15:59.387Z]]></design:modificationdate>
     </extensionElements>
     <userTask id="FormTask_1" name="Adjuntar comprobante de transferencia" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
       <extensionElements>
@@ -94,27 +94,20 @@
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </serviceTask>
-    <exclusiveGateway id="Exclusive_Databased_Gateway_11" default="SequenceFlow_16">
+    <exclusiveGateway id="Exclusive_Databased_Gateway_11" name="¿Pago aprobado?" default="SequenceFlow_16">
       <extensionElements>
-        <flowable:element-name>¿Pago
-aprobado?</flowable:element-name>
         <design:stencilid><![CDATA[Exclusive_Databased_Gateway]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </exclusiveGateway>
-    <exclusiveGateway id="Exclusive_Databased_Gateway_25" default="SequenceFlow_46">
+    <exclusiveGateway id="Exclusive_Databased_Gateway_25" name="¿Modalidad de entrega?" default="SequenceFlow_46">
       <extensionElements>
-        <flowable:element-name>¿Modalidad de
- entrega?</flowable:element-name>
         <design:stencilid><![CDATA[Exclusive_Databased_Gateway]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </exclusiveGateway>
-    <exclusiveGateway id="Exclusive_Databased_Gateway_33" default="SequenceFlow_36">
+    <exclusiveGateway id="Exclusive_Databased_Gateway_33" name="¿Voluntario o courier?" default="SequenceFlow_36">
       <extensionElements>
-        <flowable:element-name>¿Voluntario
-o
- courier?</flowable:element-name>
         <design:stencilid><![CDATA[Exclusive_Databased_Gateway]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
@@ -125,10 +118,8 @@ o
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </exclusiveGateway>
-    <startEvent id="startnoneevent1" flowable:initiator="initiator" flowable:formFieldValidation="false">
+    <startEvent id="startnoneevent1" name="Pedido creado" flowable:initiator="initiator" flowable:formFieldValidation="false">
       <extensionElements>
-        <flowable:element-name>Pedido creado
-(Checkout)</flowable:element-name>
         <flowable:work-form-field-validation><![CDATA[false]]></flowable:work-form-field-validation>
         <design:stencilid><![CDATA[StartNoneEvent]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
@@ -146,42 +137,32 @@ o
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </endEvent>
-    <endEvent id="EndNoneEvent_37">
+    <endEvent id="EndNoneEvent_37" name="Despachado por voluntario">
       <extensionElements>
-        <flowable:element-name>Despachado
-por voluntario</flowable:element-name>
         <design:stencilid><![CDATA[EndNoneEvent]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </endEvent>
-    <endEvent id="EndNoneEvent_41">
+    <endEvent id="EndNoneEvent_41" name="Despachado por courier">
       <extensionElements>
-        <flowable:element-name>Despachado
- por courier</flowable:element-name>
         <design:stencilid><![CDATA[EndNoneEvent]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </endEvent>
-    <endEvent id="EndNoneEvent_44">
+    <endEvent id="EndNoneEvent_44" name="Pedido cancelado por vencimiento">
       <extensionElements>
-        <flowable:element-name>Pedido cancelado
- por vencimiento</flowable:element-name>
         <design:stencilid><![CDATA[EndNoneEvent]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </endEvent>
-    <endEvent id="EndNoneEvent_51">
+    <endEvent id="EndNoneEvent_51" name="Cancelado por falta de stock">
       <extensionElements>
-        <flowable:element-name>Cancelado por
- falta de stock</flowable:element-name>
         <design:stencilid><![CDATA[EndNoneEvent]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </endEvent>
-    <boundaryEvent id="IntermediateTimerEventBoundary_9" attachedToRef="FormTask_1" cancelActivity="true">
+    <boundaryEvent id="IntermediateTimerEventBoundary_9" name="Timer de 24 hrs" attachedToRef="FormTask_1" cancelActivity="true">
       <extensionElements>
-        <flowable:element-name>Timer de
- 24 hrs</flowable:element-name>
         <design:stencilid><![CDATA[IntermediateTimerEventBoundary]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
@@ -348,7 +329,7 @@ por voluntario</flowable:element-name>
         <omgdc:Bounds height="80.0" width="100.0" x="1493.7470798666595" y="-237.24899701137437"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="FormTask_39" id="BPMNShape_FormTask_39">
-        <omgdc:Bounds height="80.0" width="100.0" x="1621.7470798666595" y="-104.00000000000003"></omgdc:Bounds>
+        <omgdc:Bounds height="80.0" width="100.0" x="1643.755824189182" y="-105.15835496434332"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="ServiceTask_41" id="BPMNShape_ServiceTask_41">
         <omgdc:Bounds height="80.0" width="100.0" x="534.0" y="-104.0"></omgdc:Bounds>
@@ -365,19 +346,19 @@ por voluntario</flowable:element-name>
       <bpmndi:BPMNShape bpmnElement="Exclusive_Databased_Gateway_11" id="BPMNShape_Exclusive_Databased_Gateway_11">
         <omgdc:Bounds height="40.0" width="40.0" x="834.0" y="73.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="36.0" width="58.0" x="823.9280414708944" y="116.5552198797024"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="96.0" x="806.5527170057451" y="120.03028477273224"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="Exclusive_Databased_Gateway_25" id="BPMNShape_Exclusive_Databased_Gateway_25">
         <omgdc:Bounds height="40.0" width="40.0" x="1373.7470798666595" y="73.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="36.0" width="81.0" x="1353.1470798666596" y="116.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="132.0" x="1336.9301103658536" y="119.47506489302984"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="Exclusive_Databased_Gateway_33" id="BPMNShape_Exclusive_Databased_Gateway_33">
-        <omgdc:Bounds height="40.0" width="40.0" x="1651.7470798666595" y="73.0"></omgdc:Bounds>
+        <omgdc:Bounds height="40.0" width="40.0" x="1673.755824189182" y="73.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="54.0" width="61.0" x="1640.1470798666596" y="118.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="119.0" x="1637.830369937973" y="116.84164503565671"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="Exclusive_Databased_Gateway_44" id="BPMNShape_Exclusive_Databased_Gateway_44">
@@ -389,7 +370,7 @@ por voluntario</flowable:element-name>
       <bpmndi:BPMNShape bpmnElement="startnoneevent1" id="BPMNShape_startnoneevent1">
         <omgdc:Bounds height="30.0" width="30.0" x="404.5" y="78.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="36.0" width="78.0" x="383.1" y="109.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="78.0" x="383.1" y="109.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="EndNoneEvent_19" id="BPMNShape_EndNoneEvent_19">
@@ -405,33 +386,33 @@ por voluntario</flowable:element-name>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="EndNoneEvent_37" id="BPMNShape_EndNoneEvent_37">
-        <omgdc:Bounds height="28.0" width="28.0" x="1983.7470798666595" y="79.0"></omgdc:Bounds>
+        <omgdc:Bounds height="28.0" width="28.0" x="2016.1810188682716" y="79.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="36.0" width="76.0" x="1962.8042455317636" y="111.5157165665104"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="148.0" x="1961.6458905674203" y="117.30749138822682"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="EndNoneEvent_41" id="BPMNShape_EndNoneEvent_41">
-        <omgdc:Bounds height="28.0" width="28.0" x="1771.7470798666595" y="-78.00000000000003"></omgdc:Bounds>
+        <omgdc:Bounds height="28.0" width="28.0" x="1860.7470798666595" y="-79.15835496434332"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="36.0" width="69.0" x="1751.2470798666595" y="-46.00000000000003"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="131.0" x="1812.0400863917032" y="-36.45915054280819"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="EndNoneEvent_44" id="BPMNShape_EndNoneEvent_44">
-        <omgdc:Bounds height="28.0" width="28.0" x="689.5" y="-78.0"></omgdc:Bounds>
+        <omgdc:Bounds height="28.0" width="28.0" x="720.0" y="-78.00000000000004"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="36.0" width="97.0" x="654.1862193948547" y="-47.14869835499702"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="188.0" x="643.9455462797353" y="-38.3094985807426"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="EndNoneEvent_51" id="BPMNShape_EndNoneEvent_51">
-        <omgdc:Bounds height="28.0" width="28.0" x="1224.0" y="-78.00000000000004"></omgdc:Bounds>
+        <omgdc:Bounds height="28.0" width="28.0" x="1265.5633654187336" y="-79.15835496434332"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="36.0" width="80.0" x="1197.9647061410312" y="-43.90541175435879"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="158.0" x="1201.2500775768788" y="-34.15448638983422"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="IntermediateTimerEventBoundary_9" id="BPMNShape_IntermediateTimerEventBoundary_9">
         <omgdc:Bounds height="30.0" width="30.0" x="569.0" y="118.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="36.0" width="48.0" x="559.0" y="150.5"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="85.0" x="542.783030499194" y="153.97506489302987"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_48" id="BPMNEdge_SequenceFlow_48" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
@@ -443,8 +424,8 @@ por voluntario</flowable:element-name>
         <omgdi:waypoint x="1373.7470798666595" y="93.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_38" id="BPMNEdge_SequenceFlow_38" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="14.0" flowable:targetDockerY="14.0">
-        <omgdi:waypoint x="1924.7470798666595" y="93.00000000000001"></omgdi:waypoint>
-        <omgdi:waypoint x="1983.7470798666595" y="93.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1924.7470798666595" y="93.00000000000003"></omgdi:waypoint>
+        <omgdi:waypoint x="2016.1810188682716" y="93.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_16" id="BPMNEdge_SequenceFlow_16" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="854.0" y="73.0"></omgdi:waypoint>
@@ -479,7 +460,7 @@ por voluntario</flowable:element-name>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_45" id="BPMNEdge_SequenceFlow_45" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="14.0" flowable:targetDockerY="14.0">
         <omgdi:waypoint x="634.0" y="-64.0"></omgdi:waypoint>
-        <omgdi:waypoint x="689.5" y="-64.0"></omgdi:waypoint>
+        <omgdi:waypoint x="720.0" y="-64.00000000000004"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_46" id="BPMNEdge_SequenceFlow_46" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="1413.7470798666595" y="93.0"></omgdi:waypoint>
@@ -490,13 +471,13 @@ por voluntario</flowable:element-name>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_47" id="BPMNEdge_SequenceFlow_47" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
         <omgdi:waypoint x="1612.7470798666595" y="93.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1651.7470798666595" y="93.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1673.755824189182" y="93.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_36" id="BPMNEdge_SequenceFlow_36" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="1691.7470798666595" y="93.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1713.755824189182" y="93.0"></omgdi:waypoint>
         <omgdi:waypoint x="1824.7470798666595" y="93.00000000000003"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="56.0" x="1723.7470798666595" y="74.79999999999998"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="56.0" x="1737.3642491304315" y="72.8546901051754"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_2" id="BPMNEdge_SequenceFlow_2" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
@@ -504,10 +485,10 @@ por voluntario</flowable:element-name>
         <omgdi:waypoint x="534.0" y="93.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_40" id="BPMNEdge_SequenceFlow_40" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="1671.7470798666595" y="73.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1671.7470798666595" y="-24.00000000000003"></omgdi:waypoint>
+        <omgdi:waypoint x="1693.755824189182" y="73.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1693.755824189182" y="-25.158354964343317"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="40.0" x="1627.7470798666595" y="16.799999999999983"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="40.0" x="1643.309559025256" y="16.799999999999983"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_30" id="BPMNEdge_SequenceFlow_30" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
@@ -516,15 +497,17 @@ por voluntario</flowable:element-name>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_52" id="BPMNEdge_SequenceFlow_52" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="14.0" flowable:targetDockerY="14.0">
         <omgdi:waypoint x="1174.0" y="-64.00000000000004"></omgdi:waypoint>
-        <omgdi:waypoint x="1224.0" y="-64.00000000000004"></omgdi:waypoint>
+        <omgdi:waypoint x="1219.7816827093668" y="-64.00000000000004"></omgdi:waypoint>
+        <omgdi:waypoint x="1219.7816827093668" y="-65.15835496434332"></omgdi:waypoint>
+        <omgdi:waypoint x="1265.5633654187336" y="-65.15835496434332"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_20" id="BPMNEdge_SequenceFlow_20" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="14.0" flowable:targetDockerY="14.0">
         <omgdi:waypoint x="1063.5793683991592" y="-187.41714150100717"></omgdi:waypoint>
         <omgdi:waypoint x="1113.5793683991592" y="-187.41714150100717"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_42" id="BPMNEdge_SequenceFlow_42" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="14.0" flowable:targetDockerY="14.0">
-        <omgdi:waypoint x="1721.7470798666595" y="-64.00000000000003"></omgdi:waypoint>
-        <omgdi:waypoint x="1771.7470798666595" y="-64.00000000000003"></omgdi:waypoint>
+        <omgdi:waypoint x="1743.755824189182" y="-65.15835496434332"></omgdi:waypoint>
+        <omgdi:waypoint x="1860.7470798666595" y="-65.15835496434332"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_53" id="BPMNEdge_SequenceFlow_53" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="1144.0" y="93.0"></omgdi:waypoint>

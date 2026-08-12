@@ -17,10 +17,10 @@ Authorization: {{authorization}}
 Content-Type: multipart/form-data; boundary=----Boundary
 
 ------Boundary
-Content-Disposition: form-data; name="file"; filename="venta-mapuescuela.bpmn"
+Content-Disposition: form-data; name="file"; filename="ventaMapuescuela.bpmn"
 Content-Type: application/xml
 
-< ../bpmn/venta-mapuescuela.bpmn
+< ../bpmn/ventaMapuescuela.bpmn
 ------Boundary--
 
 ### 2) Ver definiciones desplegadas (confirmar que ventaMapuescuela existe)
