@@ -1,9 +1,13 @@
-# Decisiones de arquitectura
+# docs/ — Decisiones y referencia técnica
 
-Acá voy anotando las decisiones importantes del proyecto y por qué las tomé, para no tener que
-acordarme de todo después cuando me toque explicarlas.
+Dos cosas hay acá: el registro de las decisiones importantes que fui tomando (más abajo), y
+`flowable-api.http`, un archivo con todas las peticiones a la API de Flowable listas para ejecutar —
+desplegar el modelo, iniciar instancias, completar tareas, hacer de worker a mano y revisar el
+historial. Se usa con la extensión *REST Client* de VS Code.
 
 ---
+
+## Decisiones de arquitectura
 
 ### ADR-001 · Arquitectura espejo del patrón del curso
 

@@ -44,7 +44,7 @@ Accept: application/json
     { "name": "clienteEmail",     "value": "juan@example.com" },
     { "name": "montoTotal",       "type": "integer", "value": 15000 },
     { "name": "modalidadEntrega", "value": "RETIRO" },
-    { "name": "plazoPago",        "value": "PT2M" }
+    { "name": "plazoPago",        "value": "PT24H" }
   ]
 }
 # ↑ plazoPago PT2M solo para demos; en producción PT24H (viene de configuración)
@@ -60,15 +60,25 @@ GET {{baseUrl}}/service/runtime/tasks?processInstanceId={{processInstanceId}}
 Authorization: {{authorization}}
 Accept: application/json
 
-### 6) Completar "Adjuntar comprobante" (la web lo hace cuando el cliente sube el archivo)
+# ----------------------------------------------------------------------------
+#  COMPLETAR UNA TAREA — los bloques 6, 7, 7b y 7c son ALTERNATIVAS entre si.
+#  Por cada tarea se manda UNO SOLO, segun si esa tarea decide algo o no.
+#  Los cuatro hacen POST a la MISMA URL; solo cambia el cuerpo.
+#  Antes de cada uno: correr el bloque 5 y actualizar @taskId (cambia siempre).
+# ----------------------------------------------------------------------------
+
 @taskId = PEGAR-TASKID-AQUI
+
+### 6) Tarea que NO decide nada -> solo se cierra
+# Sirve para: Adjuntar comprobante · Preparar pedido · Marcar listo para retiro
+#             Registrar retiro · Registrar datos de envio · Registrar despacho
 POST {{baseUrl}}/service/runtime/tasks/{{taskId}}
 Authorization: {{authorization}}
 Content-Type: application/json
 
 { "action": "complete" }
 
-### 7) Completar "Revisar comprobante" APROBANDO
+### 7) "Revisar comprobante" -> APROBANDO   (no mandar tambien el 6)
 POST {{baseUrl}}/service/runtime/tasks/{{taskId}}
 Authorization: {{authorization}}
 Content-Type: application/json
@@ -80,7 +90,7 @@ Content-Type: application/json
   ]
 }
 
-### 7b) Completar "Revisar comprobante" RECHAZANDO
+### 7b) "Revisar comprobante" -> RECHAZANDO   (no mandar tambien el 6)
 POST {{baseUrl}}/service/runtime/tasks/{{taskId}}
 Authorization: {{authorization}}
 Content-Type: application/json
@@ -93,13 +103,27 @@ Content-Type: application/json
   ]
 }
 
+### 7c) "Gestionar despacho" -> eligiendo COURIER
+# Si se completa con el bloque 6, el default manda el pedido por voluntario.
+POST {{baseUrl}}/service/runtime/tasks/{{taskId}}
+Authorization: {{authorization}}
+Content-Type: application/json
+
+{
+  "action": "complete",
+  "variables": [
+    { "name": "tipoDespacho", "value": "COURIER" }
+  ]
+}
+
 ### 8) Variables de la instancia
 GET {{baseUrl}}/service/runtime/process-instances/{{processInstanceId}}/variables
 Authorization: {{authorization}}
 Accept: application/json
 
 ### 9) Historial de actividades (el recorrido del token — evidencia para las demos)
-GET {{baseUrl}}/service/history/historic-activity-instances?processInstanceId={{processInstanceId}}&sort=startTime&order=asc
+@processInstanceId = c9e0c88b-96b3-11f1-8701-369bef4f31fa
+GET {{baseUrl}}/service/history/historic-activity-instances?processInstanceId={{processInstanceId}}&sort=startTime&order=desc
 Authorization: {{authorization}}
 Accept: application/json
 
@@ -118,3 +142,47 @@ Accept: application/json
 GET {{baseUrl}}/service/management/deadletter-jobs
 Authorization: {{authorization}}
 Accept: application/json
+
+# ============================================================================
+#  HACIENDO DE WORKER A MANO
+#  Estos tres bloques son exactamente lo que hará el worker en Python.
+#  Sirven para recorrer el proceso completo antes de programarlo.
+# ============================================================================
+
+### 13) [WORKER] Tomar un trabajo pendiente de un topic
+# workerId    = mi nombre; el motor lo usa para saber quién reservó el trabajo
+# lockDuration = cuánto queda reservado para mí antes de que otro pueda tomarlo
+POST {{baseUrl}}/external-job-api/acquire/jobs
+Authorization: {{authorization}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "topic": "cancelarPedidoVencido",
+  "workerId": "worker-manual",
+  "lockDuration": "PT10M",
+  "numberOfTasks": 1
+}
+
+### 14) [WORKER] Completar el trabajo devolviendo variables al proceso
+# El jobId sale de la respuesta del bloque 13.
+# El workerId TIENE que ser el mismo que lo reservó.
+@jobId = 12d821b9-96b4-11f1-8701-369bef4f31fa
+POST {{baseUrl}}/external-job-api/acquire/jobs/{{jobId}}/complete
+Authorization: {{authorization}}
+Content-Type: application/json
+
+{
+  "workerId": "worker-manual",
+  "variables": [
+    { "name": "stockOk", "type": "boolean", "value": true }
+  ]
+}
+
+### 14b) [WORKER] Completar un trabajo que no devuelve nada al proceso
+# Para los topics de notificación y cancelación.
+POST {{baseUrl}}/external-job-api/acquire/jobs/{{jobId}}/complete
+Authorization: {{authorization}}
+Content-Type: application/json
+
+{ "workerId": "worker-manual" }

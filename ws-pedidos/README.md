@@ -1,6 +1,16 @@
-# ws-pedidos/ — Web Service de dominio (Java + JAX-RS/Jersey + Gradle)
+# ws-pedidos/ — El web service de dominio, en Java
 
-**Entrega 2.** Servicio REST en Java (contenido core del curso, patrón del ejemplo `ws-socios`).
-Expone las operaciones de negocio que el proceso orquesta: descuento condicional de inventario,
-cancelaciones con motivo, registro de decisiones y datos de despacho. Persiste en SQL Server
-(`MAPUESCUELA_DB`). Puerto: 9090.
+Este es el servicio REST que expone las operaciones de negocio del proceso: consultar pedidos,
+crearlos y descontar inventario. Lo hago en **Java** porque el curso lo exige para los web services,
+y sigo el mismo patrón del ejemplo `ws-socios` del profesor: Jersey + JAX-RS + Gradle, con un
+servidor embebido en el puerto 9090.
+
+Es el único componente que el worker va a llamar cuando el proceso ejecute una tarea automática.
+
+## Cómo correrlo
+
+```
+.\gradlew.bat run
+```
+
+No hace falta tener Gradle instalado: el *wrapper* que está en la carpeta lo descarga solo.
