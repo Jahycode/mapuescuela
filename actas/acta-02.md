@@ -3,92 +3,97 @@
 - **Fechas:** domingo 10 y lunes 11 de agosto de 2026
 - **Participa:** Valentín González (trabajo individual, autorizado por el profesor)
 
-## Domingo 10: el modelo AS-IS y las validaciones del TO-BE
+## El modelo del proceso actual
 
-Partí dibujando el modelo del proceso manual actual, que me faltaba. Antes de hacerlo me pregunté
-para qué servía si igual iba a construir el proceso nuevo, y la respuesta es que sin el AS-IS las
-mejoras no se pueden justificar: quedan como propuestas sueltas en vez de soluciones a un problema
-concreto. Lo dibujé tal como me lo describieron: publican en Instagram, el cliente comenta o escribe,
-coordinan todo por WhatsApp y anotan la venta en un cuaderno.
+Comencé dibujando el modelo del proceso manual, que era uno de los elementos que me faltaban según la
+rúbrica. Antes de hacerlo me pregunté qué sentido tenía modelar algo que igual iba a reemplazar, y
+llegué a la conclusión de que sin ese modelo las mejoras del proceso nuevo quedarían como propuestas
+sueltas, sin nada con qué compararlas. Lo dibujé tal como me lo describieron: publican el artículo en
+Instagram, el cliente comenta o escribe, coordinan todo por WhatsApp y anotan la venta en un cuaderno.
 
-Después me metí con las validaciones del modelo automatizado. Le puse las condiciones a los gateways
-con la sintaxis del curso (`${vars:equals(variable, valor)}`) y marqué los flujos default. Acá tomé
-una decisión que me parece importante: **todos los default apuntan al camino seguro** — rechazar el
-pago, asumir que no hay stock, despachar. Si alguna variable llegara vacía, el proceso nunca va a
-aprobar un pago ni entregar un producto por accidente.
+## Las validaciones del proceso automatizado
 
-También me di cuenta de un hueco lógico: tenía un gateway que preguntaba si el despacho lo hacía un
-voluntario o un courier, pero nadie definía eso antes. Agregué la tarea **Gestionar despacho**, donde
-el voluntario decide. Va ahí porque según el enunciado la decisión es de la organización, no del
-cliente.
+Después trabajé las condiciones de los gateways del modelo nuevo, utilizando la sintaxis que muestra
+el material del curso, y marqué los flujos por defecto de cada uno.
+
+Aquí tomé una decisión que considero importante: todos los flujos por defecto apuntan al camino más
+conservador, es decir, rechazar el pago, asumir que no hay stock y despachar en lugar de entregar en
+retiro. De esta forma, si alguna variable de decisión llegara vacía, el proceso nunca aprobaría un
+pago ni entregaría un producto por accidente.
+
+También detecté un vacío en la lógica del modelo. Tenía un gateway que preguntaba si el despacho lo
+realizaba un voluntario o un courier, pero no había ninguna tarea previa donde esa decisión se
+tomara. Agregué entonces la tarea de gestión del despacho, en la que el voluntario define la
+modalidad. La ubiqué ahí porque, según el enunciado, esa decisión corresponde a la organización y no
+al cliente.
 
 ## El caso del artículo que se vende dos veces
 
-El enunciado pide evitar vender unidades que ya no están disponibles, así que me puse en el caso: hay
-un solo sofá, dos personas lo compran y las dos transfieren. El voluntario aprueba a la primera y el
-stock queda en cero; cuando aprueba a la segunda, ya no hay nada que entregar.
+El enunciado pide evitar que se vendan unidades que ya no están disponibles, así que me puse en el
+escenario concreto: existe un solo sofá, dos personas lo compran y ambas transfieren. El voluntario
+aprueba el primer pago y el stock queda en cero, de modo que al aprobar el segundo ya no hay nada que
+entregar.
 
-Lo resolví agregando un gateway **¿Había stock?** después de descontar inventario. El worker intenta
-el descuento y devuelve una variable con el resultado; si no se pudo, el proceso se va por una rama
-que avisa al cliente y termina en su propio final. Modelé este caso en el proceso y no lo escondí en
-el código a propósito: cancelar un pedido que ya está pagado es una decisión de negocio y tiene que
-quedar visible y trazable.
+Lo resolví agregando un gateway posterior al descuento de inventario, que consulta si el descuento
+pudo realizarse. El worker intenta la operación y devuelve una variable con el resultado; si no
+alcanzó, el proceso toma una rama que notifica al cliente y termina en un evento de fin propio.
+Decidí modelar este caso dentro del proceso y no resolverlo dentro del código porque cancelar un
+pedido que ya fue pagado es una decisión de negocio, y como tal debe quedar visible y trazable.
 
-Como los artículos son donados y muchos son únicos, no existe la posibilidad de reponer. Por eso la
-única salida realista es avisarle al cliente y coordinar la devolución del dinero.
+Además, como los artículos son donados y en su mayoría únicos, no existe la posibilidad de reponer
+stock. Por eso la única salida realista es notificar al cliente y coordinar la devolución del dinero.
 
-## Lunes 11: revisión técnica del XML
+## Revisión técnica del archivo exportado
 
-Antes de desplegar quise verificar algo que me preocupaba: dibujé con la paleta de la versión
-licenciada de Flowable, pero la entrega final tiene que correr sobre la versión open source. Revisé
-el XML exportado y confirmé que las tareas automáticas, el temporizador, los flujos default y las
-condiciones están todos escritos con sintaxis estándar. No hay nada exclusivo de la versión pagada,
-así que la migración del final no debería darme problemas.
+Antes de desplegar quise verificar algo que me preocupaba: dibujé el modelo con la paleta de la
+versión licenciada de Flowable, pero la entrega final debe ejecutarse sobre la versión open source.
+Revisé el archivo exportado y confirmé que las tareas automáticas, el temporizador, los flujos por
+defecto y las condiciones están escritos con sintaxis estándar, sin nada exclusivo de la versión
+pagada. Por lo tanto, la migración del cierre del ramo no debería presentar dificultades.
 
-De paso encontré un detalle que se me habría pasado: **13 elementos tenían el nombre guardado en una
-extensión propia de la herramienta de diseño en vez del atributo estándar**. Pasaba con todos los
-nombres que escribí apretando Enter para cortar la línea. El modelo se desplegaba igual, pero el
-motor los habría mostrado sin nombre en el historial de actividades, que es justamente la evidencia
-que voy a usar para demostrar el recorrido. Los reescribí todos en una sola línea, en los dos
-modelos.
+En esa misma revisión encontré un detalle que de otra forma habría pasado inadvertido. Trece
+elementos tenían su nombre guardado en una extensión propia de la herramienta de diseño en lugar del
+atributo estándar, lo que ocurría con todos los nombres que había escrito utilizando saltos de línea.
+El modelo se desplegaba igual, pero el motor los habría mostrado sin nombre en el historial de
+actividades, que es justamente la evidencia que pienso utilizar para demostrar el recorrido del
+proceso. Los reescribí todos en una sola línea, en ambos modelos.
 
-Cerré dejando ambos modelos con la validación limpia y corrigiendo la documentación del repositorio,
-que en algunas partes describía un modelo anterior al que terminé dibujando.
+## El proceso corriendo y un error que solo apareció al ejecutarlo
 
-## El proceso corriendo, y un bug que solo apareció al ejecutarlo
+Levanté el motor de Flowable open source en un contenedor y desplegué el modelo mediante la API REST.
+Inicié una instancia de prueba configurando el plazo de pago en dos minutos en lugar de veinticuatro
+horas, para poder demostrar el vencimiento sin tener que esperar un día completo.
 
-Levanté el motor de Flowable open source en Docker y desplegué el modelo por la API REST. Inicié una
-instancia de prueba con el plazo de pago en 2 minutos en vez de 24 horas, para poder demostrar el
-vencimiento sin esperar un día.
+El temporizador se disparó por sí solo, sin ninguna intervención. Sin embargo, al revisar el historial
+de actividades me encontré con que el recorrido se cortaba justo en el temporizador y nunca llegaba a
+cancelar el pedido. Revisando el archivo del modelo encontré la causa: la flecha hacia la tarea de
+cancelación nacía en la tarea de adjuntar el comprobante y no en el temporizador.
 
-El timer disparó solo, sin que yo tocara nada. Pero al revisar el historial de actividades me
-encontré con que **el recorrido se cortaba justo en el temporizador**: nunca llegaba a cancelar el
-pedido. Revisando el XML descubrí la causa: la flecha hacia *Cancelar pedido* nacía en la tarea y no
-en el temporizador.
+Ese error tenía dos consecuencias. La primera es que, al vencerse el plazo, el token no tenía por
+dónde continuar y la instancia terminaba en silencio. La segunda es más grave: la tarea quedaba con
+dos flechas de salida sin ningún gateway entre medio, lo que en BPMN se interpreta como una
+bifurcación paralela. Es decir, al subir el comprobante el pedido habría avanzado a revisión y a
+cancelación al mismo tiempo.
 
-Eso tenía dos consecuencias. La primera es que al vencerse el plazo el token no tenía por dónde
-seguir y la instancia moría en silencio. La segunda es peor: la tarea quedaba con dos flechas de
-salida sin gateway, que en BPMN es una bifurcación paralela implícita — o sea que al subir el
-comprobante, el pedido se habría ido a revisión **y** a cancelación al mismo tiempo.
+Lo corregí redibujando la flecha desde el temporizador, volví a desplegar y repetí la prueba. En esta
+ocasión el recorrido llegó completo hasta la tarea de cancelación.
 
-Lo corregí redibujando la flecha desde el temporizador, volví a desplegar y repetí la prueba. Esta
-vez el recorrido llegó completo hasta la tarea de cancelación.
+Lo que rescato de esta situación es que la validación de la herramienta de diseño no detectó el
+error: el panel de validaciones estaba limpio y el diagrama se veía correcto. Un modelo que valida no
+es necesariamente un modelo que funciona, y la única manera de comprobarlo fue ejecutarlo.
 
-**Lo que me llevo de esto:** la validación de Flowable Design no detectó el error, el panel estaba
-limpio y el diagrama se veía bien. Un modelo que valida no es lo mismo que un modelo que funciona, y
-la única forma de saberlo fue ejecutarlo de verdad.
-
-Al final el token quedó detenido en *Cancelar pedido*, que es una tarea de external worker: el motor
-publica el trabajo y espera que un programa externo lo tome. Ese programa lo construyo en la próxima
-entrega, así que ese es el punto exacto donde termina el alcance de esta.
+Finalmente, el token quedó detenido en la tarea de cancelación, que es una tarea de external worker.
+El motor publica el trabajo y espera que un programa externo lo tome, y ese programa corresponde a la
+próxima entrega. Ese es entonces el punto exacto donde termina el alcance de esta.
 
 ## Cómo quedó el proceso
 
-8 tareas humanas, 5 automáticas como external workers, 4 gateways exclusivos, un temporizador de 24
-horas y 6 finales diferenciados, para poder distinguir en el historial si un pedido terminó bien, se
-venció, lo rechazaron o se quedó sin stock.
+El modelo quedó con ocho tareas humanas, cinco tareas automáticas resueltas como external workers,
+cuatro gateways exclusivos, un temporizador de veinticuatro horas y seis eventos de fin distintos.
+Los mantuve separados para poder distinguir en el historial si un pedido terminó correctamente, si se
+venció, si fue rechazado o si se quedó sin stock.
 
-## Pendientes para la entrega de mañana
+## Estado de los pendientes
 
 | # | Pendiente | Estado |
 |---|---|---|
@@ -98,6 +103,6 @@ venció, lo rechazaron o se quedó sin stock.
 | 4 | Proceso desplegado vía API REST | ✅ |
 | 5 | Instancia de prueba recorriendo las tareas | ✅ |
 | 6 | Formularios de las tareas humanas | ☐ |
-| 7 | Endpoint REST como avance de web services | ☐ |
+| 7 | Avance de web services | ☐ |
 | 8 | Video técnico y video para la emprendedora | ☐ |
 | 9 | Tag `entrega-1` | ☐ |

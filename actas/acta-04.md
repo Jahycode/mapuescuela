@@ -5,80 +5,86 @@
 
 ## Primera compilación
 
-Escribí los dos archivos de configuración de Gradle y compilé el proyecto por primera vez. Salió a la
-primera, y sin tener Gradle instalado en el computador: el *wrapper* que copié del repositorio del
-profesor descarga la versión correcta por su cuenta y compila con ella.
+Escribí los dos archivos de configuración del proyecto y lo compilé por primera vez. Funcionó a la
+primera y sin tener la herramienta de construcción instalada en el computador, ya que los archivos
+que copié del repositorio del profesor descargan la versión correcta por su cuenta y compilan con
+ella.
 
-Ahí entendí para qué sirve realmente: no es solo comodidad. Garantiza que cualquiera que clone mi
-repositorio compile con exactamente la misma versión que yo, sin instalar nada. Es la misma idea que
-me resolvió Docker con el motor, pero aplicada a la herramienta de compilación.
+Ahí terminé de entender para qué sirven realmente. No se trata solo de comodidad: garantizan que
+cualquier persona que clone mi repositorio compile con exactamente la misma versión que yo, sin
+instalar nada previamente. Es la misma idea que me resolvió el contenedor con el motor de procesos,
+pero aplicada a la compilación.
 
-## Qué campos lleva un pedido, y cuáles no
+## Qué datos guarda un pedido y cuáles no
 
-Antes de escribir la primera clase me puse a definir qué datos guarda un pedido. Los que vienen del
-checkout eran evidentes, pero dos decisiones me costaron más.
+Antes de escribir la primera clase definí qué información debía almacenar un pedido. Los datos que
+vienen del checkout eran evidentes, pero dos decisiones me tomaron más tiempo.
 
-**Guardar el id de la instancia del proceso.** Sin ese campo no tengo cómo volver a encontrar el
-pedido en el motor. Es el puente entre mi base de datos y Flowable, y es lo que hace posible lo que
-decidí en el ADR-006.
+La primera fue guardar el identificador de la instancia del proceso. Sin ese dato no tendría forma de
+volver a encontrar el pedido dentro del motor, y es lo que hace posible la decisión que había tomado
+antes de que el motor sea la fuente de verdad del flujo.
 
-**No guardar el estado.** Esta la pensé al revés primero: mi idea era tener un campo con el estado
-del pedido, para poder consultarlo rápido y saber cuáles estaban esperando el pago. Pero eso choca
-con mi propia decisión de que el motor es la fuente de la verdad: si mi tabla dice una cosa y el
-motor dice otra, no tengo forma de saber cuál está bien.
+La segunda fue **no** guardar el estado del pedido. Inicialmente pensaba lo contrario: quería tener
+una columna con el estado para poder consultarlo rápido y saber cuáles estaban esperando el pago.
+Sin embargo, eso entra en conflicto con la decisión anterior, porque si mi base de datos indica una
+cosa y el motor indica otra, no tendría manera de determinar cuál es la correcta.
 
-Y revisando, el motor responde mejor esas preguntas que una columna: para saber cuáles vencen y
-cuándo, ya existe la consulta de temporizadores programados, que además me da la hora exacta. Y para
-saber cómo terminó un pedido, el motor guarda en qué evento de fin cerró — que distingue si se
-canceló por vencimiento, por rechazo o por falta de stock. Con un campo de estado eso habría que
-adivinarlo.
+Al revisarlo con más detalle, además, el motor responde esas preguntas mejor que una columna. Para
+saber cuáles pedidos están por vencer y en qué momento exacto, existe la consulta de temporizadores
+programados. Y para saber cómo terminó un pedido, el motor registra en qué evento de fin cerró, lo
+que permite distinguir si se canceló por vencimiento, por rechazo o por falta de stock. Con una
+columna de estado eso habría que deducirlo.
 
-Lo que sí dejé es la **fecha de creación**, porque es un hecho que no cambia nunca y que voy a
-necesitar para reportería. La regla que me quedó: **el estado del flujo vive en el motor, los hechos
-de negocio viven en mi base.**
+Lo que sí incorporé fue la fecha de creación, porque es un dato que no cambia nunca y que voy a
+necesitar para obtener información agregada. La regla que me quedó es que el estado del flujo vive en
+el motor y los hechos de negocio viven en mi base de datos.
 
-## El descuento de stock
+## El descuento de inventario
 
-Es el método más importante del servicio y el que más pensé. La versión intuitiva sería consultar
-cuánto stock hay, y si alcanza, descontarlo. Pero eso falla en el caso que ya había detectado al
-modelar: si dos pedidos del mismo producto se aprueban casi al mismo tiempo, los dos leen el mismo
-stock, los dos creen que alcanza, y el inventario queda negativo.
+Es el método más importante del servicio y al que dediqué más tiempo. La versión intuitiva consistiría
+en consultar cuánto stock hay y, si alcanza, descontarlo. Pero eso falla en el escenario que ya había
+detectado al modelar el proceso: si dos pedidos del mismo producto se aprueban casi al mismo tiempo,
+ambos leen el mismo stock, ambos concluyen que alcanza y el inventario termina en negativo.
 
-Lo importante que aprendí es **por qué** falla, porque mi primera explicación estaba equivocada:
-pensaba que era un problema de demora del programa. No lo es. Aunque el código fuera instantáneo, son
-dos viajes separados a la base, y entre uno y otro la base está libre para atender a cualquier otro.
-Ser más rápido no arregla el problema, solo lo hace menos frecuente — que es peor, porque entonces
-falla en producción y no se puede reproducir.
+Lo más importante que aprendí es **por qué** falla, porque mi primera explicación era equivocada.
+Pensaba que se trataba de una demora del programa, y no es así. Aunque el código se ejecutara de
+forma instantánea, son dos consultas separadas a la base de datos, y entre una y otra la base queda
+disponible para atender cualquier otra operación. Ser más rápido no resuelve el problema, solo lo
+hace menos frecuente, lo que resulta peor porque entonces falla en producción y no se puede
+reproducir.
 
-La solución es dejar que la base decida, en una sola sentencia que verifica y descuenta al mismo
-tiempo. Si hay stock suficiente afecta una fila; si no, no afecta ninguna. Ese número de filas
-afectadas es exactamente la variable que mi proceso BPMN espera del worker.
+La solución consiste en dejar que la base de datos decida, mediante una sola sentencia que verifica y
+descuenta al mismo tiempo. Si hay stock suficiente afecta una fila y, si no lo hay, no afecta
+ninguna. Ese número de filas afectadas es exactamente la variable que el proceso espera recibir del
+programa externo.
 
-Quedó en cuatro líneas y sin ninguna condición escrita en Java. Toda la lógica está en la consulta.
+El método quedó en cuatro líneas y sin ninguna condición escrita en Java, ya que toda la lógica está
+en la consulta.
 
 ## Sobre los códigos de respuesta
 
-Cuando no hay stock, el servicio responde que la operación salió bien, con el resultado adentro. Al
-principio me pareció raro y pensé en devolver un error.
+Cuando no hay stock, el servicio responde que la operación se procesó correctamente e incluye el
+resultado en el cuerpo de la respuesta. Al principio me pareció extraño y consideré devolver un
+error.
 
-Pero no es un error: la petición se procesó correctamente y la respuesta es "no alcanzó". Los códigos
-de error son para cuando quien llama se equivocó — como pedir un pedido que no existe, que ahí sí
-respondo que no se encontró. Que un producto se haya agotado es un resultado de negocio normal, no
-una falla.
+Sin embargo, no se trata de un error: la petición se procesó sin problemas y la respuesta es que no
+alcanzó. Los códigos de error corresponden a situaciones en que quien llama se equivocó, como
+solicitar un pedido que no existe, y en ese caso sí respondo que no se encontró. Que un producto se
+haya agotado es un resultado de negocio normal, no una falla.
 
-## Una repetición que había que sacar
+## Una repetición que convenía eliminar
 
-Al escribir el método para buscar un pedido por su id me di cuenta de que estaba copiando por segunda
-vez el bloque que convierte una fila de la base en un objeto. Eso significa que el día que agregue un
-campo al pedido tendría que acordarme de tocarlo en dos lugares.
+Al escribir el método para buscar un pedido por su identificador noté que estaba copiando por segunda
+vez el bloque que convierte una fila de la base de datos en un objeto. Eso significa que el día que
+agregue un campo al pedido tendría que recordar modificarlo en dos lugares distintos.
 
-Lo saqué a un método aparte que usan los dos. La búsqueda por id pasó de veinticinco líneas a ocho, y
-la conversión quedó en un solo lugar.
+Lo extraje a un método aparte que utilizan ambos. La búsqueda por identificador pasó de veinticinco
+líneas a ocho, y la conversión quedó definida en un solo lugar.
 
 ## Estado
 
-Escritas tres de las cuatro clases del servicio: el modelo, la capa de acceso a datos y los
-endpoints. Falta la clase que levanta el servidor y probarlo de punta a punta.
+Quedaron escritas tres de las cuatro clases del servicio: el modelo de datos, la capa de acceso a la
+base y los endpoints. Falta la clase que levanta el servidor y probar el conjunto completo.
 
 | Criterio de la entrega | Estado |
 |---|---|

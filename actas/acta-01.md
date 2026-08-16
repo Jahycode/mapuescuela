@@ -5,30 +5,33 @@
 
 ## Qué hice en esta sesión
 
-Partí leyendo el enunciado completo del caso Mapuescuela y volviendo a la clase grabada del profesor
-para sacar las reglas del ramo: los web services tienen que ser en Java, las entregas son rebanadas
-ejecutables y no unidades sueltas, hay que llevar actas, y el motor pasa a ser la fuente de la verdad
-del flujo.
+Primero revisé nuevamente el enunciado completo del caso Mapuescuela y volví a ver parte de la clase
+grabada del profesor para tener claras las reglas del ramo. Entre ellas, que los web services deben
+desarrollarse en Java, que las entregas deben ser rebanadas funcionales y ejecutables, que tenemos
+que llevar actas y que el motor de procesos será la fuente de verdad del flujo.
 
-Después revisé el repositorio de ejemplo que compartió el profesor (`INP-complementario-socios`) para
-entender el patrón que usa el curso: la web llama a Flowable por REST, las tareas automáticas son
-external workers con topic, y el worker termina llamando a un web service Java. Decidí replicar ese
-patrón cambiando PHP por Python, que es donde avanzo más rápido.
+Después revisé el repositorio de ejemplo que compartió el profesor (INP-complementario-socios) para
+entender mejor cómo está planteada la solución. Ahí vi que la web se comunica con Flowable mediante
+REST, que las tareas automáticas se manejan mediante external workers con topics y que estos workers
+finalmente llaman a un web service en Java. Para el proyecto decidí mantener esa misma lógica, pero
+utilizar Python en algunas partes donde me permite avanzar más rápido.
 
-Con eso armé el repositorio, dejé las carpetas por componente y escribí las decisiones de
-arquitectura en `docs/DECISIONES.md` para no tener que acordarme después del porqué de cada cosa.
+A partir de eso armé el repositorio y dejé separadas las carpetas según cada componente. También
+documenté las principales decisiones de arquitectura en `docs/`, principalmente para dejar registrado
+por qué se tomaron ciertas decisiones y no tener que reconstruirlo más adelante.
 
-Terminé la sesión dibujando el modelo del proceso automatizado en Flowable Design: el inicio en el
-checkout, la tarea de adjuntar el comprobante con el temporizador de 24 horas, la revisión del pago,
-el descuento de inventario y las ramas de entrega.
+Finalmente, avancé con el modelo del proceso automatizado en Flowable Design. Dejé planteado el flujo
+desde el checkout, incluyendo la tarea para adjuntar el comprobante con un temporizador de 24 horas,
+la revisión del pago, el descuento de inventario y las distintas alternativas de entrega.
 
 ## Lo que revisé de la rúbrica
 
-Leyendo la pauta de la Evaluación 1 me di cuenta de que faltaban cosas que no tenía contempladas: el
-modelo AS-IS del proceso actual, los formularios en Flowable, un avance de web services y **dos**
-videos, no uno.
+Al revisar con más detalle la pauta de la Evaluación 1, me di cuenta de que había algunos elementos
+que todavía no tenía considerados. Entre ellos están el modelo AS-IS del proceso actual, los
+formularios dentro de Flowable, un avance de los web services y, algo que había pasado por alto, que
+se deben entregar dos videos y no uno.
 
-## Compromisos para la Entrega 1 (martes 12/08)
+## Compromisos para la Entrega 1
 
 | # | Compromiso | Estado al cierre de la sesión |
 |---|---|---|
@@ -36,7 +39,7 @@ videos, no uno.
 | 2 | Modelo TO-BE dibujado en Flowable Design | ✅ |
 | 3 | Modelo AS-IS del proceso manual actual | ☐ |
 | 4 | Formularios de las tareas humanas | ☐ |
-| 5 | Endpoint REST simple como avance de web services | ☐ |
+| 5 | Endpoint REST como avance de web services | ☐ |
 | 6 | Proceso desplegado en el motor vía API REST | ☐ |
 | 7 | Instancia de prueba recorriendo las tareas | ☐ |
 | 8 | Video técnico y video para la emprendedora | ☐ |
