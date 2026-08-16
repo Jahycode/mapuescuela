@@ -47,7 +47,7 @@ Accept: application/json
     { "name": "plazoPago",        "value": "PT24H" }
   ]
 }
-# ↑ plazoPago PT2M solo para demos; en producción PT24H (viene de configuración)
+# plazoPago PT2M solo para demos; en producción PT24H (viene de configuración)
 
 ### 4) Ver instancias en ejecución
 GET {{baseUrl}}/service/runtime/process-instances
@@ -55,7 +55,7 @@ Authorization: {{authorization}}
 Accept: application/json
 
 ### 5) Tareas activas de una instancia (¿dónde está el token?)
-@processInstanceId = PEGAR-ID-AQUI
+@processInstanceId = 2b09465f-99be-11f1-b74a-3af3e7debbf4
 GET {{baseUrl}}/service/runtime/tasks?processInstanceId={{processInstanceId}}
 Authorization: {{authorization}}
 Accept: application/json
@@ -67,7 +67,7 @@ Accept: application/json
 #  Antes de cada uno: correr el bloque 5 y actualizar @taskId (cambia siempre).
 # ----------------------------------------------------------------------------
 
-@taskId = PEGAR-TASKID-AQUI
+@taskId = c5647638-99bd-11f1-b74a-3af3e7debbf4
 
 ### 6) Tarea que NO decide nada -> solo se cierra
 # Sirve para: Adjuntar comprobante · Preparar pedido · Marcar listo para retiro
@@ -122,7 +122,6 @@ Authorization: {{authorization}}
 Accept: application/json
 
 ### 9) Historial de actividades (el recorrido del token — evidencia para las demos)
-@processInstanceId = c9e0c88b-96b3-11f1-8701-369bef4f31fa
 GET {{baseUrl}}/service/history/historic-activity-instances?processInstanceId={{processInstanceId}}&sort=startTime&order=desc
 Authorization: {{authorization}}
 Accept: application/json

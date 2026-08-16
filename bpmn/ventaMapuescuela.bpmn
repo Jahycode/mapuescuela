@@ -6,7 +6,7 @@
       <design:stencilid><![CDATA[BPMNDiagram]]></design:stencilid>
       <design:creationdate><![CDATA[2026-08-10T01:15:13.233Z]]></design:creationdate>
       <design:description><![CDATA[Sistema de gestión de ventas de artículos donados]]></design:description>
-      <design:modificationdate><![CDATA[2026-08-12T02:36:15.207Z]]></design:modificationdate>
+      <design:modificationdate><![CDATA[2026-08-16T21:55:08.262Z]]></design:modificationdate>
     </extensionElements>
     <userTask id="FormTask_1" name="Adjuntar comprobante de transferencia" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
       <extensionElements>
@@ -15,7 +15,7 @@
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </userTask>
-    <userTask id="FormTask_9" name="Revisar comprobante de pago" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
+    <userTask id="FormTask_9" name="Revisar comprobante de pago" flowable:assignee="${initiator}" flowable:formKey="revisionDelPago" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
@@ -81,7 +81,7 @@
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </userTask>
-    <userTask id="FormTask_44" name="Gestionar despacho" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
+    <userTask id="FormTask_44" name="Gestionar despacho" flowable:assignee="${initiator}" flowable:formKey="gestionDelDespacho" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
