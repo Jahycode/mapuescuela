@@ -1,6 +1,6 @@
 # Acta 05 — El web service funcionando y los formularios
 
-- **Fecha:** sábado 16 de agosto de 2026
+- **Fecha:** Domingo 16 de agosto de 2026
 - **Participa:** Valentín González (trabajo individual, autorizado por el profesor)
 
 ## La clase que levanta el servidor
