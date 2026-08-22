@@ -1,5 +1,5 @@
 import requests
-from config import FLOWABLE, AUTH, WORKER_ID, LOCK
+from config import FLOWABLE, AUTH, REINTENTO, WORKER_ID, LOCK
 
 def tomar(topic):
     cuerpo = {
@@ -25,3 +25,9 @@ def listar_jobs():
                              auth=AUTH, params={"size": 100})
     respuesta.raise_for_status()
     return respuesta.json()["data"]
+
+def fallar(job_id, mensaje):
+    cuerpo = {"workerId": WORKER_ID, "errorMessage": mensaje, "retryTimeout": REINTENTO}
+    respuesta = requests.post(f"{FLOWABLE}/external-job-api/acquire/jobs/{job_id}/fail",
+                              auth=AUTH, json=cuerpo)
+    respuesta.raise_for_status()

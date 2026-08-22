@@ -36,7 +36,7 @@ public class PedidoDAO {
                     monto_total         INT,
                     modalidad_entrega   VARCHAR(20),
                     producto_id         INT,
-                    cantidad            INT,
+                    cantidad            INT NOT NULL CHECK (cantidad > 0),
                     process_instance_id VARCHAR(64),
                     creado              TIMESTAMP
                 )
@@ -96,6 +96,18 @@ public class PedidoDAO {
             try (ResultSet rs = st.executeQuery()) {
                 return rs.next() ? mapear(rs) : null;
                 
+            }
+        }
+    }
+
+    public boolean existeProducto(int productoId) throws SQLException {
+        String sql = "SELECT 1 FROM producto WHERE id = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, productoId);
+
+            try (ResultSet rs = st.executeQuery()) {
+                return rs.next();
             }
         }
     }

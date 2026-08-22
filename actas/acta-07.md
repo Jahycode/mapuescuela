@@ -90,6 +90,60 @@ Un detalle chico me confirmó que el refactor había quedado bien: al terminar, 
 librería HTTP en ese archivo quedó sin uso. Se volvió innecesario justamente porque el archivo dejó
 de hablar HTTP.
 
+## Los dos errores del web service
+
+En la revisión del lunes había anotado dos errores en el web service, en código que ya daba por
+terminado. Hoy los arreglé.
+
+El primero es que el descuento de stock respondía lo mismo cuando el producto no existía y cuando no
+había unidades. En los dos casos decía que no alcanzó, así que un pedido con datos malos se iba por la
+rama de cancelación como si fuera una decisión de negocio, sin dejar rastro en ningún log. Intenté
+resolverlo metiendo la comprobación dentro del mismo método y no funciona: **un booleano no puede
+decir tres cosas**, y acá los resultados posibles son tres. Terminó siendo una consulta aparte que
+solo verifica si el producto existe, y el recurso devolviendo el código de recurso no encontrado.
+Quien decide qué significa cada caso es el recurso, que es el que sabe de códigos HTTP.
+
+El segundo era la cantidad. Un pedido con cantidad cero, o sin ese campo, informaba que el descuento
+había alcanzado sin descontar nada. Y probándolo encontré algo peor de lo que tenía anotado: **una
+cantidad negativa subía el stock**. Restar menos tres es sumar tres, y la condición del `WHERE`
+también se cumplía, así que un pedido de menos tres unidades inventaba tres unidades. Lo comprobé
+drenando el producto después: había pasado de cuatro a siete.
+
+Lo arreglé en dos capas: una validación al crear el pedido, que rechaza y dice qué llegó, y una
+restricción en la propia tabla, para que la garantía no dependa de que un endpoint futuro se acuerde
+de validar. Drenar un producto de cinco unidades ahora da exactamente cinco descuentos y después
+falla, que es la aritmética que uno esperaría y que antes no se cumplía.
+
+## El worker aguantando los fallos
+
+El arreglo anterior tuvo una consecuencia inmediata: ahora que el endpoint puede responder que no
+encuentra el pedido, el worker se caía, porque no tenía manejo de errores. Y no es un caso
+hipotético: cada vez que reinicio el web service su base en memoria nace vacía, y las instancias que
+siguen vivas en el motor apuntan a pedidos que ya no existen.
+
+Lo probé a propósito con el web service apagado y el worker murió con un error de conexión. Después
+envolví el procesamiento de cada trabajo, de modo que un fallo se anote y el bucle siga con el
+siguiente. Un detalle que casi me cuesta caro: hay que capturar solo las excepciones normales, porque
+la interrupción de teclado no es una de ellas. Si uno captura todo, construye un worker que no se
+puede apagar con `Ctrl+C`.
+
+Con eso deja de morirse, pero el motor no se enteraba de nada: para él el trabajo seguía reservado por
+alguien que no había vuelto. Así que agregué el aviso de fallo, que le descuenta un reintento al
+trabajo y guarda el motivo. Cuando los tres se agotan, el trabajo cae en la bandeja de trabajos
+muertos, donde queda visible y deja de reintentarse. Lo probé y funcionó: el mensaje que quedó
+guardado dice exactamente qué pedido no se encontró.
+
+Probándolo apareció un problema que no había previsto. Ese aviso devuelve el trabajo a la cola de
+inmediato, así que el worker lo tomaba de nuevo tres segundos después y los tres reintentos se
+consumían en menos de veinte segundos. Un reinicio del web service demora más que eso, o sea que el
+worker estaba convirtiendo fallos pasajeros en permanentes. Se resuelve pidiéndole al motor que espere
+antes de volver a ofrecer el trabajo. Con eso los intentos quedaron separados por más de un minuto, y
+un problema que se arregla solo alcanza a arreglarse.
+
+Dejo anotada una imprecisión: configuré treinta segundos de espera y el motor esperó más de ochenta.
+No averigüé por qué. Mi sospecha es que revisa los trabajos vencidos en ciclos propios y eso agrega
+latencia, pero no lo comprobé. Para el efecto que buscaba da lo mismo, así que lo dejo pendiente.
+
 ## Estado de la Entrega 2
 
 | Criterio | Estado |

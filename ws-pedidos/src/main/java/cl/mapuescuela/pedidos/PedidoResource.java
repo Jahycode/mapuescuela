@@ -40,6 +40,19 @@ public class PedidoResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response crear(Pedido pedido) throws Exception {
+        
+        if (!dao.existeProducto(pedido.getProductoId())) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity(Map.of("error", "El producto " + pedido.getProductoId() + " no existe"))
+                           .build();          
+        }
+
+        if (pedido.getCantidad() <= 0) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(Map.of("error", "La cantidad debe ser mayor que cero, llego "
+                                        + pedido.getCantidad()))
+                        .build();
+        }
         pedido.setCreado(LocalDateTime.now());
         pedido.setId(dao.insertar(pedido));
         return Response.status(Response.Status.CREATED).entity(pedido).build();
@@ -55,6 +68,12 @@ public class PedidoResource {
             return Response.status(Response.Status.NOT_FOUND)
                            .entity(Map.of("error", "No existe el pedido " + id))
                            .build();
+        }
+        if (!dao.existeProducto(pedido.getProductoId())) {
+            return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "El pedido " + id + " apunta al producto "
+                                        + pedido.getProductoId() + ", que no existe"))
+                        .build();
         }
 
         boolean stockOk = dao.descontarStock(pedido.getProductoId(), pedido.getCantidad());
