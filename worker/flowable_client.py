@@ -31,3 +31,9 @@ def fallar(job_id, mensaje):
     respuesta = requests.post(f"{FLOWABLE}/external-job-api/acquire/jobs/{job_id}/fail",
                               auth=AUTH, json=cuerpo)
     respuesta.raise_for_status()
+
+def soltar(job_id):
+    cuerpo = {"workerId": WORKER_ID}
+    respuesta = requests.post(f"{FLOWABLE}/external-job-api/unacquire/jobs/{job_id}",
+                              auth=AUTH, json=cuerpo)
+    respuesta.raise_for_status()

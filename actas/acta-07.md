@@ -144,6 +144,16 @@ Dejo anotada una imprecisión: configuré treinta segundos de espera y el motor 
 No averigüé por qué. Mi sospecha es que revisa los trabajos vencidos en ciclos propios y eso agrega
 latencia, pero no lo comprobé. Para el efecto que buscaba da lo mismo, así que lo dejo pendiente.
 
+Lo último fue el apagado. Si detenía el worker mientras tenía un trabajo en mano, ese trabajo quedaba
+reservado a su nombre hasta que venciera la reserva, o sea varios minutos en los que nadie más podía
+tomarlo. Agregué que al detenerse lo devuelva a la cola, con una operación distinta a la del fallo:
+esta no descuenta reintentos ni guarda ningún mensaje, porque apagar el worker no es un error. El
+trabajo queda como si nunca lo hubieran tomado.
+
+Para probarlo tuve que meter una pausa a propósito en un handler, porque procesar un trabajo toma
+milisegundos y no hay forma de alcanzar a interrumpirlo. Me sirve saberlo: para grabar el video voy a
+necesitar el mismo truco si quiero mostrar qué pasa cuando el worker se cae a mitad de camino.
+
 ## Estado de la Entrega 2
 
 | Criterio | Estado |
