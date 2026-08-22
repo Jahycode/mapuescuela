@@ -1,56 +1,59 @@
-import requests
 import time
-
-FLOWABLE = "http://localhost:8080/flowable-rest"
-WS_PEDIDOS = "http://localhost:9090"
-AUTH = ("rest-admin", "test")
-WORKER_ID = "worker-valentin"
-ESPERA = 3
-
-def tomar(topic):
-    cuerpo = {
-        "topic": topic,
-        "workerId": WORKER_ID,
-        "lockDuration": "PT5M",
-        "numberOfTasks": 1
-    }
-    respuesta = requests.post(f"{FLOWABLE}/external-job-api/acquire/jobs", auth=AUTH, json=cuerpo)
-    respuesta.raise_for_status()
-    return respuesta.json()
-
-def completar(job_id, variables=None):
-    cuerpo = {"workerId": WORKER_ID}
-    if variables:
-        cuerpo["variables"] = variables
-    respuesta = requests.post(f"{FLOWABLE}/external-job-api/acquire/jobs/{job_id}/complete",
-                              auth=AUTH, json=cuerpo)
-    respuesta.raise_for_status()
+from config import ESPERA
+from flowable_client import tomar, completar
+from pedidos_client import descontar_stock
 
 def descontar_inventario(job):
     variables = {v["name"]: v["value"] for v in job["variables"]}
-    pedido_id = variables["pedidoId"]
+    stock_ok = descontar_stock(variables["pedidoId"])
 
-    respuesta = requests.post(f"{WS_PEDIDOS}/pedidos/{pedido_id}/descontar-stock")
-    respuesta.raise_for_status()
-    stock_ok = respuesta.json()["stockOk"]
-
-    print(f"   pedido {pedido_id} -> stockOk = {stock_ok}")
+    print(f"   pedido {variables['pedidoId']} -> stockOk = {stock_ok}")
     return [{"name": "stockOk", "value": stock_ok}]
+
+def registrar_rechazo(job):
+    variables = {v["name"]: v["value"] for v in job["variables"]}
+    print(f" [pendiente] registrar el rechazo del pedido {variables['pedidoId']}")
+    return None
+
+def notificar_cliente(job):
+    variables = {v["name"]: v["value"] for v in job["variables"]}
+    print(f" [pendiente] notificar a {variables['clienteEmail']}")
+    return None
+
+def cancelar_pedido_vencido(job):
+    variables = {v["name"]: v["value"] for v in job["variables"]}
+    print(f" [pendiente] cancelar el pedido vencido {variables['pedidoId']}")
+    return None
+
+def notificar_falta_stock(job):
+    variables = {v["name"]: v["value"] for v in job["variables"]}
+    print(f" [pendiente] notificar al cliente la falta de stock del pedido {variables['pedidoId']}")
+    return None
+
+HANDLERS = {
+    "descontarInventario": descontar_inventario,
+    "registrarRechazo": registrar_rechazo,
+    "notificarCliente": notificar_cliente,
+    "cancelarPedidoVencido": cancelar_pedido_vencido,
+    "notificarFaltaStock": notificar_falta_stock,
+}
 
 print("Worker arriba.")
 
 while True:
-    jobs = tomar("descontarInventario")
+    hubo_trabajo = False
 
-    if not jobs:
+    for topic, handler in HANDLERS.items():
+        jobs = tomar(topic)
+        if not jobs:
+            continue
+
+        job = jobs[0]
+        print(f"-> {topic}")
+        variables = handler(job)
+        completar(job["id"], variables)
+        hubo_trabajo = True
+
+    if not hubo_trabajo:
         time.sleep(ESPERA)
-        continue
-
-    job = jobs[0]
-    print(f"-> tomé un job de descontarInventario")
-
-    variables = descontar_inventario(job)
-    completar(job["id"], variables)
-
-    print("   completado")
     

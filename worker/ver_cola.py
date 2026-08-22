@@ -1,20 +1,8 @@
-import requests
+from flowable_client import listar_jobs
 
-class VerCola:
+jobs = listar_jobs()
 
-    url: str = "http://localhost:8080/flowable-rest/external-job-api/jobs"
-    auth=("rest-admin", "test")
-
-    def __init__(self, url: str = None):
-        self.url = url if url is not None else self.url
-
-    def get_data(self):
-        respuesta = requests.get(self.url, auth=self.auth)
-        if respuesta.status_code == 200:
-            return respuesta.json()
-        else:
-            respuesta.raise_for_status()
-
-milink = VerCola()
-
-print(milink.get_data())
+print(f"{len(jobs)} trabajos esperando")
+for job in jobs:
+    dueno = job["lockOwner"] or "libre"
+    print(f"  {job['elementName']:28} {dueno}")
