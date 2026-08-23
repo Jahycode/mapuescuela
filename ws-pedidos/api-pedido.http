@@ -29,3 +29,32 @@ Accept: application/json
 ### 4) Descontar stock de un pedido que no existe
 POST {{baseUrl}}/pedidos/999/descontar-stock
 Accept: application/json
+
+
+### 5) Registrar el desenalce de un pedido
+POST http://localhost:9090/pedidos/1/desenlace
+Content-Type: application/json
+{
+  "valor": "RECHAZADO",
+  "motivo": "el comprobante no coincide con el monto"
+}
+
+### 6) Registrar un desenlace inválido
+POST http://localhost:9090/pedidos/1/desenlace
+Content-Type: application/json
+{
+  "valor": "INVENTADO",
+}
+
+### 7) Registrar un aviso al cliente
+POST http://localhost:9090/pedidos/1/notificaciones
+Content-Type: application/json
+
+{ "tipo": "PAGO_RECHAZADO" }
+
+### 8) Tipo invalido (debe dar 400)
+POST http://localhost:9090/pedidos/1/notificaciones
+Content-Type: application/json
+
+{ "tipo": "INVENTADO" }
+

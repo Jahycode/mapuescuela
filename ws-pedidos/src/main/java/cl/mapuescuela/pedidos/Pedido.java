@@ -13,6 +13,9 @@ public class Pedido {
     private int cantidad;
     private String processInstanceId;
     private LocalDateTime creado;
+    private String desenlace;
+    private String desenlaceMotivo;
+    private LocalDateTime desenlaceEn;
 
     public int getId() {
         return id;
@@ -87,6 +90,30 @@ public class Pedido {
     }
 
     public Pedido() {
+    }
+
+    public String getDesenlace() {
+        return desenlace;
+    }
+
+    public void setDesenlace(String desenlace) {
+        this.desenlace = desenlace;
+    }
+
+    public String getDesenlaceMotivo() {
+        return desenlaceMotivo;
+    }
+
+    public void setDesenlaceMotivo(String desenlaceMotivo) {
+        this.desenlaceMotivo = desenlaceMotivo;
+    }
+
+    public LocalDateTime getDesenlaceEn() {
+        return desenlaceEn;
+    }
+
+    public void setDesenlaceEn(LocalDateTime desenlaceEn) {
+        this.desenlaceEn = desenlaceEn;
     }
 
 

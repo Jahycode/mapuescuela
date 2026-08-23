@@ -1,7 +1,7 @@
 import time
 from config import ESPERA
 from flowable_client import tomar, completar, fallar, soltar
-from pedidos_client import descontar_stock
+from pedidos_client import descontar_stock, registrar_desenlace, registrar_notificacion
 
 def descontar_inventario(job):
     variables = {v["name"]: v["value"] for v in job["variables"]}
@@ -12,23 +12,28 @@ def descontar_inventario(job):
 
 def registrar_rechazo(job):
     variables = {v["name"]: v["value"] for v in job["variables"]}
-    print(f" [pendiente] registrar el rechazo del pedido {variables['pedidoId']}")
+    registrar_desenlace(variables["pedidoId"], "RECHAZADO", variables.get("motivoRechazo"))
+    print(f"   pedido {variables['pedidoId']} -> RECHAZADO")
     # time.sleep(15)
     return None
 
 def notificar_cliente(job):
     variables = {v["name"]: v["value"] for v in job["variables"]}
-    print(f" [pendiente] notificar a {variables['clienteEmail']}")
+    registrar_notificacion(variables["pedidoId"], "PAGO_RECHAZADO")
+    print(f"   pedido {variables['pedidoId']} -> aviso PAGO_RECHAZADO")
     return None
 
 def cancelar_pedido_vencido(job):
     variables = {v["name"]: v["value"] for v in job["variables"]}
-    print(f" [pendiente] cancelar el pedido vencido {variables['pedidoId']}")
+    registrar_desenlace(variables["pedidoId"], "CANCELADO_VENCIMIENTO", "No llego el comprobante en el plazo")
+    print(f"   pedido {variables['pedidoId']} -> CANCELADO_VENCIMIENTO")
     return None
 
 def notificar_falta_stock(job):
     variables = {v["name"]: v["value"] for v in job["variables"]}
-    print(f" [pendiente] notificar al cliente la falta de stock del pedido {variables['pedidoId']}")
+    registrar_desenlace(variables["pedidoId"], "SIN_STOCK", "No habia unidades disponibles")
+    registrar_notificacion(variables["pedidoId"], "SIN_STOCK")
+    print(f"   pedido {variables['pedidoId']} -> SIN_STOCK")
     return None
 
 HANDLERS = {
