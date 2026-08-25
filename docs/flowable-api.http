@@ -55,7 +55,7 @@ Authorization: {{authorization}}
 Accept: application/json
 
 ### 5) Tareas activas de una instancia (¿dónde está el token?)
-@processInstanceId = 2b09465f-99be-11f1-b74a-3af3e7debbf4
+@processInstanceId = 2604690e-9d00-11f1-961c-fa1358949da8
 GET {{baseUrl}}/service/runtime/tasks?processInstanceId={{processInstanceId}}
 Authorization: {{authorization}}
 Accept: application/json
@@ -67,7 +67,7 @@ Accept: application/json
 #  Antes de cada uno: correr el bloque 5 y actualizar @taskId (cambia siempre).
 # ----------------------------------------------------------------------------
 
-@taskId = c5647638-99bd-11f1-b74a-3af3e7debbf4
+@taskId = 68df6e7c-9d00-11f1-961c-fa1358949da8
 
 ### 6) Tarea que NO decide nada -> solo se cierra
 # Sirve para: Adjuntar comprobante · Preparar pedido · Marcar listo para retiro

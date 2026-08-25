@@ -3,6 +3,7 @@ package cl.mapuescuela.pedidos;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -155,6 +156,48 @@ public class PedidoResource {
             return Response.status(creada ? Response.Status.CREATED : Response.Status.OK)
                            .entity(Map.of("tipo", tipo, "destinatario", pedido.getClienteEmail(), "mensaje", mensaje, "creada", creada))
                            .build();
+        }
+    }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response buscarPedido(@PathParam("id") int id) throws Exception {
+        try (Connection conn = Db.getConnection()) {
+            PedidoDAO dao = new PedidoDAO(conn);
+            Pedido pedido = dao.buscarPorId(id);
+
+            if (pedido == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "No existe el pedido " + id))
+                        .build();
+            }
+            return Response.ok(pedido).build();
+        }
+    }
+
+    @PUT
+    @Path("/{id}/instancia")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response asignarInstancia(@PathParam("id") int id, Map<String, String> cuerpo) throws Exception {
+
+        String processInstanceId = (cuerpo == null) ? null : cuerpo.get("processInstanceId");
+
+        if (processInstanceId == null || processInstanceId.isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity(Map.of("error", "Falta el processInstanceId"))
+                           .build();
+        }
+        try (Connection conn = Db.getConnection()) {
+            PedidoDAO dao = new PedidoDAO(conn);
+
+            if (!dao.asignarInstancia(id, processInstanceId)) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity(Map.of("error", "No se pudo asignar la instancia al pedido " + id))
+                               .build();                  
+            }
+            return Response.ok(dao.buscarPorId(id)).build();
         }
     }
 }

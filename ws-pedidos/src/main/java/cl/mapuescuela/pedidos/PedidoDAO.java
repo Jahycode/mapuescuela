@@ -178,6 +178,36 @@ public class PedidoDAO {
         }
     }
 
+    public List<Producto> listarProductos() throws SQLException {
+        List<Producto> productos = new ArrayList<>();
+
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery("SELECT * FROM producto ORDER BY id")) {
+            
+            while (rs.next()) {
+                Producto p = new Producto();
+                p.setId(rs.getInt("id"));
+                p.setNombre(rs.getString("nombre"));
+                p.setStock(rs.getInt("stock"));
+                productos.add(p);
+            }    
+        }
+        return productos;
+    }
+
+    public boolean asignarInstancia(int pedidoId, String processInstanceId) throws SQLException {
+
+        String sql = "UPDATE pedido SET process_instance_id = ? WHERE id = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, processInstanceId);
+            st.setInt(2, pedidoId);
+            return st.executeUpdate() == 1;
+        }
+    }
+
+
+
         private Pedido mapear(ResultSet rs) throws SQLException {
         Pedido p = new Pedido();
         p.setId(rs.getInt("id"));
