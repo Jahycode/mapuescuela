@@ -38,3 +38,7 @@ Thumbs.db
 # ===== Videos de entregas (se envían aparte, pesan mucho) =====
 videos/
 *.mp4
+
+
+# ===== Base H2 local (datos de prueba, no van al repo) =====
+data/
