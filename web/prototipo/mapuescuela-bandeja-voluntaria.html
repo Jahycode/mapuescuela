@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tareas pendientes · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+@layer reset, tokens, base, layout, components, states, utilities;
+
+/* ───────────── RESET ───────────── */
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  * { margin: 0; }
+  img, svg { display: block; max-width: 100%; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; }
+  ul, ol { list-style: none; padding: 0; }
+}
+
+/* ───────────── TOKENS (los mismos del cliente) ───────────── */
+@layer tokens {
+  :root {
+    /* ── Superficies ── */
+    --paper:#EEEDF3; --card:#FFFFFF; --bed:#E4E0EC;
+    --rule:#CFC9DA;  --rule-soft:#E3DFEA;
+    --ink:#1D1930;   --ink-2:#5D5670;
+    --violeta:#4B2A82; --violeta-hondo:#3A1F68; --violeta-suave:#F7F5FC;
+    --mostaza:#E8A81C;
+
+    /* ── Estados: un solo par de nombres para todo el sistema ── */
+    --esp-fg:#8A4B10; --esp-bg:#FBEBD5;   /* esperando el pago · reservado · apura */
+    --rev-fg:#4B2A82; --rev-bg:#E6E1F3;   /* revisando */
+    --apr-fg:#1D6B4A; --apr-bg:#DCEDE3;   /* aprobado · listo */
+    --can-fg:#A32718; --can-bg:#FBE3DF;   /* cancelado · atrasado */
+    --ven-fg:#5D5670; --ven-bg:#E7E4EE;   /* vendido · encontró casa */
+
+    /* ── Tipografía ── */
+    --display:"Bricolage Grotesque","Helvetica Neue",system-ui,sans-serif;
+    --body:"Instrument Sans",system-ui,-apple-system,sans-serif;
+    --mono:"DM Mono",ui-monospace,"SF Mono",Consolas,monospace;
+
+    --t-micro:.6875rem; --t-sm:.8125rem; --t-base:.9375rem; --t-md:1.0625rem;
+    --t-lg:clamp(1.35rem, 1.1rem + .6vw, 1.75rem);
+    --t-xl:clamp(1.75rem, 1.3rem + 1.2vw, 2.5rem);
+    --t-portada:clamp(2.6rem, 1.9rem + 2.6vw, 4.6rem);
+
+    /* ── Espacio y medidas ── */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+    --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+
+    --radius:2px;
+    --wrap:78rem;        /* pantallas del cliente */
+    --wrap-ancho:96rem;  /* pantallas de trabajo interno */
+  }
+}
+
+/* ───────────── BASE ───────────── */
+@layer base {
+  html, body { height: 100%; }
+  body {
+    display: flex; flex-direction: column;
+    font-family: var(--body); font-size: var(--t-base); line-height: 1.5;
+    color: var(--ink); background-color: var(--paper);
+    background-image:
+      linear-gradient(to right,  rgba(35,26,63,.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(35,26,63,.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  a { color: var(--violeta); }
+  :focus-visible { outline: 2px solid var(--violeta); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition-duration:.01ms !important; } }
+}
+
+/* ───────────── MARCO SUPERIOR ───────────── */
+@layer layout {
+  .wrap { width:100%; max-width:var(--wrap-ancho); margin-inline:auto;
+    padding-inline:clamp(var(--sp-4), 2.5vw, var(--sp-8)); }
+
+  .tope { background:var(--card); border-bottom:1px solid var(--rule); flex:0 0 auto; }
+  .tope__in { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+    gap:var(--sp-4); padding-block:var(--sp-4) var(--sp-3); }
+  .marca { font-family:var(--display); font-weight:700; font-size:var(--t-md); letter-spacing:-.01em; }
+  .marca span { color:var(--violeta); }
+  .marca + p { font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ink-2); margin-top:3px; }
+
+  .quien { display:flex; align-items:center; gap:var(--sp-3); }
+  .quien__ini { width:2.1rem; height:2.1rem; flex:0 0 auto; display:grid; place-items:center;
+    border-radius:50%; background:var(--violeta); color:#fff;
+    font-family:var(--display); font-weight:600; font-size:var(--t-sm); }
+  .quien select { font-size:var(--t-sm); padding:var(--sp-1) var(--sp-2);
+    border:1px solid var(--rule); border-radius:var(--radius); background:var(--card); }
+  .quien p { font-size:var(--t-micro); color:var(--ink-2); margin-top:2px; }
+
+  .trazo { height:4px; background:var(--mostaza); flex:0 0 auto; }
+
+  /* Resumen: lo primero que mira al llegar */
+  .resumen { background:var(--card); border-bottom:1px solid var(--rule); flex:0 0 auto; }
+  .resumen__in { display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-4) var(--sp-6);
+    padding-block:var(--sp-3); }
+  .cifra { display:flex; align-items:baseline; gap:var(--sp-2); }
+  .cifra b { font-family:var(--mono); font-weight:500; font-size:1.5rem; line-height:1;
+    font-variant-numeric:tabular-nums; letter-spacing:-.03em; }
+  .cifra span { font-size:var(--t-sm); color:var(--ink-2); }
+  .cifra--tarde b, .cifra--tarde span { color:var(--can-fg); }
+
+  .tipos { display:flex; flex-wrap:wrap; gap:var(--sp-1) var(--sp-2); }
+  .tipo-chip { display:inline-flex; align-items:center; gap:var(--sp-2);
+    padding:var(--sp-1) var(--sp-3); font-size:var(--t-sm); font-weight:500; color:var(--ink-2);
+    border:1px solid var(--rule); border-radius:var(--radius); }
+  .tipo-chip:hover { color:var(--ink); border-color:var(--ink-2); }
+  .tipo-chip[aria-pressed="true"] { color:#fff; background:var(--violeta); border-color:var(--violeta); }
+  .tipo-chip b { font-family:var(--mono); font-weight:500; }
+  .tipo-chip svg { width:15px; height:15px; }
+
+  .orden { display:flex; align-items:center; gap:var(--sp-2); margin-left:auto; }
+  .orden select { font-size:var(--t-sm); padding:var(--sp-2) var(--sp-3);
+    border:1px solid var(--rule); border-radius:var(--radius); background:var(--card); }
+
+  /* Las dos columnas */
+  .tablero { flex:1; min-height:0; width:100%; max-width:var(--wrap-ancho); margin-inline:auto;
+    padding:var(--sp-5) clamp(var(--sp-4), 2.5vw, var(--sp-8));
+    display:grid; grid-template-columns:minmax(0, 25rem) minmax(0, 1fr);
+    gap:clamp(var(--sp-4), 2vw, var(--sp-6)); }
+  @media (max-width:64rem) { .tablero { grid-template-columns:minmax(0,1fr); } }
+
+  .panel--lista, .panel--detalle {
+    min-height:0; background:var(--card);
+    border:1px solid var(--rule); border-radius:var(--radius);
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  .panel__head { flex:0 0 auto; padding:var(--sp-3) var(--sp-4);
+    border-bottom:1px solid var(--rule-soft);
+    display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3); }
+  .panel__scroll { flex:1; min-height:0; overflow-y:auto; }
+}
+
+/* ───────────── LA LISTA ───────────── */
+@layer components {
+  .tarea {
+    display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:var(--sp-3);
+    width:100%; text-align:left; align-items:start;
+    padding:var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-3);
+    border-bottom:1px solid var(--rule-soft);
+    border-left:3px solid transparent;
+    transition:background-color .12s ease;
+  }
+  .tarea:hover { background:var(--violeta-suave); }
+  .tarea[data-urg="atrasado"] { border-left-color:var(--can-fg); }
+  .tarea[data-urg="apura"] { border-left-color:var(--mostaza); }
+  .tarea[aria-current="true"] { background:var(--violeta-suave); border-left-color:var(--violeta); }
+  .tarea[aria-current="true"] .tarea__titulo { color:var(--violeta); }
+
+  .tarea__icono { color:var(--ink-2); margin-top:2px; }
+  .tarea__icono svg { width:17px; height:17px; }
+  .tarea[aria-current="true"] .tarea__icono { color:var(--violeta); }
+
+  .tarea__titulo { font-family:var(--display); font-weight:600; font-size:var(--t-base);
+    line-height:1.2; }
+  .tarea__pedido { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); margin-top:3px; }
+  .tarea__porque { font-size:var(--t-sm); color:var(--ink-2); margin-top:var(--sp-2);
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+  .tarea__derecha { text-align:right; display:grid; gap:var(--sp-2); justify-items:end; }
+  .espera { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); white-space:nowrap; }
+  .insignia { font-size:var(--t-micro); font-weight:700; letter-spacing:.07em; text-transform:uppercase;
+    padding:2px var(--sp-2); border-radius:var(--radius); white-space:nowrap; }
+  .insignia--atrasado { color:var(--can-fg); background:var(--can-bg); }
+  .insignia--apura { color:var(--esp-fg); background:var(--esp-bg); }
+
+  .vacio-lista { padding:var(--sp-10) var(--sp-5); text-align:center; color:var(--ink-2); }
+  .vacio-lista strong { display:block; font-family:var(--display); color:var(--ink);
+    font-size:var(--t-md); margin-bottom:var(--sp-2); }
+
+  .pista { flex:0 0 auto; padding:var(--sp-3) var(--sp-4); border-top:1px solid var(--rule-soft);
+    font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+  kbd { font-family:var(--mono); font-size:var(--t-micro); padding:1px 5px;
+    border:1px solid var(--rule); border-radius:2px; background:var(--paper); }
+}
+
+/* ───────────── EL DETALLE ───────────── */
+@layer components {
+  .det { padding:clamp(var(--sp-4), 2vw, var(--sp-6)); display:grid; gap:var(--sp-6); }
+
+  .det__cab { display:grid; gap:var(--sp-3);
+    padding-bottom:var(--sp-5); border-bottom:1px solid var(--rule-soft); }
+  .det__marca { display:flex; align-items:center; gap:var(--sp-2);
+    font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ink-2); }
+  .det__marca svg { width:15px; height:15px; }
+  .det__titulo { font-family:var(--display); font-weight:700; font-size:var(--t-lg);
+    line-height:1.1; letter-spacing:-.015em; text-wrap:balance; }
+  .det__meta { display:flex; flex-wrap:wrap; gap:var(--sp-2) var(--sp-5); align-items:center; }
+  .det__meta dl { display:flex; align-items:baseline; gap:var(--sp-2); }
+  .det__meta dd { font-family:var(--mono); font-size:var(--t-sm); }
+
+  .porque { padding:var(--sp-4) var(--sp-5); border-left:3px solid var(--mostaza);
+    background:var(--paper); font-size:var(--t-base); }
+  .porque[data-urg="atrasado"] { border-left-color:var(--can-fg); background:var(--can-bg); }
+  .porque b { font-weight:600; }
+
+  /* El comprobante al lado de los datos: no hay que mover la vista */
+  .par { display:grid; gap:var(--sp-5);
+    grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); align-items:start; }
+  @media (max-width:80rem) { .par { grid-template-columns:minmax(0,1fr); } }
+
+  .comprobante { border:1px solid var(--rule); border-radius:var(--radius); overflow:hidden; }
+  .comprobante__img { aspect-ratio:3/4; background:var(--bed);
+    display:grid; place-items:center; gap:var(--sp-2); text-align:center; padding:var(--sp-5); }
+  .comprobante__img span { font-family:var(--mono); font-size:var(--t-sm); color:var(--ink-2); }
+  .comprobante__pie { display:flex; align-items:center; justify-content:space-between;
+    gap:var(--sp-2); padding:var(--sp-2) var(--sp-3); border-top:1px solid var(--rule-soft); }
+  .comprobante__pie span { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+}
+
+/* ───────────── PIEZAS COMPARTIDAS ───────────── */
+@layer components {
+  .lbl { font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ink-2); }
+  .sub { font-family:var(--display); font-weight:600; font-size:var(--t-md); line-height:1.2; }
+  .lead { color:var(--ink-2); font-size:var(--t-sm); max-width:62ch; }
+
+  .panel { border:1px solid var(--rule); border-radius:var(--radius); }
+  .panel__head { padding:var(--sp-3) var(--sp-4); border-bottom:1px solid var(--rule-soft);
+    display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3); }
+  .panel__body { padding:var(--sp-4); display:grid; gap:var(--sp-4); }
+
+  .filas { display:grid; }
+  .fila-d { display:grid; grid-template-columns:minmax(0,9rem) minmax(0,1fr);
+    gap:var(--sp-3); align-items:center;
+    padding:var(--sp-3) var(--sp-4); border-bottom:1px solid var(--rule-soft); }
+  .fila-d:last-child { border-bottom:0; }
+  .fila-d dd { font-family:var(--mono); font-size:var(--t-base); overflow-wrap:anywhere; }
+  .fila-d--clave { background:var(--violeta-suave); }
+  .fila-d--clave dd { font-size:var(--t-md); font-weight:500; font-variant-numeric:tabular-nums; }
+
+  .objeto { display:flex; gap:var(--sp-3); align-items:flex-start;
+    padding-block:var(--sp-3); border-bottom:1px solid var(--rule-soft); }
+  .objeto:last-child { border-bottom:0; }
+  .objeto__foto { flex:0 0 3rem; aspect-ratio:4/5; background:var(--bed); }
+  .objeto__n { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+  .objeto__nom { font-family:var(--display); font-weight:600; font-size:var(--t-sm);
+    line-height:1.2; margin-top:2px; }
+  .objeto__precio { font-family:var(--mono); font-size:var(--t-sm);
+    font-variant-numeric:tabular-nums; margin-top:2px; }
+  .objeto__extra { font-size:var(--t-micro); color:var(--ink-2); margin-top:3px; }
+
+  .chequeo { display:grid; gap:var(--sp-3); }
+  .chequeo label { display:flex; gap:var(--sp-3); align-items:flex-start;
+    font-size:var(--t-base); cursor:pointer; }
+  .chequeo input { accent-color:var(--violeta); width:1.05rem; height:1.05rem; margin-top:2px;
+    flex:0 0 auto; }
+  .chequeo small { display:block; font-size:var(--t-micro); color:var(--ink-2); }
+  .chequeo label:has(:checked) > div > span { text-decoration:line-through; color:var(--ink-2); }
+
+  .campo { display:grid; gap:var(--sp-2); }
+  input[type=text], textarea, .campo select {
+    padding:10px var(--sp-3); background:var(--card); color:var(--ink);
+    border:1px solid var(--rule); border-radius:var(--radius); font-size:var(--t-base);
+    font-family:inherit; width:100%;
+  }
+  textarea { min-height:5.5rem; resize:vertical; line-height:1.5; }
+  input::placeholder, textarea::placeholder { color:#9A92AC; }
+  .ayuda { font-size:var(--t-micro); color:var(--ink-2); }
+
+  /* Acciones */
+  .acciones { display:grid; gap:var(--sp-3);
+    padding-top:var(--sp-5); border-top:1px solid var(--rule); }
+  .acciones__fila { display:flex; flex-wrap:wrap; gap:var(--sp-3); align-items:center; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
+    padding:12px var(--sp-5); font-size:var(--t-base); font-weight:600; border-radius:var(--radius);
+    transition:background-color .15s ease, border-color .15s ease, color .15s ease; }
+  .btn--pri { background:var(--violeta); color:#fff; }
+  .btn--pri:hover { background:var(--violeta-hondo); }
+  .btn--sec { border:1px solid var(--rule); color:var(--ink); }
+  .btn--sec:hover { border-color:var(--ink); }
+  .btn--peligro { border:1px solid var(--can-bg); color:var(--can-fg); }
+  .btn--peligro:hover { border-color:var(--can-fg); background:var(--can-bg); }
+  .btn--sm { padding:var(--sp-2) var(--sp-3); font-size:var(--t-sm); }
+
+  .consecuencia { font-size:var(--t-sm); color:var(--ink-2); max-width:66ch; }
+  .consecuencia b { color:var(--ink); font-weight:600; }
+
+  .sin-tarea { display:grid; place-items:center; gap:var(--sp-3); padding:var(--sp-10);
+    text-align:center; height:100%; }
+  .sin-tarea strong { font-family:var(--display); font-size:var(--t-md); }
+  .sin-tarea p { color:var(--ink-2); font-size:var(--t-sm); max-width:40ch; }
+}
+
+@layer utilities {
+  [hidden] { display:none !important; }
+  .oculto { position:absolute; width:1px; height:1px; overflow:hidden;
+    clip-path:inset(50%); white-space:nowrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOPE ═══ -->
+<header class="tope">
+  <div class="wrap tope__in">
+    <div>
+      <p class="marca">Agrupación <span>Mapuescuela</span></p>
+      <p>Tareas pendientes</p>
+    </div>
+    <div class="quien">
+      <span class="quien__ini" aria-hidden="true">AM</span>
+      <div>
+        <label class="oculto" for="quien">Quién está trabajando</label>
+        <select id="quien">
+          <option>Ana Millán</option>
+          <option>Diego Paredes</option>
+          <option>Rosa Yáñez</option>
+        </select>
+        <p>Lo que hagas queda anotado con tu nombre.</p>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+<!-- ═══ RESUMEN ═══ -->
+<section class="resumen" aria-label="Resumen del día">
+  <div class="wrap resumen__in">
+    <div class="cifra"><b id="nTotal">—</b><span>tareas pendientes</span></div>
+    <div class="cifra cifra--tarde" id="cajaTarde"><b id="nTarde">—</b><span>atrasadas</span></div>
+
+    <div class="tipos" id="tipos" role="group" aria-label="Filtrar por tipo de tarea"></div>
+
+    <div class="orden">
+      <label class="lbl" for="orden">Orden</label>
+      <select id="orden">
+        <option value="urgencia">Lo más urgente primero</option>
+        <option value="espera">Lo que lleva más rato esperando</option>
+        <option value="tipo">Agrupado por tipo</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LISTA + DETALLE ═══ -->
+<div class="tablero">
+
+  <section class="panel panel--lista" aria-label="Lista de tareas">
+    <div class="panel__head">
+      <h2 class="sub">Por hacer</h2>
+      <span class="lbl" id="rotulo">—</span>
+    </div>
+    <div class="panel__scroll" id="lista"></div>
+    <p class="pista">Muévete con <kbd>↑</kbd> <kbd>↓</kbd></p>
+  </section>
+
+  <section class="panel panel--detalle" aria-label="Detalle de la tarea">
+    <div class="panel__scroll" id="detalle"></div>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ════════════ DIBUJITOS POR TIPO ════════════ */
+  const ICONO = {
+    comprobante: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 2.5h7l3 3v12H5z"/><path d="M7.5 8.5h5M7.5 11.5h5M7.5 14h3"/></svg>',
+    preparar:    '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 6.5 10 3l7 3.5v7L10 17l-7-3.5z"/><path d="M3 6.5 10 10l7-3.5M10 10v7"/></svg>',
+    despacho:    '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 5.5h8v8H2zM10 8h4l3 3v2.5h-7"/><circle cx="5.5" cy="15.5" r="1.6"/><circle cx="13.5" cy="15.5" r="1.6"/></svg>',
+    entrega:     '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="10" cy="10" r="7.2"/><path d="m6.8 10.2 2.2 2.2 4.3-4.6"/></svg>'
+  };
+
+  const NOMBRE_TIPO = {
+    comprobante: 'Revisar comprobante',
+    preparar:    'Preparar pedido',
+    despacho:    'Gestionar despacho',
+    entrega:     'Registrar entrega'
+  };
+
+  const mueble = '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/><rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/><rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/><rect x="46" y="62" width="108" height="16" fill="#A79DBA"/></svg>';
+  const libros = '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><rect x="52" y="92" width="96" height="20" fill="#C0B8CE"/><rect x="58" y="112" width="84" height="20" fill="#AEA4C0"/><rect x="48" y="132" width="104" height="20" fill="#CBC4D8"/><rect x="60" y="152" width="80" height="20" fill="#AEA4C0"/></svg>';
+
+  /* ════════════ LAS TAREAS ════════════
+     La urgencia no la calcula la voluntaria: cada tarea trae escrito
+     por qué está donde está. */
+  const TAREAS = [
+    {
+      id:'t1', tipo:'comprobante', urg:'atrasado', min:400,
+      pedido:'MAP-0151', cliente:'Rodrigo Sepúlveda', espera:'6 h 40 min',
+      titulo:'Revisar el comprobante de Rodrigo Sepúlveda',
+      porque:'Transfirió a las 9:20 y su reserva vence en <b>1 h 20 min</b>. Si nadie lo revisa, el pedido se cancela solo con la plata ya pagada.',
+      monto:'$89.000', desde:'Hoy 09:20', tel:'+56 9 5544 3322',
+      pagador:'Rodrigo Sepúlveda Vera',
+      objetos:[{n:'0151', nom:'Cómoda de seis cajones', pre:'$89.000', foto:mueble, extra:'Estado bueno · 80×110×45'}]
+    },
+    {
+      id:'t2', tipo:'despacho', urg:'atrasado', min:180,
+      pedido:'MAP-0144', cliente:'Fernanda Ortiz', espera:'3 h',
+      titulo:'Gestionar el despacho de Fernanda Ortiz',
+      porque:'La encomienda del día sale a las <b>16:00</b> y quedan 22 minutos. Si no sale hoy, se va el viernes.',
+      monto:'$18.500', desde:'Ayer 17:40', tel:'+56 9 6677 8899',
+      direccion:'Los Aromos 455, depto 302', comuna:'Ñuñoa, Santiago',
+      courier:'Starken · Retiro en sucursal', corte:'16:00',
+      objetos:[
+        {n:'0144', nom:'Lote de 7 libros de historia', pre:'$12.500', foto:libros, extra:'Como nuevo · 4,2 kg'},
+        {n:'0138', nom:'Diccionario ilustrado, 1992',  pre:'$6.000',  foto:libros, extra:'Con detalles · 1,8 kg'}
+      ]
+    },
+    {
+      id:'t3', tipo:'comprobante', urg:'apura', min:185,
+      pedido:'MAP-0148', cliente:'Camila Riquelme', espera:'3 h 05 min',
+      titulo:'Revisar el comprobante de Camila Riquelme',
+      porque:'Camila subió el comprobante a las 09:41 y desde entonces solo ve «estamos revisando». Le prometimos respuesta el mismo día.',
+      monto:'$54.500', desde:'Hoy 09:12', tel:'+56 9 8765 4321',
+      pagador:'Camila Riquelme Soto',
+      objetos:[
+        {n:'0148', nom:'Velador de madera con cajón', pre:'$48.000', foto:mueble, extra:'Estado bueno · 55×40×38'},
+        {n:'0147', nom:'Lote de 4 novelas chilenas',  pre:'$6.500',  foto:libros, extra:'Como nuevo'}
+      ]
+    },
+    {
+      id:'t4', tipo:'preparar', urg:'apura', min:1250,
+      pedido:'MAP-0145', cliente:'Ignacio Fuentes', espera:'20 h 50 min',
+      titulo:'Preparar el pedido de Ignacio Fuentes',
+      porque:'Le dijimos que le avisaríamos hoy y quedan <b>4 horas</b> de horario. Ya pagó y está esperando la dirección.',
+      monto:'$41.000', desde:'Ayer 15:10', tel:'+56 9 2233 4455',
+      bodega:'Bodega, repisa C',
+      objetos:[{n:'0145', nom:'Escritorio de pino, 2 cajones', pre:'$41.000', foto:mueble, extra:'Para restaurar · 75×120×60'}]
+    },
+    {
+      id:'t5', tipo:'entrega', urg:'apura', min:1180,
+      pedido:'MAP-0139', cliente:'Luis Cárdenas', espera:'19 h 40 min',
+      titulo:'Registrar la entrega de Luis Cárdenas',
+      porque:'Se llevó el mueble ayer a las 17:30 y no quedó anotado. Mientras no se registre, no sabemos qué salió de bodega.',
+      monto:'$72.000', desde:'Ayer 17:30', tel:'+56 9 3344 5566',
+      objetos:[{n:'0139', nom:'Estante de siete repisas', pre:'$72.000', foto:mueble, extra:'Estado bueno · 180×80×30'}]
+    },
+    {
+      id:'t6', tipo:'comprobante', urg:'aldia', min:41,
+      pedido:'MAP-0152', cliente:'Marcela Tapia', espera:'41 min',
+      titulo:'Revisar el comprobante de Marcela Tapia',
+      porque:'Llegó recién. Tiene tiempo de sobra, pero es rápido de cerrar.',
+      monto:'$12.000', desde:'Hoy 13:35', tel:'+56 9 7788 9900',
+      pagador:'Marcela Tapia Guzmán',
+      objetos:[{n:'0152', nom:'Caja de 12 libros infantiles', pre:'$12.000', foto:libros, extra:'Como nuevo'}]
+    },
+    {
+      id:'t7', tipo:'preparar', urg:'aldia', min:150,
+      pedido:'MAP-0150', cliente:'Josefa Aravena', espera:'2 h 30 min',
+      titulo:'Preparar el pedido de Josefa Aravena',
+      porque:'Aprobado hoy a las 11:50. Tenemos hasta mañana para avisarle.',
+      monto:'$29.000', desde:'Hoy 11:50', tel:'+56 9 4455 6677',
+      bodega:'Bodega, suelo pasillo 2',
+      objetos:[{n:'0150', nom:'Par de sillas de comedor', pre:'$29.000', foto:mueble, extra:'Con detalles · 90×45×45'}]
+    },
+    {
+      id:'t8', tipo:'entrega', urg:'aldia', min:95,
+      pedido:'MAP-0142', cliente:'Paula Núñez', espera:'1 h 35 min',
+      titulo:'Registrar la entrega de Paula Núñez',
+      porque:'Pasó a buscarlo hoy a las 12:25. Solo falta anotarlo.',
+      monto:'$8.500', desde:'Hoy 12:25', tel:'+56 9 9900 1122',
+      objetos:[{n:'0142', nom:'Lote de 5 libros de cocina', pre:'$8.500', foto:libros, extra:'Estado bueno'}]
+    }
+  ];
+
+  const RANGO = { atrasado:0, apura:1, aldia:2 };
+  const SELLO = { atrasado:'Atrasada', apura:'Apura' };
+
+  /* ════════════ TROZOS DE HTML ════════════ */
+  const objetosHTML = t => t.objetos.map(o => `
+    <div class="objeto">
+      <div class="objeto__foto">${o.foto}</div>
+      <div>
+        <p class="objeto__n">N° ${o.n}</p>
+        <p class="objeto__nom">${o.nom}</p>
+        <p class="objeto__precio">${o.pre}</p>
+        <p class="objeto__extra">${o.extra}</p>
+      </div>
+    </div>`).join('');
+
+  /* ── Detalle según el tipo de tarea ── */
+  const CUERPO = {
+
+    comprobante: t => `
+      <div class="par">
+        <div class="comprobante">
+          <div class="comprobante__img">
+            <span>Comprobante que subió<br>${t.cliente.split(' ')[0]}</span>
+          </div>
+          <div class="comprobante__pie">
+            <span>transferencia-${t.pedido.toLowerCase()}.jpg</span>
+            <button class="btn btn--sec btn--sm">Ver más grande</button>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:var(--sp-5)">
+          <div class="panel">
+            <div class="panel__head"><h3 class="sub">Lo que debería decir</h3></div>
+            <div class="filas">
+              <div class="fila-d fila-d--clave"><dt class="lbl">Monto</dt><dd>${t.monto}</dd></div>
+              <div class="fila-d fila-d--clave"><dt class="lbl">Mensaje</dt><dd>${t.pedido}</dd></div>
+              <div class="fila-d"><dt class="lbl">A nombre de</dt><dd>Agrup. Mapuescuela</dd></div>
+              <div class="fila-d"><dt class="lbl">Cuenta</dt><dd>12345678</dd></div>
+              <div class="fila-d"><dt class="lbl">Quién pagó</dt><dd>${t.pagador}</dd></div>
+              <div class="fila-d"><dt class="lbl">Pedido hecho</dt><dd>${t.desde}</dd></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head"><h3 class="sub">Lo que compró</h3></div>
+            <div class="panel__body">${objetosHTML(t)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label class="lbl" for="msg-${t.id}">Mensaje para ${t.cliente.split(' ')[0]}</label>
+        <textarea id="msg-${t.id}" placeholder="Solo si vas a pedirle otra foto o cancelar. Cuéntale qué pasó y qué puede hacer."></textarea>
+        <p class="ayuda">Esto aparece tal cual en la página de su pedido, firmado con tu nombre.</p>
+      </div>
+
+      <div class="acciones">
+        <div class="acciones__fila">
+          <button class="btn btn--pri">Aprobar el pago</button>
+          <button class="btn btn--sec">Pedirle otra foto</button>
+          <button class="btn btn--peligro">Cancelar el pedido</button>
+        </div>
+        <p class="consecuencia">
+          <b>Aprobar</b> le manda un WhatsApp y la tarea pasa a preparar el pedido.
+          <b>Pedirle otra foto</b> mantiene los objetos reservados y le da 12 horas más.
+          <b>Cancelar</b> devuelve los objetos al catálogo, así que úsalo solo si la plata no llegó.
+        </p>
+      </div>`,
+
+    preparar: t => `
+      <div class="par">
+        <div class="panel">
+          <div class="panel__head">
+            <h3 class="sub">Antes de avisarle</h3>
+            <span class="lbl">${t.bodega}</span>
+          </div>
+          <div class="panel__body">
+            <div class="chequeo">
+              <label><input type="checkbox"><div><span>Limpiar y sacar el polvo</span><small>Paño húmedo, sin producto en la madera.</small></div></label>
+              <label><input type="checkbox"><div><span>Revisar que los detalles calcen con las fotos</span><small>Si aparece un daño nuevo, avísale antes de que venga.</small></div></label>
+              <label><input type="checkbox"><div><span>Pegarle el papel con ${t.pedido}</span><small>Para que en la entrega no haya confusión.</small></div></label>
+              <label><input type="checkbox"><div><span>Moverlo al sector de retiros</span><small>Nada listo se queda en bodega.</small></div></label>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:var(--sp-5)">
+          <div class="panel">
+            <div class="panel__head"><h3 class="sub">Lo que hay que preparar</h3></div>
+            <div class="panel__body">${objetosHTML(t)}</div>
+          </div>
+          <div class="panel">
+            <div class="panel__head"><h3 class="sub">Contacto</h3></div>
+            <div class="filas">
+              <div class="fila-d"><dt class="lbl">Cliente</dt><dd>${t.cliente}</dd></div>
+              <div class="fila-d"><dt class="lbl">WhatsApp</dt><dd>${t.tel}</dd></div>
+              <div class="fila-d"><dt class="lbl">Pagó el</dt><dd>${t.desde}</dd></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <div class="acciones__fila">
+          <button class="btn btn--pri">Marcar listo para retiro</button>
+          <button class="btn btn--sec">Avisarle que se atrasa</button>
+        </div>
+        <p class="consecuencia">
+          <b>Marcar listo</b> le manda un WhatsApp con la dirección, el horario y hasta cuándo se lo guardamos.
+          Si todavía no está limpio y revisado, mejor avísale que se atrasa: es peor que venga y se lleve algo a medias.
+        </p>
+      </div>`,
+
+    despacho: t => `
+      <div class="par">
+        <div class="panel">
+          <div class="panel__head"><h3 class="sub">A dónde va</h3></div>
+          <div class="filas">
+            <div class="fila-d"><dt class="lbl">Nombre</dt><dd>${t.cliente}</dd></div>
+            <div class="fila-d"><dt class="lbl">Dirección</dt><dd>${t.direccion}</dd></div>
+            <div class="fila-d"><dt class="lbl">Comuna</dt><dd>${t.comuna}</dd></div>
+            <div class="fila-d"><dt class="lbl">Teléfono</dt><dd>${t.tel}</dd></div>
+            <div class="fila-d fila-d--clave"><dt class="lbl">Sale a las</dt><dd>${t.corte}</dd></div>
+            <div class="fila-d"><dt class="lbl">Por</dt><dd>${t.courier}</dd></div>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:var(--sp-5)">
+          <div class="panel">
+            <div class="panel__head">
+              <h3 class="sub">Qué va en el paquete</h3>
+              <span class="lbl">6 kg en total</span>
+            </div>
+            <div class="panel__body">${objetosHTML(t)}</div>
+          </div>
+
+          <div class="campo">
+            <label class="lbl" for="seg-${t.id}">Número de seguimiento</label>
+            <input type="text" id="seg-${t.id}" placeholder="Cópialo del comprobante de Starken">
+            <p class="ayuda">Sin este número no podemos registrar el envío, porque es lo que le mandamos a ${t.cliente.split(' ')[0]}.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <div class="acciones__fila">
+          <button class="btn btn--pri">Registrar el envío</button>
+          <button class="btn btn--sec">No alcanza hoy, mover a mañana</button>
+        </div>
+        <p class="consecuencia">
+          <b>Registrar el envío</b> le manda el número de seguimiento por WhatsApp y cierra el pedido.
+          Si lo mueves a mañana, ${t.cliente.split(' ')[0]} recibe un aviso explicando por qué, no la dejamos esperando sin noticias.
+        </p>
+      </div>`,
+
+    entrega: t => `
+      <div class="par">
+        <div class="panel">
+          <div class="panel__head"><h3 class="sub">Quién se lo llevó</h3></div>
+          <div class="panel__body">
+            <div class="campo">
+              <label class="lbl" for="ret-${t.id}">Nombre de quien retiró</label>
+              <input type="text" id="ret-${t.id}" value="${t.cliente}">
+            </div>
+            <label class="chequeo" style="display:flex;gap:var(--sp-3);align-items:flex-start">
+              <input type="checkbox">
+              <div><span>Vino otra persona en su lugar</span>
+              <small>Anota su nombre arriba y revisa que ${t.cliente.split(' ')[0]} lo haya autorizado por WhatsApp.</small></div>
+            </label>
+            <div class="campo">
+              <label class="lbl" for="cuando-${t.id}">Cuándo se lo llevó</label>
+              <input type="text" id="cuando-${t.id}" value="${t.desde}">
+            </div>
+            <div class="campo">
+              <label class="lbl" for="obs-${t.id}">Algo que anotar (si hubo)</label>
+              <textarea id="obs-${t.id}" placeholder="Por ejemplo: vino con camioneta, revisó la marca del cajón y quedó conforme."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head"><h3 class="sub">Lo que salió de bodega</h3></div>
+          <div class="panel__body">${objetosHTML(t)}</div>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <div class="acciones__fila">
+          <button class="btn btn--pri">Registrar la entrega</button>
+          <button class="btn btn--sec">No se lo llevó, sigue esperando</button>
+        </div>
+        <p class="consecuencia">
+          <b>Registrar la entrega</b> cierra el pedido y los objetos pasan a «encontró casa» en el catálogo.
+          Esto es lo que reemplaza el cuaderno: si después hay una duda, acá queda anotado quién se lo llevó y cuándo.
+        </p>
+      </div>`
+  };
+
+  /* ════════════ ESTADO DE LA PANTALLA ════════════ */
+  const $lista   = document.getElementById('lista');
+  const $detalle = document.getElementById('detalle');
+  const $tipos   = document.getElementById('tipos');
+  const $orden   = document.getElementById('orden');
+  const $rotulo  = document.getElementById('rotulo');
+
+  const estado = { tipo:'todos', orden:'urgencia', elegida:TAREAS[0].id };
+
+  const ORDENES = {
+    urgencia: (a,b) => RANGO[a.urg] - RANGO[b.urg] || b.min - a.min,
+    espera:   (a,b) => b.min - a.min,
+    tipo:     (a,b) => a.tipo.localeCompare(b.tipo) || RANGO[a.urg] - RANGO[b.urg]
+  };
+
+  const visibles = () => TAREAS
+    .filter(t => estado.tipo === 'todos' || t.tipo === estado.tipo)
+    .sort(ORDENES[estado.orden]);
+
+  function pintarTipos() {
+    const cuenta = k => TAREAS.filter(t => t.tipo === k).length;
+    $tipos.innerHTML =
+      `<button class="tipo-chip" data-tipo="todos" aria-pressed="${estado.tipo==='todos'}">
+         Todas <b>${TAREAS.length}</b></button>` +
+      Object.keys(NOMBRE_TIPO).map(k => `
+        <button class="tipo-chip" data-tipo="${k}" aria-pressed="${estado.tipo===k}">
+          ${ICONO[k]} ${NOMBRE_TIPO[k].split(' ')[1] || NOMBRE_TIPO[k]} <b>${cuenta(k)}</b>
+        </button>`).join('');
+  }
+
+  function pintarLista() {
+    const ts = visibles();
+    $rotulo.textContent = ts.length === 1 ? '1 tarea' : ts.length + ' tareas';
+
+    if (!ts.length) {
+      $lista.innerHTML = `<div class="vacio-lista">
+        <strong>No queda nada de este tipo</strong>
+        Prueba con otro tipo de tarea, o mira todas.</div>`;
+      return;
+    }
+
+    $lista.innerHTML = ts.map(t => `
+      <button class="tarea" data-id="${t.id}" data-urg="${t.urg}"
+              aria-current="${t.id === estado.elegida}">
+        <span class="tarea__icono">${ICONO[t.tipo]}</span>
+        <span>
+          <span class="tarea__titulo">${t.titulo}</span>
+          <span class="tarea__pedido">${t.pedido} · ${t.monto}</span>
+          <span class="tarea__porque">${t.porque.replace(/<\/?b>/g,'')}</span>
+        </span>
+        <span class="tarea__derecha">
+          ${SELLO[t.urg] ? `<span class="insignia insignia--${t.urg}">${SELLO[t.urg]}</span>` : ''}
+          <span class="espera">${t.espera}</span>
+        </span>
+      </button>`).join('');
+  }
+
+  function pintarDetalle() {
+    const t = TAREAS.find(x => x.id === estado.elegida);
+    const ts = visibles();
+
+    if (!t || !ts.some(x => x.id === t.id)) {
+      $detalle.innerHTML = `<div class="sin-tarea">
+        <strong>Elige una tarea de la lista</strong>
+        <p>Acá aparece todo lo que necesitas para resolverla, sin cambiar de pantalla.</p></div>`;
+      return;
+    }
+
+    $detalle.innerHTML = `
+      <div class="det">
+        <div class="det__cab">
+          <p class="det__marca">${ICONO[t.tipo]} ${NOMBRE_TIPO[t.tipo]}</p>
+          <h2 class="det__titulo">${t.titulo}</h2>
+          <div class="det__meta">
+            <dl><dt class="lbl">Pedido</dt><dd>${t.pedido}</dd></dl>
+            <dl><dt class="lbl">Monto</dt><dd>${t.monto}</dd></dl>
+            <dl><dt class="lbl">Esperando</dt><dd>${t.espera}</dd></dl>
+            ${SELLO[t.urg] ? `<span class="insignia insignia--${t.urg}">${SELLO[t.urg]}</span>` : ''}
+          </div>
+        </div>
+
+        <p class="porque" data-urg="${t.urg}">${t.porque}</p>
+
+        ${CUERPO[t.tipo](t)}
+      </div>`;
+
+    $detalle.parentElement.querySelector('.panel__scroll').scrollTop = 0;
+  }
+
+  function elegir(id) {
+    estado.elegida = id;
+    pintarLista();
+    pintarDetalle();
+  }
+
+  function pintarTodo() {
+    document.getElementById('nTotal').textContent = TAREAS.length;
+    const tardes = TAREAS.filter(t => t.urg === 'atrasado').length;
+    document.getElementById('nTarde').textContent = tardes;
+    document.getElementById('cajaTarde').hidden = tardes === 0;
+    pintarTipos(); pintarLista(); pintarDetalle();
+  }
+
+  /* ── Interacción ── */
+  $lista.addEventListener('click', e => {
+    const b = e.target.closest('.tarea');
+    if (b) elegir(b.dataset.id);
+  });
+
+  $tipos.addEventListener('click', e => {
+    const b = e.target.closest('.tipo-chip');
+    if (!b) return;
+    estado.tipo = b.dataset.tipo;
+    const ts = visibles();
+    if (ts.length && !ts.some(t => t.id === estado.elegida)) estado.elegida = ts[0].id;
+    pintarTipos(); pintarLista(); pintarDetalle();
+  });
+
+  $orden.addEventListener('change', e => {
+    estado.orden = e.target.value;
+    pintarLista(); pintarDetalle();
+  });
+
+  /* Moverse con el teclado: la usa muchas veces al día */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+    e.preventDefault();
+    const ts = visibles();
+    const i = ts.findIndex(t => t.id === estado.elegida);
+    const siguiente = e.key === 'ArrowDown'
+      ? Math.min(i + 1, ts.length - 1)
+      : Math.max(i - 1, 0);
+    if (ts[siguiente]) {
+      elegir(ts[siguiente].id);
+      $lista.querySelector('[aria-current="true"]')?.scrollIntoView({ block:'nearest' });
+    }
+  });
+
+  pintarTodo();
+})();
+</script>
+</body>
+</html>

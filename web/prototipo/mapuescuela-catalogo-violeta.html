@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El registro · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+@layer reset, tokens, base, layout, components, states, utilities;
+
+/* ───────────── RESET ───────────── */
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  * { margin: 0; }
+  img, svg { display: block; max-width: 100%; }
+  button, select, input { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; }
+  ul { list-style: none; padding: 0; }
+}
+
+/* ───────────── TOKENS (idénticos al resto del sistema) ───────────── */
+@layer tokens {
+  :root {
+    /* ── Superficies ── */
+    --paper:#EEEDF3; --card:#FFFFFF; --bed:#E4E0EC;
+    --rule:#CFC9DA;  --rule-soft:#E3DFEA;
+    --ink:#1D1930;   --ink-2:#5D5670;
+    --violeta:#4B2A82; --violeta-hondo:#3A1F68; --violeta-suave:#F7F5FC;
+    --mostaza:#E8A81C;
+
+    /* ── Estados: un solo par de nombres para todo el sistema ── */
+    --esp-fg:#8A4B10; --esp-bg:#FBEBD5;   /* esperando el pago · reservado · apura */
+    --rev-fg:#4B2A82; --rev-bg:#E6E1F3;   /* revisando */
+    --apr-fg:#1D6B4A; --apr-bg:#DCEDE3;   /* aprobado · listo */
+    --can-fg:#A32718; --can-bg:#FBE3DF;   /* cancelado · atrasado */
+    --ven-fg:#5D5670; --ven-bg:#E7E4EE;   /* vendido · encontró casa */
+
+    /* ── Tipografía ── */
+    --display:"Bricolage Grotesque","Helvetica Neue",system-ui,sans-serif;
+    --body:"Instrument Sans",system-ui,-apple-system,sans-serif;
+    --mono:"DM Mono",ui-monospace,"SF Mono",Consolas,monospace;
+
+    --t-micro:.6875rem; --t-sm:.8125rem; --t-base:.9375rem; --t-md:1.0625rem;
+    --t-lg:clamp(1.35rem, 1.1rem + .6vw, 1.75rem);
+    --t-xl:clamp(1.75rem, 1.3rem + 1.2vw, 2.5rem);
+    --t-portada:clamp(2.6rem, 1.9rem + 2.6vw, 4.6rem);
+
+    /* ── Espacio y medidas ── */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+    --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+
+    --radius:2px;
+    --wrap:78rem;        /* pantallas del cliente */
+    --wrap-ancho:96rem;  /* pantallas de trabajo interno */
+  }
+}
+
+/* ───────────── BASE ───────────── */
+@layer base {
+  body {
+    font-family: var(--body); font-size: var(--t-base); line-height: 1.55;
+    color: var(--ink); background-color: var(--paper);
+    background-image:
+      linear-gradient(to right,  rgba(35,26,63,.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(35,26,63,.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  a { color: var(--violeta); text-underline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--violeta); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition-duration:.01ms !important; } }
+}
+
+/* ───────────── MARCO ───────────── */
+@layer layout {
+  .wrap { width:100%; max-width:var(--wrap); margin-inline:auto;
+    padding-inline:clamp(var(--sp-4), 3vw, var(--sp-10)); }
+
+  /* ── PORTADA: banda violeta sólida, no fondo de papel ── */
+  .portada {
+    background-color:var(--violeta);
+    /* la cuadrícula del registro sigue, pero violeta sobre violeta */
+    background-image:
+      linear-gradient(to right,  rgba(255,255,255,.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,.055) 1px, transparent 1px);
+    background-size:24px 24px;
+    color:#fff;
+  }
+
+  .portada__tira { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end;
+    gap:var(--sp-2) var(--sp-5); padding-block:var(--sp-3);
+    font-size:var(--t-sm); border-bottom:1px solid rgba(255,255,255,.14); }
+  .portada__tira a { color:#D3C9E6; text-decoration:none; }
+  .portada__tira a:hover { color:#fff; text-decoration:underline; }
+
+  .portada__in { display:grid; gap:clamp(var(--sp-6), 4vw, var(--sp-12));
+    grid-template-columns:minmax(0, 1fr) minmax(0, 26rem);
+    align-items:end; padding-block:var(--sp-10) var(--sp-10); }
+  @media (max-width:62rem) {
+    .portada__in { grid-template-columns:minmax(0,1fr); align-items:start; }
+  }
+
+  .antetitulo { font-family:var(--mono); font-size:var(--t-micro);
+    letter-spacing:.14em; text-transform:uppercase; color:#C9BCE0;
+    padding-bottom:var(--sp-4); }
+
+  .rotulo { font-family:var(--display); font-weight:800; font-size:var(--t-portada);
+    line-height:.88; letter-spacing:-.035em; font-stretch:92%; color:#fff; }
+  .rotulo small { display:block; font-size:.3em; font-weight:600; font-stretch:100%;
+    letter-spacing:.01em; color:#C9BCE0; margin-top:var(--sp-4); }
+
+  /* La frase que explica de qué se trata esto */
+  .tesis { font-size:var(--t-md); line-height:1.5; color:#fff;
+    padding-left:clamp(var(--sp-4), 2vw, var(--sp-6)); border-left:3px solid var(--mostaza); }
+  .tesis b { font-weight:600; }
+  .tesis span { color:#D3C9E6; }
+
+  .trazo { height:4px; background:var(--mostaza); }
+
+  /* Las tres reglas: alineadas con el resto del contenido, no pegadas al borde */
+  .reglas { border-bottom:1px solid var(--rule); }
+  .reglas__in { display:grid; gap:var(--sp-5) 0;
+    grid-template-columns:repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    padding-block:var(--sp-5); }
+  .reglas__in > div + div { padding-left:clamp(var(--sp-4), 2vw, var(--sp-6));
+    border-left:1px solid var(--rule-soft); }
+  .reglas__in > div + div + div { padding-left:clamp(var(--sp-4), 2vw, var(--sp-6)); }
+  .reglas p { font-size:var(--t-sm); color:var(--ink-2); margin-top:2px; }
+  .reglas strong { color:var(--ink); font-weight:600; }
+
+  /* Barra del registro */
+  .barra { border-bottom:1px solid var(--rule); background:var(--card); }
+  .barra__in { display:grid; gap:var(--sp-4); padding-block:var(--sp-5); }
+  .cuentas { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--sp-2) var(--sp-6); }
+  .cuenta { display:flex; align-items:baseline; gap:var(--sp-2); }
+  .cuenta b { font-family:var(--mono); font-weight:500; font-size:1.35rem; line-height:1;
+    font-variant-numeric:tabular-nums; letter-spacing:-.03em; }
+  .cuenta span { font-size:var(--t-sm); color:var(--ink-2); }
+  .cuenta--sordo b, .cuenta--sordo span { color:var(--ink-2); }
+
+  .controles { display:flex; flex-wrap:wrap; align-items:center;
+    gap:var(--sp-3) var(--sp-6); padding-top:var(--sp-4); border-top:1px solid var(--rule-soft); }
+  .chips { display:flex; flex-wrap:wrap; gap:var(--sp-1) var(--sp-5); }
+  .chip { padding:var(--sp-2) 2px; font-size:var(--t-sm); font-weight:500; color:var(--ink-2);
+    border-bottom:2px solid transparent; }
+  .chip:hover { color:var(--ink); }
+  .chip[aria-pressed="true"] { color:var(--ink); font-weight:600; border-bottom-color:var(--mostaza); }
+  .campo-sel { display:flex; align-items:center; gap:var(--sp-2); }
+  select { font-size:var(--t-sm); padding:var(--sp-2) var(--sp-3); background:var(--card);
+    border:1px solid var(--rule); border-radius:var(--radius); }
+  .conteo { margin-left:auto; font-family:var(--mono); font-size:var(--t-sm); color:var(--ink-2); }
+}
+
+/* ───────────── LAS FICHAS ───────────── */
+@layer components {
+  .seccion { padding-block:var(--sp-10) 0; }
+  .seccion__cab { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between;
+    gap:var(--sp-3); padding-bottom:var(--sp-5); }
+  .seccion h2 { font-family:var(--display); font-weight:700; font-size:var(--t-lg);
+    letter-spacing:-.015em; }
+  .seccion__nota { font-size:var(--t-sm); color:var(--ink-2); max-width:56ch; }
+
+  .rejilla { display:grid; gap:clamp(var(--sp-4), 2vw, var(--sp-6));
+    grid-template-columns:repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); }
+
+  .ficha { display:flex; flex-direction:column; background:var(--card);
+    border:1px solid var(--rule); border-radius:var(--radius); }
+
+  .ficha__cab { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-2);
+    padding:var(--sp-2) var(--sp-3); border-bottom:1px solid var(--rule-soft); }
+  .ficha__n { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+  .ojo { font-size:var(--t-micro); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+    background:var(--mostaza); color:#1D1A14; padding:2px var(--sp-2); border-radius:var(--radius); }
+  .insignia { font-size:var(--t-micro); font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    padding:2px var(--sp-2); border-radius:var(--radius); white-space:nowrap; }
+  .insignia--esperando { color:var(--esp-fg); background:var(--esp-bg); }
+
+  .ficha__foto { position:relative; aspect-ratio:4/5; background:var(--bed); overflow:hidden; }
+  .ficha__fotos { position:absolute; inset:auto var(--sp-2) var(--sp-2) auto;
+    font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2);
+    background:rgba(255,255,255,.86); padding:1px var(--sp-2); border-radius:var(--radius); }
+  .ficha[data-estado="reservado"] .ficha__foto { opacity:.72; }
+
+  .ficha__cuerpo { flex:1; display:flex; flex-direction:column; gap:var(--sp-3);
+    padding:var(--sp-3) var(--sp-4) var(--sp-4); }
+  .ficha__nom { font-family:var(--display); font-weight:600; font-size:var(--t-md);
+    line-height:1.15; letter-spacing:-.01em; text-wrap:balance; }
+
+  .datos { display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-2) var(--sp-3); }
+  .datos dd { font-family:var(--mono); font-size:var(--t-sm); margin-top:1px; }
+
+  /* De dónde vino: esto es lo que una tienda no puede decir */
+  .origen { font-size:var(--t-sm); color:var(--ink-2); padding-top:var(--sp-3);
+    border-top:1px solid var(--rule-soft); }
+  .marca-uso { font-size:var(--t-sm); color:var(--esp-fg); }
+
+  .ficha__pie { margin-top:auto; padding-top:var(--sp-3); border-top:1px solid var(--rule-soft);
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--sp-2); }
+  .precio { font-family:var(--mono); font-weight:500; font-size:1.1rem;
+    font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .libera { font-family:var(--mono); font-size:var(--t-micro); color:var(--esp-fg); }
+
+  .vacio { grid-column:1/-1; padding:var(--sp-12) var(--sp-5); text-align:center;
+    background:var(--card); border:1px dashed var(--rule); border-radius:var(--radius); }
+  .vacio strong { display:block; font-family:var(--display); font-size:var(--t-md); font-weight:600; }
+  .vacio p { margin-top:var(--sp-2); font-size:var(--t-sm); color:var(--ink-2); }
+}
+
+/* ───────────── EL ARCHIVO DE VENDIDOS ─────────────
+   Formato distinto a propósito: no son ofertas, son registros. */
+@layer components {
+  .archivo { margin-top:var(--sp-12); padding-block:var(--sp-8) var(--sp-10);
+    border-top:1px solid var(--rule); }
+  .archivo__lista { display:grid; gap:var(--sp-3);
+    grid-template-columns:repeat(auto-fill, minmax(min(100%, 21rem), 1fr)); }
+
+  .idos { display:flex; gap:var(--sp-3); align-items:center;
+    padding:var(--sp-2) var(--sp-3);
+    background:var(--card); border:1px solid var(--rule-soft); border-radius:var(--radius); }
+  .idos__foto { flex:0 0 2.75rem; aspect-ratio:1; background:var(--bed);
+    filter:grayscale(1); opacity:.55; overflow:hidden; }
+  .idos__datos { min-width:0; flex:1; }
+  .idos__n { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+  .idos__nom { font-size:var(--t-sm); font-weight:500; color:var(--ink-2);
+    line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .idos__cuando { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2);
+    white-space:nowrap; }
+}
+
+/* ───────────── PIEZAS ───────────── */
+@layer components {
+  .lbl { font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ink-2); }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center;
+    padding:9px var(--sp-4); font-size:var(--t-sm); font-weight:600; border-radius:var(--radius);
+    transition:background-color .15s ease, border-color .15s ease; }
+  .btn--pri { background:var(--violeta); color:#fff; }
+  .btn--pri:hover { background:var(--violeta-hondo); }
+  .btn--sec { border:1px solid var(--rule); color:var(--ink); }
+  .btn--sec:hover { border-color:var(--ink); }
+
+  .pie { margin-top:var(--sp-12); border-top:1px solid var(--rule); background:var(--card); }
+  .pie__rejilla { display:grid; gap:var(--sp-8);
+    grid-template-columns:repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    padding-block:var(--sp-10); }
+  .pie p { font-size:var(--t-sm); color:var(--ink-2); max-width:46ch; }
+  .pie dd { font-family:var(--mono); font-size:var(--t-sm); color:var(--ink); margin-top:var(--sp-1); }
+  .pie strong { color:var(--ink); font-weight:600; }
+
+  /* La regla del sistema, escrita para que se entienda */
+  .regla-numeros { border-top:1px solid var(--rule-soft); }
+  .regla-numeros p { padding-block:var(--sp-5); max-width:70ch;
+    font-family:var(--mono); font-size:var(--t-sm); color:var(--ink-2); }
+}
+
+@layer utilities { [hidden]{ display:none !important; } }
+</style>
+</head>
+<body>
+
+<!-- ═══ PORTADA ═══ -->
+<header class="portada">
+  <nav class="wrap portada__tira" aria-label="Contacto">
+    <a href="#">Instagram · @mapuescuela</a>
+    <a href="#">WhatsApp · +56 9 1234 5678</a>
+    <a href="#">Quiénes somos</a>
+    <a href="#">Quiero donar algo</a>
+  </nav>
+
+  <div class="wrap portada__in">
+    <div>
+      <p class="antetitulo">Objetos donados · Rancagua · desde 2019</p>
+      <h1 class="rotulo">Mapuescuela<small>El registro</small></h1>
+    </div>
+    <p class="tesis">
+      <b>Esto no es una tienda.</b> Cada objeto de acá existe uno solo: alguien lo donó,
+      lo revisamos, le dimos un número y se vende una vez.
+      <span>No hay más unidades, no hay otra talla, no hay reposición. Si te gusta, es ese.</span>
+    </p>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+<!-- ═══ LAS TRES REGLAS ═══ -->
+<section class="reglas" aria-label="Cómo funciona">
+  <div class="wrap reglas__in">
+    <div>
+      <span class="lbl">Pago</span>
+      <p><strong>Por transferencia.</strong> Subes una foto del comprobante y lo revisa una persona.</p>
+    </div>
+    <div>
+      <span class="lbl">Reserva</span>
+      <p><strong>24 horas.</strong> Mientras corre el plazo, nadie más puede comprarlo.</p>
+    </div>
+    <div>
+      <span class="lbl">Entrega</span>
+      <p><strong>Retiro en Rancagua.</strong> Libros y juguetes también van por encomienda.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BARRA DEL REGISTRO ═══ -->
+<section class="barra" aria-label="Qué hay y cómo filtrarlo">
+  <div class="wrap barra__in">
+
+    <div class="cuentas">
+      <p class="cuenta"><b id="nHay">—</b><span>objetos en el registro ahora</span></p>
+      <p class="cuenta cuenta--sordo"><b>41</b><span>encontraron casa desde marzo</span></p>
+      <p class="cuenta cuenta--sordo"><b>7</b><span>llegaron esta semana</span></p>
+    </div>
+
+    <div class="controles">
+      <div class="chips" role="group" aria-label="Tipo de objeto" id="chips"></div>
+
+      <div class="campo-sel">
+        <label class="lbl" for="cond">Estado</label>
+        <select id="cond">
+          <option value="todos">Cualquiera</option>
+          <option value="nuevo">Como nuevo</option>
+          <option value="bueno">Bueno</option>
+          <option value="detalles">Con detalles</option>
+          <option value="restaurar">Para restaurar</option>
+        </select>
+      </div>
+
+      <div class="campo-sel">
+        <label class="lbl" for="orden">Orden</label>
+        <select id="orden">
+          <option value="llegada">Los que llegaron último</option>
+          <option value="precio-asc">Precio, de menor a mayor</option>
+          <option value="precio-desc">Precio, de mayor a menor</option>
+        </select>
+      </div>
+
+      <p class="conteo" id="conteo" role="status" aria-live="polite">—</p>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <!-- ═══ LO QUE HAY ═══ -->
+  <section class="seccion">
+    <div class="seccion__cab">
+      <h2>En el registro ahora</h2>
+      <p class="seccion__nota">
+        Las fotos son las que les sacamos nosotros, con las marcas del uso a la vista.
+      </p>
+    </div>
+    <ul class="rejilla" id="rejilla"></ul>
+  </section>
+
+  <!-- ═══ EL ARCHIVO ═══ -->
+  <section class="archivo" aria-labelledby="tit-archivo">
+    <div class="seccion__cab">
+      <h2 id="tit-archivo">Ya encontraron casa</h2>
+      <p class="seccion__nota">
+        Los últimos que se fueron. No están en venta y no vuelven:
+        quedan acá porque son la prueba de que esto funciona.
+      </p>
+    </div>
+    <ul class="archivo__lista" id="archivoLista"></ul>
+  </section>
+
+</main>
+
+<!-- ═══ PIE ═══ -->
+<footer class="pie">
+  <div class="wrap pie__rejilla">
+    <div>
+      <span class="lbl">Para qué es la plata</span>
+      <p style="margin-top:var(--sp-2)">
+        Todo lo que juntamos vendiendo estos objetos donados financia el acompañamiento escolar de
+        <strong>34 jóvenes de Rancagua</strong> que dejaron el colegio. Nadie acá recibe sueldo por vender.
+      </p>
+    </div>
+    <dl>
+      <span class="lbl">Datos de la agrupación</span>
+      <dd>Agrupación Mapuescuela</dd>
+      <dd>RUT 65.123.456-7</dd>
+      <dd>Av. República 1180, Rancagua</dd>
+    </dl>
+    <dl>
+      <span class="lbl">Escríbenos</span>
+      <dd>+56 9 1234 5678</dd>
+      <dd>contacto@mapuescuela.cl</dd>
+      <p style="margin-top:var(--sp-2)">Contestamos de lunes a viernes, de 9 a 20 horas.</p>
+    </dl>
+    <div>
+      <span class="lbl">¿Tienes algo que donar?</span>
+      <p style="margin-top:var(--sp-2)">
+        Recibimos muebles, libros y juguetes en buen estado o restaurables. Pasamos a buscarlos
+        en Rancagua y alrededores. Escríbenos con una foto y te decimos al tiro.
+      </p>
+    </div>
+  </div>
+  <div class="wrap regla-numeros">
+    <p>
+      Los números no se repiten nunca. El N° 0148 fue ese velador y no va a ser nada más.
+    </p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ═══ Siluetas: fondo neutro y consistente para fotos desparejas ═══ */
+  const S = {
+    velador: '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/><rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/><rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/><rect x="46" y="62" width="108" height="16" fill="#A79DBA"/></svg>',
+    silla:   '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><rect x="66" y="58" width="70" height="94" fill="#CBC4D8"/><rect x="60" y="152" width="82" height="11" fill="#AEA4C0"/><rect x="64" y="163" width="10" height="40" fill="#A79DBA"/><rect x="128" y="163" width="10" height="40" fill="#A79DBA"/></svg>',
+    estante: '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><rect x="52" y="46" width="96" height="160" fill="#CBC4D8"/><rect x="52" y="86" width="96" height="7" fill="#A79DBA"/><rect x="52" y="126" width="96" height="7" fill="#A79DBA"/><rect x="52" y="166" width="96" height="7" fill="#A79DBA"/></svg>',
+    libros:  '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><rect x="52" y="92" width="96" height="20" fill="#C0B8CE"/><rect x="58" y="112" width="84" height="20" fill="#AEA4C0"/><rect x="48" y="132" width="104" height="20" fill="#CBC4D8"/><rect x="60" y="152" width="80" height="20" fill="#AEA4C0"/></svg>',
+    juguete: '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><circle cx="100" cy="104" r="30" fill="#C0B8CE"/><rect x="66" y="136" width="68" height="52" fill="#AEA4C0"/><circle cx="78" cy="196" r="12" fill="#A79DBA"/><circle cx="122" cy="196" r="12" fill="#A79DBA"/></svg>',
+    otro:    '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><circle cx="100" cy="118" r="44" fill="#C0B8CE"/><circle cx="100" cy="118" r="22" fill="#CBC4D8"/><rect x="96" y="52" width="8" height="26" fill="#A79DBA"/><rect x="70" y="192" width="60" height="10" fill="#AEA4C0"/></svg>'
+  };
+
+  const COND = { nuevo:'Como nuevo', bueno:'Bueno', detalles:'Con detalles', restaurar:'Para restaurar' };
+  const CATS = { todos:'Todo el registro', muebles:'Muebles', libros:'Libros', juguetes:'Juguetes', otros:'Otros' };
+
+  /* ═══ LOS OBJETOS ═══
+     Cada uno trae de dónde vino y qué marca tiene: eso es lo que
+     una tienda con inventario no puede escribir. */
+  const OBJETOS = [
+    { n:'0155', cat:'muebles', cond:'restaurar', precio:145000, llegada:14, fotos:9,
+      nom:'Máquina de coser Singer a pedal',
+      medida:'78×90×45', estado:'reservado', libera:'Se libera hoy 21:40',
+      origen:'La donó una señora de Machalí que la heredó de su madre.',
+      marca:'Cose, pero le falta la correa. La tapa tiene rayas.' },
+
+    { n:'0154', cat:'muebles', cond:'bueno', precio:48000, llegada:13, fotos:6, nuevo:true,
+      nom:'Velador de madera con cajón', medida:'55×40×38',
+      origen:'Llegó en agosto de una casa en el centro de Rancagua.',
+      marca:'Tiene una marca de vaso en la tapa, sale en la tercera foto.' },
+
+    { n:'0153', cat:'libros', cond:'nuevo', precio:6500, llegada:13, fotos:5, nuevo:true,
+      nom:'Lote de 4 novelas chilenas', medida:'Encomienda',
+      origen:'De una mudanza en Graneros. Casi sin abrir.' },
+
+    { n:'0152', cat:'muebles', cond:'bueno', precio:72000, llegada:12, fotos:8, nuevo:true,
+      nom:'Estante de siete repisas', medida:'180×80×30',
+      origen:'Lo donó una biblioteca de barrio que cerró.',
+      marca:'Una repisa está apenas curvada por el peso.' },
+
+    { n:'0151', cat:'juguetes', cond:'bueno', precio:14000, llegada:11, fotos:6,
+      nom:'Triciclo metálico rojo', medida:'2 a 5 años',
+      origen:'De una familia de Rancagua, lo usaron dos hijos.',
+      marca:'La pintura está saltada en el manubrio.' },
+
+    { n:'0150', cat:'otros', cond:'bueno', precio:32000, llegada:10, fotos:4,
+      nom:'Ventilador de pie, 3 velocidades', medida:'Probado, funciona',
+      origen:'Donado en julio por una oficina que se mudó.' },
+
+    { n:'0149', cat:'muebles', cond:'detalles', precio:29000, llegada:9, fotos:7,
+      nom:'Par de sillas de comedor', medida:'90×45×45',
+      origen:'Vienen de un comedor de Requínoa, son las dos que quedaban del juego.',
+      marca:'Una tiene el asiento hundido, se arregla con una tabla.' },
+
+    { n:'0148', cat:'libros', cond:'nuevo', precio:12000, llegada:8, fotos:5,
+      nom:'Caja de 12 libros infantiles', medida:'Encomienda',
+      origen:'De un jardín infantil que renovó su biblioteca.' },
+
+    { n:'0147', cat:'muebles', cond:'restaurar', precio:41000, llegada:7, fotos:8,
+      nom:'Escritorio de pino, dos cajones', medida:'75×120×60',
+      origen:'Estuvo veinte años en la misma casa en San Fernando.',
+      marca:'La cubierta necesita lijado y barniz. Los cajones corren bien.' },
+
+    { n:'0146', cat:'libros', cond:'nuevo', precio:12500, llegada:6, fotos:6,
+      nom:'Lote de 7 libros de historia', medida:'Encomienda',
+      origen:'Los donó un profesor jubilado de Rancagua.' },
+
+    { n:'0145', cat:'muebles', cond:'restaurar', precio:25000, llegada:5, fotos:5,
+      nom:'Silla de mimbre, respaldo alto', medida:'102×45×45',
+      origen:'Llegó de una casa de veraneo en Pichilemu.',
+      marca:'Al mimbre del respaldo le falta un tramo.' },
+
+    { n:'0144', cat:'juguetes', cond:'bueno', precio:9000, llegada:4, fotos:4,
+      nom:'Caja de bloques de madera', medida:'Desde 3 años',
+      origen:'De una familia de Coltauco. Están todos los bloques.' },
+
+    { n:'0143', cat:'muebles', cond:'detalles', precio:55000, llegada:3, fotos:7,
+      nom:'Sillón de un cuerpo, tapiz verde', medida:'85×80×80',
+      origen:'Donado por una vecina de Rancagua que renovó su living.',
+      marca:'El tapiz está desgastado en los brazos.' },
+
+    { n:'0142', cat:'libros', cond:'detalles', precio:6000, llegada:2, fotos:4,
+      nom:'Diccionario ilustrado, 1992', medida:'Encomienda',
+      origen:'De la misma mudanza de Graneros.',
+      marca:'El lomo está reparado con cinta.' },
+
+    { n:'0141', cat:'otros', cond:'bueno', precio:18000, llegada:1, fotos:5,
+      nom:'Juego de 6 tazas de greda', medida:'Sin trizaduras',
+      origen:'Las donó un taller de cerámica de Doñihue.' }
+  ];
+
+  /* ═══ LOS QUE SE FUERON ═══ */
+  const IDOS = [
+    { n:'0122', nom:'Mesa de centro de vidrio',      cuando:'19 ago', foto:S.velador },
+    { n:'0119', nom:'Colección de 9 libros de arte', cuando:'18 ago', foto:S.libros  },
+    { n:'0117', nom:'Coche de muñeca de mimbre',     cuando:'15 ago', foto:S.juguete },
+    { n:'0114', nom:'Ropero de dos puertas',         cuando:'13 ago', foto:S.estante },
+    { n:'0111', nom:'Atlas escolar ilustrado, 1998', cuando:'12 ago', foto:S.libros  },
+    { n:'0109', nom:'Lote de 20 revistas antiguas',  cuando:'11 ago', foto:S.libros  },
+    { n:'0106', nom:'Cómoda de seis cajones',        cuando:'08 ago', foto:S.velador },
+    { n:'0104', nom:'Bicicleta de niño, rodado 16',  cuando:'06 ago', foto:S.juguete }
+  ];
+
+  const silueta = o => ({ muebles:S.velador, libros:S.libros, juguetes:S.juguete, otros:S.otro })[o.cat]
+    || S.otro;
+
+  const plata = n => '$' + n.toLocaleString('es-CL');
+
+  /* ═══ PANTALLA ═══ */
+  const $rejilla = document.getElementById('rejilla');
+  const $chips   = document.getElementById('chips');
+  const $conteo  = document.getElementById('conteo');
+  const $cond    = document.getElementById('cond');
+  const $orden   = document.getElementById('orden');
+
+  const params = new URLSearchParams(location.search);
+  const estado = {
+    cat:   params.get('cat')   || 'todos',
+    cond:  params.get('cond')  || 'todos',
+    orden: params.get('orden') || 'llegada'
+  };
+
+  const ORDENES = {
+    'llegada':     (a,b) => b.llegada - a.llegada,
+    'precio-asc':  (a,b) => a.precio - b.precio,
+    'precio-desc': (a,b) => b.precio - a.precio
+  };
+
+  function pintarChips() {
+    $chips.innerHTML = Object.entries(CATS).map(([k,v]) => `
+      <button class="chip" data-cat="${k}" aria-pressed="${estado.cat===k}">${v}</button>`).join('');
+  }
+
+  function pintarRejilla() {
+    const lista = OBJETOS
+      .filter(o => estado.cat === 'todos' || o.cat === estado.cat)
+      .filter(o => estado.cond === 'todos' || o.cond === estado.cond)
+      .sort(ORDENES[estado.orden]);
+
+    document.getElementById('nHay').textContent = OBJETOS.length;
+    $conteo.textContent = lista.length === 1 ? '1 objeto' : lista.length + ' objetos';
+
+    if (!lista.length) {
+      $rejilla.innerHTML = `<li class="vacio">
+        <strong>No hay objetos así en el registro</strong>
+        <p>Cambia el tipo o el estado. Entran cosas nuevas casi todas las semanas,
+        y las avisamos primero por Instagram.</p></li>`;
+      return;
+    }
+
+    $rejilla.innerHTML = lista.map(o => {
+      const reservado = o.estado === 'reservado';
+      return `
+      <li class="ficha" data-estado="${reservado ? 'reservado' : 'disponible'}">
+        <div class="ficha__cab">
+          <span class="ficha__n">N° ${o.n}</span>
+          ${reservado ? '<span class="insignia insignia--esperando">Reservado</span>'
+                      : (o.nuevo ? '<span class="ojo">Recién llegó</span>' : '')}
+        </div>
+
+        <div class="ficha__foto">
+          ${silueta(o)}
+          <span class="ficha__fotos">${o.fotos} fotos</span>
+        </div>
+
+        <div class="ficha__cuerpo">
+          <h3 class="ficha__nom">${o.nom}</h3>
+
+          <dl class="datos">
+            <div><dt class="lbl">Estado</dt><dd>${COND[o.cond]}</dd></div>
+            <div><dt class="lbl">${o.cat === 'libros' ? 'Envío' : 'Medidas'}</dt><dd>${o.medida}</dd></div>
+          </dl>
+
+          <p class="origen">${o.origen}</p>
+          ${o.marca ? `<p class="marca-uso">${o.marca}</p>` : ''}
+
+          <div class="ficha__pie">
+            ${reservado
+              ? `<span class="libera">${o.libera}</span>
+                 <button class="btn btn--sec">Avísame si se libera</button>`
+              : `<span class="precio">${plata(o.precio)}</span>
+                 <button class="btn btn--pri">Reservar</button>`}
+          </div>
+        </div>
+      </li>`;
+    }).join('');
+  }
+
+  function guardarEnLaDireccion() {
+    const p = new URLSearchParams();
+    if (estado.cat   !== 'todos')   p.set('cat', estado.cat);
+    if (estado.cond  !== 'todos')   p.set('cond', estado.cond);
+    if (estado.orden !== 'llegada') p.set('orden', estado.orden);
+    history.replaceState(null, '', p.toString() ? '?' + p : location.pathname);
+  }
+
+  function pintar() { pintarChips(); pintarRejilla(); guardarEnLaDireccion(); }
+
+  $chips.addEventListener('click', e => {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    estado.cat = b.dataset.cat;
+    pintar();
+  });
+  $cond.addEventListener('change',  e => { estado.cond  = e.target.value; pintar(); });
+  $orden.addEventListener('change', e => { estado.orden = e.target.value; pintar(); });
+
+  /* Los que se fueron: otro formato, más chico y en gris */
+  document.getElementById('archivoLista').innerHTML = IDOS.map(i => `
+    <li class="idos">
+      <div class="idos__foto">${i.foto}</div>
+      <div class="idos__datos">
+        <p class="idos__n">N° ${i.n}</p>
+        <p class="idos__nom">${i.nom}</p>
+      </div>
+      <span class="idos__cuando">${i.cuando}</span>
+    </li>`).join('');
+
+  $cond.value  = estado.cond;
+  $orden.value = estado.orden;
+  pintar();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu pedido MAP-0148 · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+@layer reset, tokens, base, layout, components, states, utilities;
+
+/* ───────── RESET ───────── */
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  * { margin: 0; }
+  img, svg { display: block; max-width: 100%; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; }
+  ul, ol { list-style: none; padding: 0; }
+  summary::-webkit-details-marker { display: none; }
+}
+
+/* ───────── TOKENS ───────── */
+@layer tokens {
+  :root {
+    /* ── Superficies ── */
+    --paper:#EEEDF3; --card:#FFFFFF; --bed:#E4E0EC;
+    --rule:#CFC9DA;  --rule-soft:#E3DFEA;
+    --ink:#1D1930;   --ink-2:#5D5670;
+    --violeta:#4B2A82; --violeta-hondo:#3A1F68; --violeta-suave:#F7F5FC;
+    --mostaza:#E8A81C;
+
+    /* ── Estados: un solo par de nombres para todo el sistema ── */
+    --esp-fg:#8A4B10; --esp-bg:#FBEBD5;   /* esperando el pago · reservado · apura */
+    --rev-fg:#4B2A82; --rev-bg:#E6E1F3;   /* revisando */
+    --apr-fg:#1D6B4A; --apr-bg:#DCEDE3;   /* aprobado · listo */
+    --can-fg:#A32718; --can-bg:#FBE3DF;   /* cancelado · atrasado */
+    --ven-fg:#5D5670; --ven-bg:#E7E4EE;   /* vendido · encontró casa */
+
+    /* ── Tipografía ── */
+    --display:"Bricolage Grotesque","Helvetica Neue",system-ui,sans-serif;
+    --body:"Instrument Sans",system-ui,-apple-system,sans-serif;
+    --mono:"DM Mono",ui-monospace,"SF Mono",Consolas,monospace;
+
+    --t-micro:.6875rem; --t-sm:.8125rem; --t-base:.9375rem; --t-md:1.0625rem;
+    --t-lg:clamp(1.35rem, 1.1rem + .6vw, 1.75rem);
+    --t-xl:clamp(1.75rem, 1.3rem + 1.2vw, 2.5rem);
+    --t-portada:clamp(2.6rem, 1.9rem + 2.6vw, 4.6rem);
+
+    /* ── Espacio y medidas ── */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+    --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+
+    --radius:2px;
+    --wrap:78rem;        /* pantallas del cliente */
+    --wrap-ancho:96rem;  /* pantallas de trabajo interno */
+  }
+}
+
+/* ───────── BASE ───────── */
+@layer base {
+  body {
+    font-family: var(--body); font-size: var(--t-base); line-height: 1.55;
+    color: var(--ink); background-color: var(--paper);
+    background-image:
+      linear-gradient(to right,  rgba(35,26,63,.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(35,26,63,.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  a { color: var(--violeta); text-underline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--violeta); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: .01ms !important; }
+  }
+}
+
+/* ───────── LAYOUT ───────── */
+@layer layout {
+  .wrap {
+    width: 100%; max-width: var(--wrap); margin-inline: auto;
+    padding-inline: clamp(var(--sp-4), 3vw, var(--sp-10));
+  }
+
+  /* Barra de vista previa: no es parte del producto */
+  .demo {
+    background: var(--ink); color: #E2DEEC;
+    border-bottom: 1px solid var(--violeta-hondo);
+  }
+  .demo__inner {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: var(--sp-3) var(--sp-5); padding-block: var(--sp-3);
+  }
+  .demo__label {
+    font-family: var(--mono); font-size: var(--t-micro);
+    letter-spacing: .1em; text-transform: uppercase; color: #9C93B4;
+  }
+  .demo__btns { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); }
+  .demo__btn {
+    padding: var(--sp-1) var(--sp-3); font-size: var(--t-sm); font-weight: 500;
+    color: #C8C0D8; border: 1px solid #3B3055; border-radius: var(--radius);
+  }
+  .demo__btn:hover { color: #fff; border-color: #7A6E96; }
+  .demo__btn[aria-pressed="true"] { color: var(--ink); background: var(--mostaza); border-color: var(--mostaza); font-weight: 600; }
+
+  /* Encabezado */
+  .masthead { background: var(--paper); }
+  .masthead__inner {
+    display: flex; flex-wrap: wrap; gap: var(--sp-4);
+    align-items: flex-end; justify-content: space-between;
+    padding-block: var(--sp-8) var(--sp-5);
+  }
+  .brand { font-family: var(--display); font-weight: 700; font-size: var(--t-md);
+    letter-spacing: -.01em; }
+  .brand span { color: var(--violeta); }
+  .masthead__meta { display: flex; gap: var(--sp-6); text-align: right; }
+  .stroke { height: 4px; background: var(--mostaza); }
+
+  /* Línea de avance a lo ancho */
+  .avance { background: var(--card); border-bottom: 1px solid var(--rule); }
+  .avance__inner {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: var(--sp-4); padding-block: var(--sp-5);
+  }
+
+  /* Dos columnas: la acción y el pedido */
+  .cols {
+    display: grid; align-items: start;
+    grid-template-columns: minmax(0, 1.75fr) minmax(0, 21rem);
+    gap: clamp(var(--sp-6), 3vw, var(--sp-10));
+    padding-block: var(--sp-8) var(--sp-12);
+  }
+  @media (max-width: 60rem) { .cols { grid-template-columns: minmax(0, 1fr); } }
+
+  .aside { display: grid; gap: var(--sp-5); position: sticky; top: var(--sp-5); }
+  .main  { display: grid; gap: var(--sp-6); }
+}
+
+/* ───────── COMPONENTES ───────── */
+@layer components {
+  .lbl {
+    font-size: var(--t-micro); font-weight: 600; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--ink-2);
+  }
+  .mono { font-family: var(--mono); }
+
+  .panel { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); }
+  .panel__body { padding: clamp(var(--sp-4), 2vw, var(--sp-6)); }
+  .panel__head {
+    padding: var(--sp-3) clamp(var(--sp-4), 2vw, var(--sp-6));
+    border-bottom: 1px solid var(--rule-soft);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+  }
+
+  h1.titular { font-family: var(--display); font-weight: 700; font-size: var(--t-xl);
+    line-height: 1.05; letter-spacing: -.02em; text-wrap: balance; }
+  h2.titulo { font-family: var(--display); font-weight: 600; font-size: var(--t-lg);
+    line-height: 1.15; letter-spacing: -.01em; text-wrap: balance; }
+  h3.sub { font-family: var(--display); font-weight: 600; font-size: var(--t-md); line-height: 1.2; }
+  .lead { color: var(--ink-2); max-width: 62ch; }
+  .lead--grande { font-size: var(--t-md); line-height: 1.5; }
+
+  /* Paso de la línea de avance */
+  .paso { display: grid; gap: var(--sp-2); }
+  .paso__marca { display: flex; align-items: center; gap: var(--sp-2); }
+  .paso__punto { width: 11px; height: 11px; border-radius: 50%;
+    background: var(--card); border: 2px solid var(--rule); flex: 0 0 auto; }
+  .paso__linea { flex: 1; height: 1px; background: var(--rule-soft); }
+  .paso__nombre { font-size: var(--t-sm); font-weight: 600; color: var(--ink-2); }
+  .paso__cuando { font-family: var(--mono); font-size: var(--t-micro); color: var(--ink-2); }
+
+  .paso[data-e="hecho"] .paso__punto { background: var(--apr-fg); border-color: var(--apr-fg); }
+  .paso[data-e="hecho"] .paso__linea { background: var(--apr-fg); opacity: .35; }
+  .paso[data-e="hecho"] .paso__nombre { color: var(--ink); }
+  .paso[data-e="ahora"] .paso__punto { background: var(--violeta); border-color: var(--violeta);
+    box-shadow: 0 0 0 4px var(--rev-bg); }
+  .paso[data-e="ahora"] .paso__nombre { color: var(--violeta); }
+  .paso[data-e="corte"] .paso__punto { background: var(--can-fg); border-color: var(--can-fg); }
+  .paso[data-e="corte"] .paso__nombre { color: var(--can-fg); }
+
+  /* Botones */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+    padding: 12px var(--sp-5); font-size: var(--t-base); font-weight: 600;
+    border-radius: var(--radius); text-decoration: none;
+    transition: background-color .15s ease, border-color .15s ease;
+  }
+  .btn--pri { background: var(--violeta); color: #fff; }
+  .btn--pri:hover { background: var(--violeta-hondo); }
+  .btn--pri:disabled { background: var(--rule); color: #857D99; cursor: not-allowed; }
+  .btn--sec { border: 1px solid var(--rule); color: var(--ink); }
+  .btn--sec:hover { border-color: var(--ink); }
+  .btn--block { width: 100%; }
+  .btn--sm { padding: var(--sp-2) var(--sp-3); font-size: var(--t-sm); }
+
+  /* Plazo */
+  .plazo { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--sp-2) var(--sp-5);
+    padding: var(--sp-4) var(--sp-5); background: var(--esp-bg); border-radius: var(--radius); }
+  .plazo__cuanto { font-family: var(--display); font-weight: 700;
+    font-size: clamp(1.35rem, 1.1rem + 1vw, 1.9rem); line-height: 1.1;
+    letter-spacing: -.02em; color: var(--esp-fg); text-wrap: balance; }
+  .plazo__texto { color: var(--esp-fg); font-size: var(--t-sm); }
+  .plazo__texto strong { display: block; font-size: var(--t-base); font-weight: 600; }
+
+  /* Datos para transferir */
+  .datos { border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; }
+  .dato { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr) auto;
+    align-items: center; gap: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--rule-soft); }
+  .dato:last-child { border-bottom: 0; }
+  .dato__v { font-family: var(--mono); font-size: var(--t-base); overflow-wrap: anywhere; }
+  .dato--clave { background: var(--violeta-suave); }
+  .dato--clave .dato__v { font-size: var(--t-md); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .copiar {
+    font-size: var(--t-micro); font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--violeta); padding: var(--sp-1) var(--sp-3);
+    border: 1px solid var(--rule); border-radius: var(--radius);
+  }
+  .copiar:hover { border-color: var(--violeta); }
+  .copiar[data-listo="1"] { color: var(--apr-fg); border-color: var(--apr-fg); }
+
+  .nota { padding: var(--sp-4) var(--sp-5); border-left: 3px solid var(--violeta);
+    background: var(--rev-bg); font-size: var(--t-base); }
+  .nota strong { font-weight: 600; }
+
+  /* Preguntas */
+  .preguntas { display: grid; }
+  .pregunta { border-top: 1px solid var(--rule-soft); }
+  .pregunta:first-child { border-top: 0; }
+  .pregunta summary {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4);
+    padding: var(--sp-4) 0; font-weight: 600; font-size: var(--t-base); cursor: pointer; list-style: none;
+  }
+  .pregunta summary::after { content: "+"; font-family: var(--mono); color: var(--violeta); font-size: var(--t-md); }
+  .pregunta[open] summary::after { content: "–"; }
+  .pregunta p { padding-bottom: var(--sp-4); color: var(--ink-2); max-width: 62ch; }
+
+  /* Subir comprobante */
+  .subir { display: grid; gap: var(--sp-4); }
+  .zona { display: grid; place-items: center; gap: var(--sp-3);
+    padding: var(--sp-10) var(--sp-5); text-align: center;
+    border: 1px dashed var(--rule); border-radius: var(--radius);
+    background: var(--paper); cursor: pointer; }
+  .zona:hover { border-color: var(--violeta); }
+  .zona p { font-size: var(--t-sm); color: var(--ink-2); }
+
+  .adjunto { display: flex; gap: var(--sp-4); align-items: flex-start;
+    padding: var(--sp-4); border: 1px solid var(--rule); border-radius: var(--radius); }
+  .adjunto__img { flex: 0 0 clamp(5rem, 8vw, 7rem); aspect-ratio: 3/4;
+    background: var(--bed); display: grid; place-items: center; overflow: hidden; }
+  .adjunto__img img { width: 100%; height: 100%; object-fit: cover; }
+  .adjunto__img span { font-family: var(--mono); font-size: var(--t-micro); color: var(--ink-2); }
+  .adjunto__datos { flex: 1; min-width: 0; display: grid; gap: var(--sp-1); }
+  .adjunto__nombre { font-family: var(--mono); font-size: var(--t-sm); overflow-wrap: anywhere; }
+
+  .separador { display: flex; align-items: center; gap: var(--sp-4);
+    color: var(--ink-2); font-size: var(--t-micro); letter-spacing: .09em; text-transform: uppercase; }
+  .separador::before, .separador::after { content: ""; flex: 1; height: 1px; background: var(--rule-soft); }
+
+  /* Recado escrito por una persona */
+  .recado { padding: var(--sp-5); background: var(--paper);
+    border: 1px solid var(--rule); border-radius: var(--radius); }
+  .recado p { max-width: 60ch; }
+  .recado p + p { margin-top: var(--sp-3); }
+  .recado__firma { display: flex; align-items: center; gap: var(--sp-3);
+    margin-top: var(--sp-5); padding-top: var(--sp-4); border-top: 1px solid var(--rule-soft); }
+  .recado__inicial { width: 2.25rem; height: 2.25rem; flex: 0 0 auto;
+    display: grid; place-items: center; border-radius: 50%;
+    background: var(--violeta); color: #fff;
+    font-family: var(--display); font-weight: 600; font-size: var(--t-sm); }
+  .recado__quien strong { display: block; font-size: var(--t-sm); font-weight: 600; }
+  .recado__quien span { font-family: var(--mono); font-size: var(--t-micro); color: var(--ink-2); }
+
+  /* Retiro */
+  .retiro { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius); }
+  .retiro > div { background: var(--card); padding: var(--sp-4) var(--sp-5); }
+  .retiro dd { font-family: var(--mono); font-size: var(--t-base); margin-top: var(--sp-1); }
+  .retiro small { display: block; font-size: var(--t-micro); color: var(--ink-2); margin-top: var(--sp-1);
+    font-family: var(--body); }
+
+  .lista { display: grid; gap: var(--sp-3); }
+  .lista li { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-3);
+    font-size: var(--t-base); color: var(--ink-2); }
+  .lista li::before { content: ""; width: 6px; height: 6px; margin-top: 9px;
+    border-radius: 50%; background: var(--mostaza); }
+  .lista strong { color: var(--ink); font-weight: 600; }
+
+  /* Resumen del pedido en la columna derecha */
+  .objeto { display: flex; gap: var(--sp-3); padding-block: var(--sp-3);
+    border-bottom: 1px solid var(--rule-soft); }
+  .objeto:last-of-type { border-bottom: 0; }
+  .objeto__media { flex: 0 0 3.5rem; aspect-ratio: 4/5; background: var(--bed); }
+  .objeto__num { font-family: var(--mono); font-size: var(--t-micro); color: var(--ink-2); }
+  .objeto__nombre { font-family: var(--display); font-weight: 600; font-size: var(--t-sm);
+    line-height: 1.25; margin-top: 2px; }
+  .objeto__precio { font-family: var(--mono); font-size: var(--t-sm);
+    font-variant-numeric: tabular-nums; margin-top: var(--sp-1); }
+
+  .total { display: flex; align-items: baseline; justify-content: space-between;
+    gap: var(--sp-3); margin-top: var(--sp-4); padding-top: var(--sp-4);
+    border-top: 1px solid var(--rule); }
+  .total__cifra { font-family: var(--mono); font-weight: 500; font-size: var(--t-md);
+    font-variant-numeric: tabular-nums; }
+
+  .ficha-datos { display: grid; gap: var(--sp-3); }
+  .ficha-datos div { display: grid; gap: 2px; }
+  .ficha-datos dd { font-family: var(--mono); font-size: var(--t-sm); }
+  .ficha-datos p { font-size: var(--t-sm); color: var(--ink-2); }
+
+  /* Contenedor de cada uno de los cinco estados */
+  .pantalla { display: grid; }
+
+  .aside__pie { font-size: var(--t-sm); color: var(--ink-2); }
+  .aside__pie strong { color: var(--ink); font-weight: 600; }
+}
+
+/* ───────── ESTADOS ───────── */
+@layer states {
+  .insignia { display: inline-block; font-size: var(--t-micro); font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: var(--sp-1) var(--sp-3); border-radius: var(--radius); }
+  .insignia--esperando { color: var(--esp-fg); background: var(--esp-bg); }
+  .insignia--revisando { color: var(--rev-fg); background: var(--rev-bg); }
+  .insignia--aprobado  { color: var(--apr-fg); background: var(--apr-bg); }
+  .insignia--listo     { color: var(--apr-fg); background: var(--apr-bg); }
+  .insignia--cancelado { color: var(--can-fg); background: var(--can-bg); }
+
+  .cabecera { display: grid; gap: var(--sp-4); }
+  .cabecera__ins { display: flex; align-items: center; gap: var(--sp-3); }
+}
+
+@layer utilities {
+  [hidden] { display: none !important; }
+  .oculto-visual { position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap; }
+  .apilar-4 { display: grid; gap: var(--sp-4); }
+  .apilar-5 { display: grid; gap: var(--sp-5); }
+  .fila { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ VISTA PREVIA (no es parte del producto) ═══ -->
+<div class="demo">
+  <div class="wrap demo__inner">
+    <span class="demo__label">Vista previa · una pantalla, cinco estados</span>
+    <div class="demo__btns" id="switch" role="group" aria-label="Cambiar de estado">
+      <button class="demo__btn" data-ir="1" aria-pressed="true">1 · Esperando el pago</button>
+      <button class="demo__btn" data-ir="2" aria-pressed="false">2 · Comprobante recibido</button>
+      <button class="demo__btn" data-ir="3" aria-pressed="false">3 · Pago aprobado</button>
+      <button class="demo__btn" data-ir="4" aria-pressed="false">4 · Listo para retiro</button>
+      <button class="demo__btn" data-ir="5" aria-pressed="false">5 · Cancelado</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ENCABEZADO ═══ -->
+<header class="masthead">
+  <div class="wrap masthead__inner">
+    <div>
+      <p class="brand">Agrupación <span>Mapuescuela</span></p>
+      <p class="lbl" style="margin-top:6px">Seguimiento de tu pedido</p>
+    </div>
+    <dl class="masthead__meta">
+      <div>
+        <dt class="lbl">Pedido</dt>
+        <dd class="mono" style="font-size:var(--t-md);font-weight:500">MAP-0148</dd>
+      </div>
+      <div>
+        <dt class="lbl">Hecho el</dt>
+        <dd class="mono" style="font-size:var(--t-md)">26 ago 2026</dd>
+      </div>
+    </dl>
+  </div>
+  <div class="stroke" role="presentation"></div>
+</header>
+
+<!-- ═══ LÍNEA DE AVANCE ═══ -->
+<section class="avance" aria-label="En qué va tu pedido">
+  <div class="wrap avance__inner" id="avance"><!-- lo arma el guion de abajo --></div>
+</section>
+
+<div class="wrap cols">
+
+  <!-- ══════════ COLUMNA PRINCIPAL ══════════ -->
+  <main class="main">
+
+    <!-- ─────── ESTADO 1 · ESPERANDO EL PAGO ─────── -->
+    <div class="pantalla" data-estado="1">
+      <div class="apilar-5">
+
+        <div class="cabecera">
+          <div class="cabecera__ins">
+            <span class="insignia insignia--esperando">Esperando el pago</span>
+          </div>
+          <h1 class="titular">Guardamos tus dos objetos a tu nombre por 24 horas</h1>
+          <p class="lead lead--grande">
+            Nadie más los puede comprar mientras corra el plazo. Transfiere los $54.500 y después
+            sube una foto del comprobante acá mismo.
+          </p>
+        </div>
+
+        <div class="plazo">
+          <p class="plazo__cuanto" id="cuanto">—</p>
+          <p class="plazo__texto">
+            <strong id="vence">—</strong>
+            Si no alcanzas, escríbenos y lo vemos.
+          </p>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head">
+            <h2 class="sub">Datos para transferir</h2>
+            <button class="btn btn--sec btn--sm" id="copiarTodo">Copiar todo</button>
+          </div>
+          <div class="panel__body apilar-4">
+            <div class="datos">
+              <div class="dato"><span class="lbl">Banco</span><span class="dato__v" id="v1">Banco Estado</span><button class="copiar" data-copia="v1">Copiar</button></div>
+              <div class="dato"><span class="lbl">Tipo de cuenta</span><span class="dato__v" id="v2">Cuenta Corriente</span><button class="copiar" data-copia="v2">Copiar</button></div>
+              <div class="dato"><span class="lbl">Número</span><span class="dato__v" id="v3">12345678</span><button class="copiar" data-copia="v3">Copiar</button></div>
+              <div class="dato"><span class="lbl">RUT</span><span class="dato__v" id="v4">65.123.456-7</span><button class="copiar" data-copia="v4">Copiar</button></div>
+              <div class="dato"><span class="lbl">A nombre de</span><span class="dato__v" id="v5">Agrupación Mapuescuela</span><button class="copiar" data-copia="v5">Copiar</button></div>
+              <div class="dato"><span class="lbl">Correo</span><span class="dato__v" id="v6">pagos@mapuescuela.cl</span><button class="copiar" data-copia="v6">Copiar</button></div>
+              <div class="dato dato--clave"><span class="lbl">Monto exacto</span><span class="dato__v" id="v7">$54.500</span><button class="copiar" data-copia="v7">Copiar</button></div>
+              <div class="dato dato--clave"><span class="lbl">Mensaje</span><span class="dato__v" id="v8">MAP-0148</span><button class="copiar" data-copia="v8">Copiar</button></div>
+            </div>
+
+            <p class="nota">
+              <strong>Escribe MAP-0148 en el mensaje de la transferencia.</strong>
+              Es lo único que nos permite reconocer que el pago es tuyo. Si tu banco no tiene ese campo,
+              mándanos el comprobante y listo.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head"><h2 class="sub">Sube el comprobante</h2></div>
+          <div class="panel__body subir">
+            <p class="lead">
+              Un pantallazo de la transferencia sirve. Lo revisa una persona del equipo, no una máquina.
+            </p>
+
+            <label class="zona" for="archivo" id="zona">
+              <span class="btn btn--sec">Elegir una foto o un PDF</span>
+              <p>Desde tu computador. También puedes arrastrarlo hasta acá.</p>
+            </label>
+            <input type="file" id="archivo" accept="image/*,application/pdf" hidden>
+
+            <div class="adjunto" id="adjunto" hidden>
+              <div class="adjunto__img" id="adjuntoImg"></div>
+              <div class="adjunto__datos">
+                <span class="lbl">Comprobante elegido</span>
+                <p class="adjunto__nombre" id="adjuntoNombre">comprobante.jpg</p>
+                <div class="fila" style="margin-top:var(--sp-2)">
+                  <button class="btn btn--sec btn--sm" id="quitar">Elegir otro</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="fila">
+              <button class="btn btn--pri" id="enviar" disabled>Enviar el comprobante</button>
+            </div>
+
+            <p class="separador">o si te acomoda más</p>
+
+            <div class="fila">
+              <a class="btn btn--sec" href="https://wa.me/56912345678?text=Hola!%20Adjunto%20el%20comprobante%20del%20pedido%20MAP-0148" target="_blank" rel="noopener">
+                Mándalo por WhatsApp
+              </a>
+              <p class="lead" style="font-size:var(--t-sm);align-self:center">
+                Nos llega igual y queda pegado a tu pedido.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head"><h2 class="sub">Antes de transferir, por si te queda la duda</h2></div>
+          <div class="panel__body">
+            <div class="preguntas">
+              <details class="pregunta">
+                <summary>¿Cómo sé que ustedes existen de verdad?</summary>
+                <p>
+                  Somos una agrupación con RUT, dirección y teléfono, todo a la derecha de esta página.
+                  Puedes llamarnos antes de transferir y te atendemos. También estamos en Instagram desde
+                  2019, con las ventas y las entregas publicadas.
+                </p>
+              </details>
+              <details class="pregunta">
+                <summary>¿Y si transfiero de más o de menos?</summary>
+                <p>
+                  No es problema. Si transferiste menos, te avisamos y completas la diferencia. Si transferiste
+                  más, te devolvemos la plata a la misma cuenta el mismo día. Nunca nos quedamos con
+                  un peso que no corresponda.
+                </p>
+              </details>
+              <details class="pregunta">
+                <summary>¿Puedo pagar en efectivo cuando lo retire?</summary>
+                <p>
+                  No, y es por una razón: si guardamos los objetos sin pago, se nos llena la bodega de cosas
+                  reservadas que nadie viene a buscar, y dejamos de vender. Por eso pedimos la transferencia primero.
+                </p>
+              </details>
+              <details class="pregunta">
+                <summary>¿Qué pasa si se me pasan las 24 horas?</summary>
+                <p>
+                  Los objetos vuelven al catálogo y quedan disponibles para otra persona. Si ya transferiste
+                  y solo se te pasó subir el comprobante, escríbenos al WhatsApp y lo arreglamos, no perdiste
+                  la plata.
+                </p>
+              </details>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─────── ESTADO 2 · COMPROBANTE RECIBIDO ─────── -->
+    <div class="pantalla" data-estado="2" hidden>
+      <div class="apilar-5">
+
+        <div class="cabecera">
+          <div class="cabecera__ins">
+            <span class="insignia insignia--revisando">Revisando tu pago</span>
+          </div>
+          <h1 class="titular">Recibimos tu comprobante</h1>
+          <p class="lead lead--grande">
+            Lo está mirando una persona del equipo. Te escribimos al WhatsApp en cuanto lo confirmemos.
+            Casi siempre alcanzamos a revisar el mismo día.
+          </p>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head">
+            <h2 class="sub">Lo que nos mandaste</h2>
+            <span class="mono" style="font-size:var(--t-micro);color:var(--ink-2)">Hoy 09:41</span>
+          </div>
+          <div class="panel__body apilar-4">
+            <div class="adjunto">
+              <div class="adjunto__img"><span>Comprobante</span></div>
+              <div class="adjunto__datos">
+                <p class="adjunto__nombre">transferencia-banco-estado.jpg</p>
+                <p class="lead" style="font-size:var(--t-sm)">
+                  Si te equivocaste de foto o quedó borrosa, puedes mandar otra sin problema.
+                </p>
+                <div class="fila" style="margin-top:var(--sp-2)">
+                  <button class="btn btn--sec btn--sm">Mandar otra foto</button>
+                </div>
+              </div>
+            </div>
+
+            <p class="nota">
+              <strong>Tus objetos ya salieron del catálogo.</strong>
+              Aunque todavía estemos revisando, nadie más los puede comprar.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head"><h2 class="sub">Qué viene después</h2></div>
+          <div class="panel__body">
+            <ul class="lista">
+              <li><span><strong>Revisamos el comprobante.</strong> De lunes a viernes, entre 9 y 20 horas.</span></li>
+              <li><span><strong>Te avisamos al WhatsApp</strong> al +56 9 8765 4321, el número que dejaste.</span></li>
+              <li><span><strong>Limpiamos y revisamos los objetos</strong> antes de entregarlos. Nos toma uno o dos días.</span></li>
+              <li><span><strong>Coordinamos el retiro</strong> en Rancagua, el día y la hora que te acomode.</span></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─────── ESTADO 3 · PAGO APROBADO ─────── -->
+    <div class="pantalla" data-estado="3" hidden>
+      <div class="apilar-5">
+
+        <div class="cabecera">
+          <div class="cabecera__ins">
+            <span class="insignia insignia--aprobado">Pago aprobado</span>
+          </div>
+          <h1 class="titular">Listo, el velador y los libros son tuyos</h1>
+          <p class="lead lead--grande">
+            Confirmamos tu transferencia de $54.500. Estamos limpiando y revisando los objetos antes
+            de entregarlos. Te avisamos cuando puedas venir a buscarlos, normalmente en uno o dos días.
+          </p>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head"><h2 class="sub">Tu pago quedó registrado</h2></div>
+          <div class="panel__body apilar-4">
+            <div class="retiro">
+              <div><dt class="lbl">Monto recibido</dt><dd>$54.500</dd></div>
+              <div><dt class="lbl">Fecha</dt><dd>26 ago 2026, 10:58</dd></div>
+              <div><dt class="lbl">Pedido</dt><dd>MAP-0148</dd></div>
+            </div>
+
+            <div class="recado">
+              <p>
+                Revisé tu transferencia y está todo bien. Te dejo el velador y los libros aparte,
+                con tu nombre. En cuanto los tenga limpios te escribo para que te pases.
+              </p>
+              <div class="recado__firma">
+                <span class="recado__inicial" aria-hidden="true">AM</span>
+                <div class="recado__quien">
+                  <strong>Ana Millán</strong>
+                  <span>Coordinadora · Hoy 11:20</span>
+                </div>
+              </div>
+            </div>
+
+            <p class="lead" style="font-size:var(--t-sm)">
+              Guarda esta página. Acá va a aparecer la dirección y el horario cuando esté todo listo.
+            </p>
+          </div>
+        </div>
+
+        <div class="fila">
+          <a class="btn btn--sec" href="https://wa.me/56912345678?text=Hola!%20Consulta%20por%20el%20pedido%20MAP-0148" target="_blank" rel="noopener">
+            Escribirle a Ana por WhatsApp
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─────── ESTADO 4 · LISTO PARA RETIRO ─────── -->
+    <div class="pantalla" data-estado="4" hidden>
+      <div class="apilar-5">
+
+        <div class="cabecera">
+          <div class="cabecera__ins">
+            <span class="insignia insignia--listo">Listo para retiro</span>
+          </div>
+          <h1 class="titular">Ya puedes venir a buscar tu pedido</h1>
+          <p class="lead lead--grande">
+            Tenemos el velador y los libros listos, con tu nombre. No necesitas avisar antes:
+            llega dentro del horario y pregunta por tu pedido en la entrada.
+          </p>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head"><h2 class="sub">Dónde y cuándo</h2></div>
+          <div class="panel__body apilar-4">
+            <div class="retiro">
+              <div>
+                <dt class="lbl">Dirección</dt>
+                <dd>Av. República 1180</dd>
+                <small>Rancagua, a dos cuadras de la plaza. Reja verde, sin letrero grande.</small>
+              </div>
+              <div>
+                <dt class="lbl">Horario</dt>
+                <dd>Lu a Vi, 10 a 18 hrs</dd>
+                <small>Sábados solo con hora convenida por WhatsApp.</small>
+              </div>
+              <div>
+                <dt class="lbl">Te esperamos hasta</dt>
+                <dd>Mié 2 de septiembre</dd>
+                <small>Si necesitas más días, escríbenos y lo guardamos, no hay apuro.</small>
+              </div>
+            </div>
+
+            <div class="nota">
+              <strong>Trae tu carné y el número MAP-0148.</strong>
+              Solo entregamos el pedido a la persona que aparece en él. Si va a venir otra persona por ti,
+              avísanos por WhatsApp con su nombre.
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head"><h2 class="sub">Dos cosas del velador</h2></div>
+          <div class="panel__body">
+            <ul class="lista">
+              <li><span><strong>Mide 55 de alto por 40 por 38 y pesa unos 12 kilos.</strong> Entra en la maleta de un auto chico si bajas el asiento de atrás.</span></li>
+              <li><span><strong>No hacemos despacho de muebles.</strong> Los libros sí te los podemos mandar por encomienda si prefieres, pregúntanos.</span></li>
+              <li><span><strong>Tiene una marca en la tapa</strong>, la misma que aparece en la tercera foto de la publicación. Revísala al retirar, para que no haya sorpresas.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="fila">
+          <a class="btn btn--pri" href="https://wa.me/56912345678?text=Hola!%20Voy%20a%20retirar%20el%20pedido%20MAP-0148" target="_blank" rel="noopener">
+            Avisar por WhatsApp cuándo paso
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─────── ESTADO 5 · CANCELADO ─────── -->
+    <div class="pantalla" data-estado="5" hidden>
+      <div class="apilar-5">
+
+        <div class="cabecera">
+          <div class="cabecera__ins">
+            <span class="insignia insignia--cancelado">Pedido cancelado</span>
+          </div>
+          <h1 class="titular">Tuvimos que cancelar tu pedido, y te queremos explicar por qué</h1>
+          <p class="lead lead--grande">
+            Esto no lo decidió un sistema. Lo revisó Ana, del equipo, y te dejó escrito lo que pasó.
+          </p>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head"><h2 class="sub">Lo que nos pasó con tu pago</h2></div>
+          <div class="panel__body apilar-4">
+
+            <div class="recado">
+              <p>
+                Hola Camila. Revisé el comprobante que subiste y la transferencia que nos llegó fue de
+                $45.000, no los $54.500 del pedido. Puede haber sido un error al escribir el monto, o
+                que se haya cargado otra cosa.
+              </p>
+              <p>
+                Te escribí al WhatsApp ayer a las 16:30 y hoy a las 10:00 para arreglarlo antes de que
+                venciera el plazo, pero no logré ubicarte, y tuve que liberar los objetos.
+              </p>
+              <p>
+                Los $45.000 están en nuestra cuenta y son tuyos. Escríbeme y te los devuelvo hoy mismo
+                a la cuenta desde donde salieron. Si todavía quieres el velador, dime y vemos qué queda
+                disponible, tengo dos parecidos que entran esta semana.
+              </p>
+              <div class="recado__firma">
+                <span class="recado__inicial" aria-hidden="true">AM</span>
+                <div class="recado__quien">
+                  <strong>Ana Millán</strong>
+                  <span>Coordinadora · Hoy 12:05</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="nota" style="border-left-color:var(--can-fg);background:var(--can-bg)">
+              <strong>Si transferiste y no tienes la plata de vuelta, escríbenos ahora.</strong>
+              Te respondemos el mismo día. No se pierde ninguna transferencia: quedan todas registradas.
+            </div>
+
+            <div class="fila">
+              <a class="btn btn--pri" href="https://wa.me/56912345678?text=Hola%20Ana!%20Te%20escribo%20por%20el%20pedido%20MAP-0148%20que%20se%20cancel%C3%B3" target="_blank" rel="noopener">
+                Escribirle a Ana por WhatsApp
+              </a>
+              <a class="btn btn--sec" href="#">Volver al catálogo</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head"><h2 class="sub">Qué pasó con los objetos</h2></div>
+          <div class="panel__body">
+            <ul class="lista">
+              <li><span><strong>Volvieron al catálogo</strong> hoy a las 12:05, así que puede que otra persona ya los haya reservado.</span></li>
+              <li><span><strong>No te cobramos nada por cancelar.</strong> Ni multas ni cargos, acá no funciona así.</span></li>
+              <li><span><strong>Puedes hacer un pedido nuevo cuando quieras.</strong> Esto no queda anotado en tu contra en ninguna parte.</span></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ══════════ COLUMNA DERECHA ══════════ -->
+  <aside class="aside">
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Tu pedido</h2></div>
+      <div class="panel__body">
+
+        <div class="objeto">
+          <div class="objeto__media">
+            <svg viewBox="0 0 200 250" aria-hidden="true"><rect width="200" height="250" fill="#E4E0EC"/><rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/><rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/><rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/><rect x="46" y="62" width="108" height="16" fill="#A79DBA"/></svg>
+          </div>
+          <div>
+            <p class="objeto__num">N° 0148 · Estado bueno</p>
+            <p class="objeto__nombre">Velador de madera con cajón</p>
+            <p class="objeto__precio">$48.000</p>
+          </div>
+        </div>
+
+        <div class="objeto">
+          <div class="objeto__media">
+            <svg viewBox="0 0 200 250" aria-hidden="true"><rect width="200" height="250" fill="#E4E0EC"/><rect x="52" y="92" width="96" height="20" fill="#C0B8CE"/><rect x="58" y="112" width="84" height="20" fill="#AEA4C0"/><rect x="48" y="132" width="104" height="20" fill="#CBC4D8"/><rect x="60" y="152" width="80" height="20" fill="#AEB9C8"/></svg>
+          </div>
+          <div>
+            <p class="objeto__num">N° 0147 · Como nuevo</p>
+            <p class="objeto__nombre">Lote de 4 novelas chilenas</p>
+            <p class="objeto__precio">$6.500</p>
+          </div>
+        </div>
+
+        <div class="total">
+          <span class="lbl">Total</span>
+          <span class="total__cifra">$54.500</span>
+        </div>
+
+        <p class="aside__pie" style="margin-top:var(--sp-3)">
+          Cada objeto es único y se vende una sola vez. Estos dos son los que reservaste.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Quiénes somos</h2></div>
+      <div class="panel__body ficha-datos">
+        <div>
+          <dt class="lbl">Nombre</dt>
+          <dd>Agrupación Mapuescuela</dd>
+        </div>
+        <div>
+          <dt class="lbl">RUT</dt>
+          <dd>65.123.456-7</dd>
+        </div>
+        <div>
+          <dt class="lbl">Dirección</dt>
+          <dd>Av. República 1180, Rancagua</dd>
+        </div>
+        <div>
+          <dt class="lbl">Teléfono y WhatsApp</dt>
+          <dd>+56 9 1234 5678</dd>
+          <p>Te contestamos de lunes a viernes, de 9 a 20 horas.</p>
+        </div>
+        <div>
+          <dt class="lbl">Instagram</dt>
+          <dd>@mapuescuela</dd>
+          <p>Publicamos ahí desde 2019.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Para qué es la plata</h2></div>
+      <div class="panel__body">
+        <p class="aside__pie">
+          Todo lo que juntamos vendiendo estos objetos donados financia el acompañamiento escolar de
+          <strong>34 jóvenes de Rancagua</strong> que dejaron el colegio. Nadie acá recibe sueldo por vender.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Quién revisa tu pago</h2></div>
+      <div class="panel__body">
+        <div class="recado__firma" style="margin-top:0;padding-top:0;border-top:0">
+          <span class="recado__inicial" aria-hidden="true">AM</span>
+          <div class="recado__quien">
+            <strong>Ana Millán</strong>
+            <span>Coordinadora</span>
+          </div>
+        </div>
+        <p class="aside__pie" style="margin-top:var(--sp-3)">
+          Los comprobantes los mira una persona, no un programa. Si algo no calza, te escribimos antes
+          de cancelar nada.
+        </p>
+      </div>
+    </section>
+
+  </aside>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ═══ Los cinco estados de la pantalla ═══ */
+  const PASOS = ['Esperando el pago', 'Revisando el pago', 'Preparando el pedido', 'Listo para retiro'];
+
+  const MAPA = {
+    1: { hasta: 0, cuando: ['Hoy 09:12', '', '', ''] },
+    2: { hasta: 1, cuando: ['Hoy 09:12', 'Hoy 09:41', '', ''] },
+    3: { hasta: 2, cuando: ['Hoy 09:12', 'Hoy 09:41', 'Hoy 11:20', ''] },
+    4: { hasta: 3, cuando: ['Hoy 09:12', 'Hoy 09:41', 'Hoy 11:20', 'Hoy 16:05'] },
+    5: { hasta: 1, corte: 2, cuando: ['Ayer 15:40', 'Ayer 16:02', 'Hoy 12:05', ''] }
+  };
+
+  const avance    = document.getElementById('avance');
+  const pantallas = [...document.querySelectorAll('.pantalla')];
+  const botones   = [...document.querySelectorAll('.demo__btn')];
+
+  function pintarAvance(n) {
+    const cfg = MAPA[n];
+    avance.innerHTML = '';
+
+    PASOS.forEach((nombre, i) => {
+      let estado = 'pendiente';
+      if (i < cfg.hasta)  estado = 'hecho';
+      if (i === cfg.hasta) estado = n === 5 ? 'hecho' : 'ahora';
+      if (cfg.corte === i) { estado = 'corte'; nombre = 'Pedido cancelado'; }
+      if (cfg.corte !== undefined && i > cfg.corte) estado = 'pendiente';
+
+      const paso = document.createElement('div');
+      paso.className = 'paso';
+      paso.dataset.e = estado;
+      paso.innerHTML =
+        '<div class="paso__marca"><span class="paso__punto"></span><span class="paso__linea"></span></div>' +
+        '<p class="paso__nombre">' + nombre + '</p>' +
+        '<p class="paso__cuando">' + (cfg.cuando[i] || '—') + '</p>';
+      avance.append(paso);
+    });
+  }
+
+  function ir(n) {
+    pantallas.forEach(p => { p.hidden = p.dataset.estado !== String(n); });
+    botones.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ir === String(n))));
+    pintarAvance(n);
+    const p = new URLSearchParams(location.search);
+    p.set('estado', n);
+    history.replaceState(null, '', '?' + p);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  document.getElementById('switch').addEventListener('click', e => {
+    const btn = e.target.closest('.demo__btn');
+    if (btn) ir(Number(btn.dataset.ir));
+  });
+
+  /* ═══ El plazo. Siempre se calcula desde una hora que manda el servidor ═══ */
+  const vence = new Date(Date.now() + (20 * 3600 + 12 * 60) * 1000);
+  const elCuanto = document.getElementById('cuanto');
+  const elVence  = document.getElementById('vence');
+  const hora = new Intl.DateTimeFormat('es-CL', { hour: '2-digit', minute: '2-digit' });
+  const mismoDia = new Date().toDateString() === vence.toDateString();
+
+  elVence.textContent = 'Vence ' + (mismoDia ? 'hoy' : 'mañana') + ' a las ' + hora.format(vence);
+
+  /* El plazo se dice en palabras, no con un segundero: el reloj corriendo
+     genera ansiedad justo en el momento más delicado y no sirve si cierra la pestaña. */
+  const PALABRA = ['cero','una','dos','tres','cuatro','cinco','seis','siete','ocho','nueve',
+    'diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho',
+    'diecinueve','veinte','veintiuna','veintidós','veintitrés','veinticuatro'];
+
+  function enPalabras(ms) {
+    if (ms <= 0) return 'Se venció el plazo';
+    const min = Math.floor(ms / 60000);
+    if (min < 15)  return 'Te quedan unos pocos minutos';
+    if (min < 60)  return 'Te queda menos de una hora';
+    const h = Math.floor(min / 60), m = min % 60;
+    if (h === 1 && m < 45) return 'Te queda poco más de una hora';
+    if (m >= 45)   return 'Te quedan poco menos de ' + PALABRA[h + 1] + ' horas';
+    if (m >= 15)   return 'Te quedan poco más de ' + PALABRA[h] + ' horas';
+    return 'Te quedan unas ' + PALABRA[h] + ' horas';
+  }
+
+  (function decir() {
+    elCuanto.textContent = enPalabras(vence - Date.now());
+    setTimeout(decir, 60000);
+  })();
+
+  /* ═══ Copiar los datos de la cuenta ═══ */
+  async function copiar(texto, btn) {
+    try { await navigator.clipboard.writeText(texto); } catch { /* el dato sigue seleccionable */ }
+    const antes = btn.textContent;
+    btn.textContent = 'Copiado';
+    btn.dataset.listo = '1';
+    setTimeout(() => { btn.textContent = antes; delete btn.dataset.listo; }, 1600);
+  }
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.copiar');
+    if (!btn) return;
+    const origen = document.getElementById(btn.dataset.copia);
+    if (origen) copiar(origen.textContent.trim(), btn);
+  });
+
+  document.getElementById('copiarTodo').addEventListener('click', e => {
+    const bloque = [...document.querySelectorAll('.datos .dato')]
+      .map(d => d.querySelector('.label').textContent + ': ' + d.querySelector('.dato__v').textContent)
+      .join('\n');
+    copiar(bloque, e.currentTarget);
+  });
+
+  /* ═══ Elegir el comprobante ═══ */
+  const archivo = document.getElementById('archivo');
+  const zona    = document.getElementById('zona');
+  const adjunto = document.getElementById('adjunto');
+  const aImg    = document.getElementById('adjuntoImg');
+  const aNombre = document.getElementById('adjuntoNombre');
+  const enviar  = document.getElementById('enviar');
+
+  function mostrar(f) {
+    if (!f) return;
+    aNombre.textContent = f.name;
+    aImg.innerHTML = '';
+    if (f.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      img.alt = 'El comprobante que elegiste';
+      img.onload = () => URL.revokeObjectURL(img.src);
+      aImg.append(img);
+    } else {
+      const s = document.createElement('span');
+      s.textContent = 'PDF';
+      aImg.append(s);
+    }
+    adjunto.hidden = false;
+    zona.hidden = true;
+    enviar.disabled = false;
+  }
+
+  archivo.addEventListener('change', () => mostrar(archivo.files[0]));
+
+  zona.addEventListener('dragover', e => { e.preventDefault(); zona.style.borderColor = 'var(--violeta)'; });
+  zona.addEventListener('dragleave', () => { zona.style.borderColor = ''; });
+  zona.addEventListener('drop', e => {
+    e.preventDefault(); zona.style.borderColor = '';
+    mostrar(e.dataTransfer.files[0]);
+  });
+
+  document.getElementById('quitar').addEventListener('click', () => {
+    archivo.value = '';
+    adjunto.hidden = true;
+    zona.hidden = false;
+    enviar.disabled = true;
+  });
+
+  /* Entrada: respeta el estado que venga en la dirección */
+  const inicial = Number(new URLSearchParams(location.search).get('estado')) || 1;
+  ir(MAPA[inicial] ? inicial : 1);
+})();
+</script>
+</body>
+</html>

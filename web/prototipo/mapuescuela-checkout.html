@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reservar tu pedido · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+@layer reset, tokens, base, layout, components, states, utilities;
+
+/* ───────── RESET ───────── */
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  * { margin: 0; }
+  img, svg { display: block; max-width: 100%; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; }
+  ul, ol { list-style: none; padding: 0; }
+}
+
+@layer tokens {
+  :root {
+    /* ── Superficies ── */
+    --paper:#EEEDF3; --card:#FFFFFF; --bed:#E4E0EC;
+    --rule:#CFC9DA;  --rule-soft:#E3DFEA;
+    --ink:#1D1930;   --ink-2:#5D5670;
+    --violeta:#4B2A82; --violeta-hondo:#3A1F68; --violeta-suave:#F7F5FC;
+    --mostaza:#E8A81C;
+
+    /* ── Estados: un solo par de nombres para todo el sistema ── */
+    --esp-fg:#8A4B10; --esp-bg:#FBEBD5;   /* esperando el pago · reservado · apura */
+    --rev-fg:#4B2A82; --rev-bg:#E6E1F3;   /* revisando */
+    --apr-fg:#1D6B4A; --apr-bg:#DCEDE3;   /* aprobado · listo */
+    --can-fg:#A32718; --can-bg:#FBE3DF;   /* cancelado · atrasado */
+    --ven-fg:#5D5670; --ven-bg:#E7E4EE;   /* vendido · encontró casa */
+
+    /* ── Tipografía ── */
+    --display:"Bricolage Grotesque","Helvetica Neue",system-ui,sans-serif;
+    --body:"Instrument Sans",system-ui,-apple-system,sans-serif;
+    --mono:"DM Mono",ui-monospace,"SF Mono",Consolas,monospace;
+
+    --t-micro:.6875rem; --t-sm:.8125rem; --t-base:.9375rem; --t-md:1.0625rem;
+    --t-lg:clamp(1.35rem, 1.1rem + .6vw, 1.75rem);
+    --t-xl:clamp(1.75rem, 1.3rem + 1.2vw, 2.5rem);
+    --t-portada:clamp(2.6rem, 1.9rem + 2.6vw, 4.6rem);
+
+    /* ── Espacio y medidas ── */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+    --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+
+    --radius:2px;
+    --wrap:78rem;        /* pantallas del cliente */
+    --wrap-ancho:96rem;  /* pantallas de trabajo interno */
+  }
+}
+
+/* ───────── BASE ───────── */
+@layer base {
+  body {
+    font-family: var(--body); font-size: var(--t-base); line-height: 1.55;
+    color: var(--ink); background-color: var(--paper);
+    background-image:
+      linear-gradient(to right,  rgba(35,26,63,.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(35,26,63,.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  a { color: var(--violeta); text-underline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--violeta); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: .01ms !important; }
+  }
+}
+
+/* ───────── LAYOUT ───────── */
+@layer layout {
+  .wrap { width:100%; max-width:var(--wrap); margin-inline:auto;
+    padding-inline:clamp(var(--sp-4), 3vw, var(--sp-10)); }
+
+  .tope { background:var(--card); border-bottom:1px solid var(--rule); }
+  .tope__in { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+    gap:var(--sp-4); padding-block:var(--sp-4) var(--sp-3); }
+  .marca { font-family:var(--display); font-weight:700; font-size:var(--t-md); letter-spacing:-.01em; }
+  .marca span { color:var(--violeta); }
+  .ruta { display:flex; align-items:center; gap:var(--sp-2); font-size:var(--t-sm); color:var(--ink-2); }
+  .ruta b { color:var(--ink); font-weight:600; }
+
+  .trazo { height:4px; background:var(--mostaza); }
+
+  .cols { display:grid; align-items:start;
+    grid-template-columns:minmax(0, 1.7fr) minmax(0, 22rem);
+    gap:clamp(var(--sp-6), 3vw, var(--sp-10));
+    padding-block:var(--sp-8) var(--sp-12); }
+  @media (max-width:64rem) { .cols { grid-template-columns:minmax(0,1fr); } }
+
+  .principal { display:grid; gap:var(--sp-6); }
+  .aside { display:grid; gap:var(--sp-5); position:sticky; top:var(--sp-5); }
+}
+
+/* ───────── COMPONENTES DEL SISTEMA ───────── */
+@layer components {
+  .lbl { font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ink-2); }
+  .sub { font-family:var(--display); font-weight:600; font-size:var(--t-md); line-height:1.2; }
+  .lead { color:var(--ink-2); max-width:62ch; }
+  .mono { font-family:var(--mono); }
+
+  .panel { background:var(--card); border:1px solid var(--rule); border-radius:var(--radius); }
+  .panel__head { padding:var(--sp-3) clamp(var(--sp-4), 2vw, var(--sp-5));
+    border-bottom:1px solid var(--rule-soft);
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--sp-3); }
+  .panel__body { padding:clamp(var(--sp-4), 2vw, var(--sp-5)); display:grid; gap:var(--sp-5); }
+
+  h1.titular { font-family:var(--display); font-weight:700; font-size:var(--t-xl);
+    line-height:1.05; letter-spacing:-.02em; text-wrap:balance; }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
+    padding:13px var(--sp-5); font-size:var(--t-base); font-weight:600;
+    border-radius:var(--radius); text-decoration:none; text-align:center;
+    transition:background-color .15s ease, border-color .15s ease; }
+  .btn--pri { background:var(--violeta); color:#fff; }
+  .btn--pri:hover { background:var(--violeta-hondo); }
+  .btn--pri:disabled { background:var(--rule); color:#857D99; cursor:not-allowed; }
+  .btn--sec { border:1px solid var(--rule); color:var(--ink); }
+  .btn--sec:hover { border-color:var(--ink); }
+  .btn--peligro { border:1px solid var(--can-bg); color:var(--can-fg); }
+  .btn--peligro:hover { border-color:var(--can-fg); background:var(--can-bg); }
+  .btn--block { width:100%; }
+  .btn--sm { padding:var(--sp-2) var(--sp-3); font-size:var(--t-sm); }
+
+  .consecuencia { font-size:var(--t-sm); color:var(--ink-2); }
+  .consecuencia b { color:var(--ink); font-weight:600; }
+
+  /* ── Lo que aún no es una compra: los tres umbrales ── */
+  .umbrales { counter-reset:paso; display:grid; gap:0; }
+  .umbral { counter-increment:paso; display:grid; grid-template-columns:auto minmax(0,1fr);
+    gap:var(--sp-4); padding-block:var(--sp-4); border-bottom:1px solid var(--rule-soft); }
+  .umbral:last-child { border-bottom:0; padding-bottom:0; }
+  .umbral::before { content:counter(paso); font-family:var(--mono); font-size:var(--t-sm);
+    width:1.75rem; height:1.75rem; display:grid; place-items:center;
+    border:1px solid var(--rule); border-radius:50%; color:var(--ink-2); }
+  .umbral[data-ahora="1"]::before { background:var(--violeta); border-color:var(--violeta); color:#fff; }
+  .umbral strong { display:block; font-weight:600; }
+  .umbral p { font-size:var(--t-sm); color:var(--ink-2); max-width:62ch; margin-top:2px; }
+
+  .aviso { padding:var(--sp-4) var(--sp-5); font-size:var(--t-base);
+    border-left:3px solid var(--mostaza); background:var(--paper); }
+  .aviso b { font-weight:600; }
+  .aviso p + p { margin-top:var(--sp-2); font-size:var(--t-sm); color:var(--ink-2); }
+
+  .aviso--plazo { border-left-color:var(--esp-fg); background:var(--esp-bg); color:var(--esp-fg); }
+  .aviso--plazo p + p { color:var(--esp-fg); opacity:.85; }
+
+  /* ── Qué llevas ── */
+  .objeto { display:grid; grid-template-columns:auto minmax(0,1fr) auto;
+    gap:var(--sp-4); align-items:start;
+    padding-block:var(--sp-4); border-bottom:1px solid var(--rule-soft); }
+  .objeto:first-of-type { padding-top:0; }
+  .objeto:last-of-type { border-bottom:0; padding-bottom:0; }
+  .objeto__foto { width:4rem; aspect-ratio:4/5; background:var(--bed); }
+  .objeto__n { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+  .objeto__nom { font-family:var(--display); font-weight:600; font-size:var(--t-md);
+    line-height:1.2; margin-top:2px; }
+  .objeto__det { font-size:var(--t-sm); color:var(--ink-2); margin-top:var(--sp-1); }
+  .objeto__der { text-align:right; display:grid; gap:var(--sp-2); justify-items:end; }
+  .objeto__precio { font-family:var(--mono); font-weight:500; font-size:var(--t-md);
+    font-variant-numeric:tabular-nums; }
+  .objeto[data-fuera="1"] { opacity:.5; }
+  .objeto[data-fuera="1"] .objeto__foto { filter:grayscale(1); }
+  .objeto[data-fuera="1"] .objeto__precio { text-decoration:line-through; }
+
+  /* ── Campos ── */
+  .campos { display:grid; gap:var(--sp-4);
+    grid-template-columns:repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+  .campo { display:grid; gap:var(--sp-2); }
+  .campo--ancho { grid-column:1/-1; }
+  input[type=text], input[type=email], input[type=tel], textarea {
+    padding:11px var(--sp-3); background:var(--card); color:var(--ink);
+    border:1px solid var(--rule); border-radius:var(--radius);
+    font-size:var(--t-base); font-family:inherit; width:100%; }
+  input::placeholder, textarea::placeholder { color:#9A92AC; }
+  input[aria-invalid="true"] { border-color:var(--can-fg); background:var(--can-bg); }
+  .ayuda { font-size:var(--t-micro); color:var(--ink-2); }
+  .error { font-size:var(--t-micro); color:var(--can-fg); font-weight:600; }
+
+  /* ── Cómo lo recibes ── */
+  .opciones { display:grid; gap:var(--sp-3); }
+  .opcion { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:var(--sp-3);
+    padding:var(--sp-4); border:1px solid var(--rule); border-radius:var(--radius);
+    cursor:pointer; align-items:start; }
+  .opcion:has(:checked) { border-color:var(--violeta); background:var(--violeta-suave); }
+  .opcion:has(:disabled) { cursor:not-allowed; background:var(--paper); }
+  .opcion input { accent-color:var(--violeta); width:1.05rem; height:1.05rem; margin-top:3px; }
+  .opcion strong { font-weight:600; }
+  .opcion p { font-size:var(--t-sm); color:var(--ink-2); margin-top:2px; max-width:52ch; }
+  .opcion__precio { font-family:var(--mono); font-size:var(--t-sm);
+    font-variant-numeric:tabular-nums; color:var(--ink-2); white-space:nowrap; }
+  .opcion:has(:disabled) strong, .opcion:has(:disabled) .opcion__precio { color:var(--ink-2); }
+
+  .sede { display:grid; gap:1px; background:var(--rule);
+    border:1px solid var(--rule); border-radius:var(--radius);
+    grid-template-columns:repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); }
+  .sede > div { background:var(--card); padding:var(--sp-3) var(--sp-4); }
+  .sede dd { font-family:var(--mono); font-size:var(--t-sm); margin-top:2px; }
+
+  /* ── Resumen ── */
+  .linea { display:flex; align-items:baseline; justify-content:space-between;
+    gap:var(--sp-3); font-size:var(--t-sm); }
+  .linea span:last-child { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+  .linea--total { padding-top:var(--sp-4); margin-top:var(--sp-2);
+    border-top:1px solid var(--rule); font-size:var(--t-base); }
+  .linea--total b { font-family:var(--mono); font-weight:500; font-size:1.25rem;
+    font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .resumen__objetos { display:grid; gap:var(--sp-3); padding-bottom:var(--sp-4);
+    margin-bottom:var(--sp-2); border-bottom:1px solid var(--rule-soft); }
+  .resumen__obj { display:flex; justify-content:space-between; gap:var(--sp-3); font-size:var(--t-sm); }
+  .resumen__obj span:first-child { min-width:0; }
+  .resumen__obj em { display:block; font-family:var(--mono); font-style:normal;
+    font-size:var(--t-micro); color:var(--ink-2); }
+  .resumen__obj b { font-family:var(--mono); font-weight:500;
+    font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+  .pasos-cortos { display:grid; gap:var(--sp-2); font-size:var(--t-sm); color:var(--ink-2); }
+  .pasos-cortos li { display:grid; grid-template-columns:auto 1fr; gap:var(--sp-2); }
+  .pasos-cortos li::before { content:""; width:6px; height:6px; margin-top:8px;
+    border-radius:50%; background:var(--rule); }
+  .pasos-cortos li[data-ahora="1"]::before { background:var(--violeta); }
+  .pasos-cortos li[data-ahora="1"] { color:var(--ink); font-weight:600; }
+
+  .confianza { display:grid; gap:var(--sp-3); }
+  .confianza div { display:grid; gap:2px; }
+  .confianza dd { font-family:var(--mono); font-size:var(--t-sm); }
+  .confianza p { font-size:var(--t-sm); color:var(--ink-2); }
+}
+
+@layer utilities {
+  [hidden] { display:none !important; }
+  .oculto { position:absolute; width:1px; height:1px; overflow:hidden;
+    clip-path:inset(50%); white-space:nowrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOPE ═══ -->
+<header class="tope">
+  <div class="wrap tope__in">
+    <p class="marca">Agrupación <span>Mapuescuela</span></p>
+    <p class="ruta"><a href="#">El registro</a> · <b>Reservar tu pedido</b></p>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+<div class="wrap cols">
+
+  <!-- ══════════ COLUMNA PRINCIPAL ══════════ -->
+  <main class="principal">
+
+    <div>
+      <h1 class="titular">Reserva tu pedido</h1>
+      <p class="lead" style="margin-top:var(--sp-3)">
+        Acá no se paga. Dejas tus datos, apartamos los objetos a tu nombre y en la pantalla
+        siguiente te mostramos la cuenta para transferir.
+      </p>
+    </div>
+
+    <!-- ── Lo primero que tiene que entender ── -->
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Todavía no estás comprando nada</h2></div>
+      <div class="panel__body">
+        <ol class="umbrales">
+          <li class="umbral" data-ahora="1">
+            <div>
+              <strong>Ahora reservas, y no pagas.</strong>
+              <p>Cuando aprietes el botón, apartamos estos objetos a tu nombre y salen del registro.
+              En esta página no se cobra nada y no pedimos datos de tarjeta.</p>
+            </div>
+          </li>
+          <li class="umbral">
+            <div>
+              <strong>Después transfieres, dentro de 24 horas.</strong>
+              <p>Te mostramos el banco, la cuenta y el monto exacto. Transfieres desde tu banco
+              y subes una foto del comprobante en la misma página.</p>
+            </div>
+          </li>
+          <li class="umbral">
+            <div>
+              <strong>Al final confirmamos, y ahí el pedido es tuyo.</strong>
+              <p>Una persona del equipo revisa el comprobante y te avisamos el mismo día.
+              Recién entonces está comprado.</p>
+            </div>
+          </li>
+        </ol>
+
+        <p class="aviso">
+          <b>Si no transfieres, no pasa nada malo.</b>
+          <p>Al cumplirse las 24 horas los objetos vuelven al registro y quedan disponibles para
+          otra persona. No hay multa, no hay cargo y no queda anotado en tu contra en ninguna parte.</p>
+        </p>
+
+        <p class="consecuencia">
+          <b>Ojo con una cosa:</b> hasta que aprietes el botón, esto no está apartado.
+          Cada objeto es uno solo, así que otra persona podría reservarlo antes que tú.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── Qué llevas ── -->
+    <section class="panel">
+      <div class="panel__head">
+        <h2 class="sub">Qué llevas</h2>
+        <span class="lbl" id="cuentaObjetos">—</span>
+      </div>
+      <div class="panel__body">
+        <div id="objetos"></div>
+        <p class="consecuencia">
+          No hay cantidades que elegir: cada objeto del registro existe uno solo.
+          Lo único que puedes hacer acá es sacar algo de la lista.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── Tus datos ── -->
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Tus datos</h2></div>
+      <div class="panel__body">
+        <div class="campos">
+          <div class="campo">
+            <label class="lbl" for="nombre">Nombre y apellido</label>
+            <input type="text" id="nombre" autocomplete="name" placeholder="Camila Riquelme">
+            <p class="error" id="errNombre" hidden>Escribe tu nombre para que sepamos a quién guardarle el pedido.</p>
+          </div>
+          <div class="campo">
+            <label class="lbl" for="correo">Correo</label>
+            <input type="email" id="correo" autocomplete="email" placeholder="camila@correo.cl">
+            <p class="ayuda">Acá te llega el enlace para volver a ver tu pedido cuando quieras.</p>
+            <p class="error" id="errCorreo" hidden>Revisa el correo, parece que le falta algo.</p>
+          </div>
+          <div class="campo campo--ancho">
+            <label class="lbl" for="wsp">WhatsApp <span style="text-transform:none;letter-spacing:0;font-weight:400">(si quieres, va más rápido)</span></label>
+            <input type="tel" id="wsp" autocomplete="tel" placeholder="+56 9 1234 5678">
+            <p class="ayuda">Por acá te avisamos en cuanto confirmemos el pago. Sin esto te escribimos solo al correo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Cómo lo recibes ── -->
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Cómo lo recibes</h2></div>
+      <div class="panel__body">
+        <div class="opciones">
+          <label class="opcion">
+            <input type="radio" name="entrega" value="retiro" checked>
+            <div>
+              <strong>Lo retiras en la sede</strong>
+              <p>Pasas cuando te acomode, dentro del horario. Te lo guardamos siete días.</p>
+            </div>
+            <span class="opcion__precio">Sin costo</span>
+          </label>
+
+          <label class="opcion" id="opDespacho">
+            <input type="radio" name="entrega" value="despacho">
+            <div>
+              <strong>Te lo despachamos</strong>
+              <p id="notaDespacho">Encomienda a todo Chile. Llega en tres a cinco días hábiles.</p>
+            </div>
+            <span class="opcion__precio">$4.990</span>
+          </label>
+        </div>
+
+        <!-- Retiro -->
+        <div id="bloqueRetiro">
+          <span class="lbl">Dónde queda la sede</span>
+          <div class="sede" style="margin-top:var(--sp-3)">
+            <div>
+              <dt class="lbl">Dirección</dt>
+              <dd>Av. República 1180</dd>
+            </div>
+            <div>
+              <dt class="lbl">Comuna</dt>
+              <dd>Rancagua</dd>
+            </div>
+            <div>
+              <dt class="lbl">Horario</dt>
+              <dd>Lu a Vi, 10 a 18 hrs</dd>
+            </div>
+          </div>
+        </div>
+
+        <!-- Despacho -->
+        <div id="bloqueDespacho" hidden>
+          <div class="campos">
+            <div class="campo campo--ancho">
+              <label class="lbl" for="dir">Dirección</label>
+              <input type="text" id="dir" autocomplete="street-address" placeholder="Los Aromos 455, depto 302">
+              <p class="error" id="errDir" hidden>Necesitamos la dirección para mandar la encomienda.</p>
+            </div>
+            <div class="campo">
+              <label class="lbl" for="comuna">Comuna</label>
+              <input type="text" id="comuna" placeholder="Ñuñoa">
+              <p class="error" id="errComuna" hidden>Falta la comuna.</p>
+            </div>
+            <div class="campo">
+              <label class="lbl" for="ciudad">Ciudad</label>
+              <input type="text" id="ciudad" placeholder="Santiago">
+            </div>
+            <div class="campo campo--ancho">
+              <label class="lbl" for="refer">Algo que ayude al repartidor <span style="text-transform:none;letter-spacing:0;font-weight:400">(si quieres)</span></label>
+              <input type="text" id="refer" placeholder="Portón café, tocar el timbre del 302">
+            </div>
+          </div>
+          <p class="consecuencia" style="margin-top:var(--sp-4)">
+            El despacho se paga junto con el pedido, en la misma transferencia.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══════════ COLUMNA DERECHA ══════════ -->
+  <aside class="aside">
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Tu pedido</h2></div>
+      <div class="panel__body">
+        <div class="resumen__objetos" id="resumenObjetos"></div>
+
+        <div style="display:grid;gap:var(--sp-2)">
+          <p class="linea"><span>Los objetos</span><span id="subtotal">—</span></p>
+          <p class="linea" id="lineaEnvio" hidden><span>Encomienda</span><span id="envio">—</span></p>
+          <p class="linea linea--total"><span class="lbl">Total a transferir</span><b id="total">—</b></p>
+        </div>
+
+        <ul class="pasos-cortos">
+          <li data-ahora="1">Reservas acá, sin pagar</li>
+          <li>Transfieres dentro de 24 horas</li>
+          <li>Confirmamos y es tuyo</li>
+        </ul>
+
+        <p class="aviso aviso--plazo">
+          <b id="plazoTexto">—</b>
+          <p>El plazo empieza a correr cuando aprietes el botón, no antes.</p>
+        </p>
+
+        <div style="display:grid;gap:var(--sp-3)">
+          <button class="btn btn--pri btn--block" id="reservar" disabled>
+            Reservar y ver los datos para transferir
+          </button>
+          <p class="consecuencia" id="notaBoton">
+            Completa tu nombre y tu correo para poder reservar.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Quiénes somos</h2></div>
+      <div class="panel__body confianza">
+        <div>
+          <dt class="lbl">Nombre</dt>
+          <dd>Agrupación Mapuescuela</dd>
+        </div>
+        <div>
+          <dt class="lbl">RUT</dt>
+          <dd>65.123.456-7</dd>
+        </div>
+        <div>
+          <dt class="lbl">Teléfono</dt>
+          <dd>+56 9 1234 5678</dd>
+          <p>Puedes llamarnos antes de reservar y te atendemos. De lunes a viernes, de 9 a 20 horas.</p>
+        </div>
+        <p>
+          Lo que juntamos vendiendo estos objetos donados financia el acompañamiento escolar
+          de 34 jóvenes de Rancagua que dejaron el colegio.
+        </p>
+      </div>
+    </section>
+
+  </aside>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const ENVIO = 4990;
+
+  const siluetas = {
+    velador: '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/><rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/><rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/><rect x="46" y="62" width="108" height="16" fill="#A79DBA"/></svg>',
+    libros:  '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><rect x="52" y="92" width="96" height="20" fill="#C0B8CE"/><rect x="58" y="112" width="84" height="20" fill="#AEA4C0"/><rect x="48" y="132" width="104" height="20" fill="#CBC4D8"/><rect x="60" y="152" width="80" height="20" fill="#AEA4C0"/></svg>'
+  };
+
+  /* Cada objeto es uno solo: no hay cantidad, solo dentro o fuera de la lista */
+  const OBJETOS = [
+    { n:'0148', nom:'Velador de madera con cajón', precio:48000, dentro:true, voluminoso:true,
+      det:'Estado bueno · 55×40×38 cm · 12 kilos', foto:siluetas.velador },
+    { n:'0147', nom:'Lote de 4 novelas chilenas', precio:6500, dentro:true, voluminoso:false,
+      det:'Como nuevo · 1,4 kilos', foto:siluetas.libros }
+  ];
+
+  const plata = n => '$' + n.toLocaleString('es-CL');
+
+  const $ = id => document.getElementById(id);
+  const $objetos  = $('objetos');
+  const $resumen  = $('resumenObjetos');
+  const $opDesp   = $('opDespacho');
+  const $radioDesp = $opDesp.querySelector('input');
+  const $radioRet  = document.querySelector('input[value="retiro"]');
+
+  /* ── Cuándo vencería el plazo si reserva ahora mismo ── */
+  const fmtHora = new Intl.DateTimeFormat('es-CL', { hour:'2-digit', minute:'2-digit' });
+  const fmtDia  = new Intl.DateTimeFormat('es-CL', { weekday:'long', day:'numeric', month:'long' });
+
+  function pintarPlazo() {
+    const vence = new Date(Date.now() + 24 * 3600 * 1000);
+    const manana = new Date(); manana.setDate(manana.getDate() + 1);
+    const esManana = vence.toDateString() === manana.toDateString();
+    $('plazoTexto').textContent = esManana
+      ? 'Si reservas ahora, tienes hasta mañana a las ' + fmtHora.format(vence)
+      : 'Si reservas ahora, tienes hasta el ' + fmtDia.format(vence) + ' a las ' + fmtHora.format(vence);
+  }
+
+  /* ── Qué llevas ── */
+  function pintarObjetos() {
+    $objetos.innerHTML = OBJETOS.map((o, i) => `
+      <div class="objeto" data-fuera="${o.dentro ? '0' : '1'}">
+        <div class="objeto__foto">${o.foto}</div>
+        <div>
+          <p class="objeto__n">N° ${o.n}</p>
+          <p class="objeto__nom">${o.nom}</p>
+          <p class="objeto__det">${o.det}</p>
+        </div>
+        <div class="objeto__der">
+          <span class="objeto__precio">${plata(o.precio)}</span>
+          <button class="btn ${o.dentro ? 'btn--peligro' : 'btn--sec'} btn--sm" data-quitar="${i}">
+            ${o.dentro ? 'Sacar de la lista' : 'Volver a agregar'}
+          </button>
+        </div>
+      </div>`).join('');
+  }
+
+  /* ── Resumen y total ── */
+  function pintarResumen() {
+    const dentro = OBJETOS.filter(o => o.dentro);
+    const subtotal = dentro.reduce((a, o) => a + o.precio, 0);
+    const conDespacho = $radioDesp.checked && !$radioDesp.disabled;
+    const total = subtotal + (conDespacho ? ENVIO : 0);
+
+    $('cuentaObjetos').textContent = dentro.length === 1 ? '1 objeto' : dentro.length + ' objetos';
+
+    $resumen.innerHTML = dentro.length
+      ? dentro.map(o => `
+          <p class="resumen__obj">
+            <span>${o.nom}<em>N° ${o.n}</em></span>
+            <b>${plata(o.precio)}</b>
+          </p>`).join('')
+      : '<p class="lead" style="font-size:var(--t-sm)">No queda nada en la lista. Vuelve a agregar algo o anda al registro.</p>';
+
+    $('subtotal').textContent = plata(subtotal);
+    $('lineaEnvio').hidden = !conDespacho;
+    $('envio').textContent = plata(ENVIO);
+    $('total').textContent = plata(total);
+  }
+
+  /* ── El despacho depende de lo que haya en la lista ── */
+  function ajustarDespacho() {
+    const dentro = OBJETOS.filter(o => o.dentro);
+    const voluminosos = dentro.filter(o => o.voluminoso);
+    const bloqueado = voluminosos.length > 0 || dentro.length === 0;
+
+    $radioDesp.disabled = bloqueado;
+
+    if (voluminosos.length) {
+      const nombres = voluminosos.map(o => o.nom.toLowerCase()).join(' y ');
+      $('notaDespacho').textContent =
+        'No se puede: por su tamaño y peso, ' + nombres + ' solo se entrega en la sede. ' +
+        'Si quieres el resto por encomienda, sácalo de la lista.';
+    } else if (!dentro.length) {
+      $('notaDespacho').textContent = 'Primero agrega algo a la lista.';
+    } else {
+      $('notaDespacho').textContent = 'Encomienda a todo Chile. Llega en tres a cinco días hábiles.';
+    }
+
+    if (bloqueado && $radioDesp.checked) $radioRet.checked = true;
+
+    const esDespacho = $radioDesp.checked && !$radioDesp.disabled;
+    $('bloqueDespacho').hidden = !esDespacho;
+    $('bloqueRetiro').hidden   = esDespacho;
+  }
+
+  /* ── Cuándo se puede reservar, y qué falta ── */
+  function revisar(mostrarErrores) {
+    const dentro = OBJETOS.filter(o => o.dentro);
+    const nombre = $('nombre').value.trim();
+    const correo = $('correo').value.trim();
+    const correoOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo);
+    const esDespacho = $radioDesp.checked && !$radioDesp.disabled;
+    const dir = $('dir').value.trim(), comuna = $('comuna').value.trim();
+
+    const faltan = [];
+    if (!dentro.length) faltan.push('algo en la lista');
+    if (!nombre) faltan.push('tu nombre');
+    if (!correoOk) faltan.push('tu correo');
+    if (esDespacho && !dir) faltan.push('la dirección');
+    if (esDespacho && !comuna) faltan.push('la comuna');
+
+    if (mostrarErrores) {
+      $('errNombre').hidden = !!nombre;
+      $('nombre').setAttribute('aria-invalid', String(!nombre));
+      $('errCorreo').hidden = correoOk || !correo;
+      $('correo').setAttribute('aria-invalid', String(!!correo && !correoOk));
+      $('errDir').hidden = !esDespacho || !!dir;
+      $('errComuna').hidden = !esDespacho || !!comuna;
+    }
+
+    $('reservar').disabled = faltan.length > 0;
+    $('notaBoton').innerHTML = faltan.length
+      ? 'Falta ' + faltan.join(', ').replace(/,([^,]*)$/, ' y$1') + ' para poder reservar.'
+      : '<b>Al apretar el botón</b> apartamos ' +
+        (dentro.length === 1 ? 'el objeto' : 'los ' + dentro.length + ' objetos') +
+        ' a tu nombre por 24 horas y te mostramos la cuenta para transferir. No se cobra nada acá.';
+  }
+
+  function pintarTodo(mostrarErrores) {
+    pintarObjetos(); ajustarDespacho(); pintarResumen(); revisar(mostrarErrores);
+  }
+
+  /* ── Interacción ── */
+  $objetos.addEventListener('click', e => {
+    const b = e.target.closest('[data-quitar]');
+    if (!b) return;
+    const o = OBJETOS[Number(b.dataset.quitar)];
+    o.dentro = !o.dentro;
+    pintarTodo(false);
+  });
+
+  document.querySelectorAll('input[name="entrega"]').forEach(r =>
+    r.addEventListener('change', () => pintarTodo(false)));
+
+  ['nombre','correo','dir','comuna'].forEach(id => {
+    $(id).addEventListener('input', () => revisar(false));
+    $(id).addEventListener('blur',  () => revisar(true));
+  });
+
+  pintarPlazo();
+  setInterval(pintarPlazo, 60000);
+  pintarTodo(false);
+})();
+</script>
+</body>
+</html>

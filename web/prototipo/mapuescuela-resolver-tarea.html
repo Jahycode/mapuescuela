@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisar comprobantes · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+@layer reset, tokens, base, layout, components, states, utilities;
+
+/* ───────── RESET ───────── */
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  * { margin: 0; }
+  img, svg { display: block; max-width: 100%; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; }
+  ul, ol { list-style: none; padding: 0; }
+}
+
+@layer tokens {
+  :root {
+    /* ── Superficies ── */
+    --paper:#EEEDF3; --card:#FFFFFF; --bed:#E4E0EC;
+    --rule:#CFC9DA;  --rule-soft:#E3DFEA;
+    --ink:#1D1930;   --ink-2:#5D5670;
+    --violeta:#4B2A82; --violeta-hondo:#3A1F68; --violeta-suave:#F7F5FC;
+    --mostaza:#E8A81C;
+
+    /* ── Estados: un solo par de nombres para todo el sistema ── */
+    --esp-fg:#8A4B10; --esp-bg:#FBEBD5;   /* esperando el pago · reservado · apura */
+    --rev-fg:#4B2A82; --rev-bg:#E6E1F3;   /* revisando */
+    --apr-fg:#1D6B4A; --apr-bg:#DCEDE3;   /* aprobado · listo */
+    --can-fg:#A32718; --can-bg:#FBE3DF;   /* cancelado · atrasado */
+    --ven-fg:#5D5670; --ven-bg:#E7E4EE;   /* vendido · encontró casa */
+
+    /* ── Tipografía ── */
+    --display:"Bricolage Grotesque","Helvetica Neue",system-ui,sans-serif;
+    --body:"Instrument Sans",system-ui,-apple-system,sans-serif;
+    --mono:"DM Mono",ui-monospace,"SF Mono",Consolas,monospace;
+
+    --t-micro:.6875rem; --t-sm:.8125rem; --t-base:.9375rem; --t-md:1.0625rem;
+    --t-lg:clamp(1.35rem, 1.1rem + .6vw, 1.75rem);
+    --t-xl:clamp(1.75rem, 1.3rem + 1.2vw, 2.5rem);
+    --t-portada:clamp(2.6rem, 1.9rem + 2.6vw, 4.6rem);
+
+    /* ── Espacio y medidas ── */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+    --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+
+    --radius:2px;
+    --wrap:78rem;        /* pantallas del cliente */
+    --wrap-ancho:96rem;  /* pantallas de trabajo interno */
+  }
+}
+
+/* ───────── BASE ───────── */
+@layer base {
+  html, body { height:100%; }
+  body {
+    display:flex; flex-direction:column;
+    font-family:var(--body); font-size:var(--t-base); line-height:1.5;
+    color:var(--ink); background-color:var(--paper);
+    background-image:
+      linear-gradient(to right,  rgba(35,26,63,.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(35,26,63,.05) 1px, transparent 1px);
+    background-size:24px 24px;
+  }
+  a { color:var(--violeta); }
+  :focus-visible { outline:2px solid var(--violeta); outline-offset:2px; }
+  kbd { font-family:var(--mono); font-size:var(--t-micro); padding:1px 5px;
+    border:1px solid currentColor; border-radius:2px; opacity:.75; }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition-duration:.01ms !important; } }
+}
+
+/* ───────── LAYOUT ───────── */
+@layer layout {
+  .wrap { width:100%; max-width:var(--wrap-ancho); margin-inline:auto;
+    padding-inline:clamp(var(--sp-4), 2.5vw, var(--sp-8)); }
+
+  .tope { background:var(--card); border-bottom:1px solid var(--rule); flex:0 0 auto; }
+  .tope__in { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+    gap:var(--sp-4); padding-block:var(--sp-4) var(--sp-3); }
+  .marca { font-family:var(--display); font-weight:700; font-size:var(--t-md); letter-spacing:-.01em; }
+  .marca span { color:var(--violeta); }
+  .marca + p { font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ink-2); margin-top:3px; }
+  .quien { display:flex; align-items:center; gap:var(--sp-3); }
+  .quien__ini { width:2.1rem; height:2.1rem; flex:0 0 auto; display:grid; place-items:center;
+    border-radius:50%; background:var(--violeta); color:#fff;
+    font-family:var(--display); font-weight:600; font-size:var(--t-sm); }
+  .quien strong { display:block; font-size:var(--t-sm); font-weight:600; }
+  .quien span { font-size:var(--t-micro); color:var(--ink-2); }
+
+  .trazo { height:4px; background:var(--mostaza); flex:0 0 auto; }
+
+  .tablero { flex:1; min-height:0; width:100%; max-width:var(--wrap-ancho);
+    margin-inline:auto; padding:var(--sp-5) clamp(var(--sp-4), 2.5vw, var(--sp-8));
+    display:grid; grid-template-columns:minmax(0, 21rem) minmax(0, 1fr);
+    gap:clamp(var(--sp-4), 2vw, var(--sp-6)); }
+  @media (max-width:70rem) { .tablero { grid-template-columns:minmax(0,1fr); } }
+}
+
+/* ───────── COMPONENTES DEL SISTEMA ───────── */
+@layer components {
+  .lbl { font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ink-2); }
+  .sub { font-family:var(--display); font-weight:600; font-size:var(--t-md); line-height:1.2; }
+  .lead { color:var(--ink-2); font-size:var(--t-sm); max-width:62ch; }
+  .mono { font-family:var(--mono); }
+
+  .panel { background:var(--card); border:1px solid var(--rule); border-radius:var(--radius); }
+  .panel__head { padding:var(--sp-3) var(--sp-4); border-bottom:1px solid var(--rule-soft);
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--sp-3); }
+  .panel__body { padding:clamp(var(--sp-4), 2vw, var(--sp-5)); display:grid; gap:var(--sp-5); }
+
+  .panel--cola, .panel--detalle { min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+  .panel__scroll { flex:1; min-height:0; overflow-y:auto; }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
+    padding:12px var(--sp-5); font-size:var(--t-base); font-weight:600; border-radius:var(--radius);
+    transition:background-color .15s ease, border-color .15s ease, color .15s ease; }
+  .btn--pri { background:var(--violeta); color:#fff; }
+  .btn--pri:hover { background:var(--violeta-hondo); }
+  .btn--pri:disabled { background:var(--rule); color:#857D99; cursor:not-allowed; }
+  .btn--sec { border:1px solid var(--rule); color:var(--ink); }
+  .btn--sec:hover { border-color:var(--ink); }
+  .btn--peligro { background:var(--can-fg); color:#fff; }
+  .btn--peligro:hover { background:#851F12; }
+  .btn--peligro:disabled { background:var(--rule); color:#857D99; cursor:not-allowed; }
+  .btn--sm { padding:var(--sp-2) var(--sp-3); font-size:var(--t-sm); }
+  .btn--grande { padding:16px var(--sp-6); font-size:var(--t-md); }
+  .btn--enlace { color:var(--violeta); text-decoration:underline; padding:0; font-weight:600;
+    font-size:var(--t-sm); }
+
+  .consecuencia { font-size:var(--t-sm); color:var(--ink-2); max-width:70ch; }
+  .consecuencia b { color:var(--ink); font-weight:600; }
+
+  .aviso { padding:var(--sp-4) var(--sp-5); font-size:var(--t-base);
+    border-left:3px solid var(--violeta); background:var(--rev-bg); }
+  .aviso b { font-weight:600; }
+  .aviso p + p { margin-top:var(--sp-2); font-size:var(--t-sm); }
+  .aviso--ojo   { border-left-color:var(--esp-fg); background:var(--esp-bg); color:var(--esp-fg); }
+  .aviso--grave { border-left-color:var(--can-fg); background:var(--can-bg); color:var(--can-fg); }
+  .aviso--bien  { border-left-color:var(--apr-fg); background:var(--apr-bg); color:var(--apr-fg); }
+
+  /* ── La cola de la izquierda ── */
+  .tarea { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--sp-3);
+    width:100%; text-align:left; align-items:start;
+    padding:var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-3);
+    border-bottom:1px solid var(--rule-soft); border-left:3px solid transparent; }
+  .tarea:hover { background:var(--violeta-suave); }
+  .tarea[data-urg="atrasado"] { border-left-color:var(--can-fg); }
+  .tarea[data-urg="apura"]    { border-left-color:var(--mostaza); }
+  .tarea[aria-current="true"] { background:var(--violeta-suave); border-left-color:var(--violeta); }
+  .tarea[aria-current="true"] .tarea__quien { color:var(--violeta); }
+  .tarea[data-hecha="1"] { opacity:.45; }
+  .tarea__quien { font-family:var(--display); font-weight:600; font-size:var(--t-base); line-height:1.2; }
+  .tarea__meta { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); margin-top:3px; }
+  .tarea__der { text-align:right; display:grid; gap:var(--sp-2); justify-items:end; }
+  .tarea__espera { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); white-space:nowrap; }
+  .pista { flex:0 0 auto; padding:var(--sp-3) var(--sp-4); border-top:1px solid var(--rule-soft);
+    font-size:var(--t-micro); color:var(--ink-2); display:flex; flex-wrap:wrap; gap:var(--sp-3); }
+
+  /* ── El detalle ── */
+  .det { padding:clamp(var(--sp-4), 2vw, var(--sp-6)); display:grid; gap:var(--sp-6); }
+  .det__cab { display:grid; gap:var(--sp-3); padding-bottom:var(--sp-5);
+    border-bottom:1px solid var(--rule-soft); }
+  .det__titulo { font-family:var(--display); font-weight:700; font-size:var(--t-lg);
+    line-height:1.1; letter-spacing:-.015em; text-wrap:balance; }
+  .det__meta { display:flex; flex-wrap:wrap; gap:var(--sp-2) var(--sp-5); align-items:center; }
+  .det__meta dl { display:flex; align-items:baseline; gap:var(--sp-2); }
+  .det__meta dd { font-family:var(--mono); font-size:var(--t-sm); }
+
+  /* El comprobante al lado de lo que debería decir */
+  .par { display:grid; gap:var(--sp-5);
+    grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); align-items:start; }
+  @media (max-width:82rem) { .par { grid-template-columns:minmax(0,1fr); } }
+
+  .comprobante { border:1px solid var(--rule); border-radius:var(--radius); overflow:hidden; }
+  .comprobante__img { background:var(--bed); padding:var(--sp-4); }
+  .comprobante__pie { display:flex; align-items:center; justify-content:space-between;
+    gap:var(--sp-2); padding:var(--sp-2) var(--sp-3); border-top:1px solid var(--rule-soft); }
+  .comprobante__pie span { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .filas { display:grid; }
+  .fila { display:grid; grid-template-columns:minmax(0,8.5rem) minmax(0,1fr);
+    gap:var(--sp-3); align-items:center;
+    padding:var(--sp-3) var(--sp-4); border-bottom:1px solid var(--rule-soft); }
+  .fila:last-child { border-bottom:0; }
+  .fila dd { font-family:var(--mono); font-size:var(--t-base); overflow-wrap:anywhere; }
+  .fila--clave { background:var(--violeta-suave); }
+  .fila--clave dd { font-size:1.2rem; font-weight:500; font-variant-numeric:tabular-nums;
+    letter-spacing:-.02em; }
+
+  /* El cotejo del monto: atrapa el error que más cuesta */
+  .cotejo { display:grid; gap:var(--sp-3); }
+  .cotejo__campo { display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-3); }
+  .cotejo__campo input { width:11rem; padding:10px var(--sp-3); background:var(--card);
+    border:1px solid var(--rule); border-radius:var(--radius);
+    font-family:var(--mono); font-size:var(--t-md); font-variant-numeric:tabular-nums; }
+  .veredicto { font-size:var(--t-sm); font-weight:600; }
+  .veredicto[data-r="igual"] { color:var(--apr-fg); }
+  .veredicto[data-r="menos"], .veredicto[data-r="mas"] { color:var(--esp-fg); }
+
+  .objeto { display:flex; gap:var(--sp-3); align-items:flex-start;
+    padding-block:var(--sp-3); border-bottom:1px solid var(--rule-soft); }
+  .objeto:last-child { border-bottom:0; }
+  .objeto__foto { flex:0 0 3rem; aspect-ratio:4/5; background:var(--bed); }
+  .objeto__n { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+  .objeto__nom { font-family:var(--display); font-weight:600; font-size:var(--t-sm);
+    line-height:1.2; margin-top:2px; }
+  .objeto__precio { font-family:var(--mono); font-size:var(--t-sm);
+    font-variant-numeric:tabular-nums; margin-top:2px; }
+
+  /* ── Acciones: la asimetría vive acá ── */
+  .acciones { display:grid; gap:var(--sp-4); padding-top:var(--sp-5); border-top:1px solid var(--rule); }
+  .acciones__rapida { display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-4); }
+  .acciones__lentas { display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-3);
+    padding-top:var(--sp-4); border-top:1px solid var(--rule-soft); }
+  .acciones__lentas .lbl { flex:0 0 100%; }
+
+  .campo { display:grid; gap:var(--sp-2); }
+  textarea { padding:var(--sp-3); background:var(--card); color:var(--ink);
+    border:1px solid var(--rule); border-radius:var(--radius);
+    font-family:inherit; font-size:var(--t-base); line-height:1.5;
+    width:100%; min-height:7rem; resize:vertical; }
+  textarea::placeholder { color:#9A92AC; }
+  .contador { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+  .marca-check { display:flex; gap:var(--sp-3); align-items:flex-start; cursor:pointer;
+    font-size:var(--t-sm); }
+  .marca-check input { accent-color:var(--can-fg); width:1.05rem; height:1.05rem; margin-top:2px;
+    flex:0 0 auto; }
+
+  /* ── Lo que va a leer el cliente ── */
+  .previa { border:1px solid var(--rule); border-radius:var(--radius); overflow:hidden;
+    background:var(--paper); }
+  .previa__cab { padding:var(--sp-2) var(--sp-4); background:var(--card);
+    border-bottom:1px solid var(--rule-soft);
+    display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3); }
+  .previa__cab span { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+  .previa__in { padding:var(--sp-5); display:grid; gap:var(--sp-4); }
+  .previa__titulo { font-family:var(--display); font-weight:700; font-size:var(--t-md);
+    line-height:1.15; }
+  .recado { padding:var(--sp-4); background:var(--card);
+    border:1px solid var(--rule); border-radius:var(--radius); }
+  .recado__texto { white-space:pre-wrap; font-size:var(--t-sm); max-width:60ch; }
+  .recado__texto[data-vacio="1"] { color:#9A92AC; font-style:italic; }
+  .recado__firma { display:flex; align-items:center; gap:var(--sp-3);
+    margin-top:var(--sp-4); padding-top:var(--sp-3); border-top:1px solid var(--rule-soft); }
+  .recado__ini { width:2rem; height:2rem; flex:0 0 auto; display:grid; place-items:center;
+    border-radius:50%; background:var(--violeta); color:#fff;
+    font-family:var(--display); font-weight:600; font-size:var(--t-micro); }
+  .recado__quien strong { display:block; font-size:var(--t-sm); font-weight:600; }
+  .recado__quien span { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+
+  /* ── Resuelta ── */
+  .resuelta { display:grid; gap:var(--sp-5); place-content:center; justify-items:center;
+    text-align:center; padding:var(--sp-12) var(--sp-5); min-height:100%; }
+  .resuelta__titulo { font-family:var(--display); font-weight:700; font-size:var(--t-lg);
+    line-height:1.15; }
+  .resuelta__fila { display:flex; flex-wrap:wrap; gap:var(--sp-3); justify-content:center; }
+  .vacia { display:grid; place-content:center; justify-items:center; text-align:center;
+    gap:var(--sp-3); padding:var(--sp-12); min-height:100%; }
+  .vacia strong { font-family:var(--display); font-size:var(--t-md); }
+}
+
+/* ───────── ESTADOS ───────── */
+@layer states {
+  .insignia { display:inline-block; font-size:var(--t-micro); font-weight:700;
+    letter-spacing:.07em; text-transform:uppercase;
+    padding:3px var(--sp-2); border-radius:var(--radius); white-space:nowrap; }
+  .insignia--esperando { color:var(--esp-fg); background:var(--esp-bg); }
+  .insignia--revisando { color:var(--rev-fg); background:var(--rev-bg); }
+  .insignia--aprobado  { color:var(--apr-fg); background:var(--apr-bg); }
+  .insignia--cancelado { color:var(--can-fg); background:var(--can-bg); }
+  .insignia--vendido   { color:var(--ven-fg); background:var(--ven-bg); }
+  .insignia--atrasado  { color:var(--can-fg); background:var(--can-bg); }
+  .insignia--apura     { color:var(--esp-fg); background:var(--esp-bg); }
+}
+
+@layer utilities {
+  [hidden] { display:none !important; }
+  .oculto { position:absolute; width:1px; height:1px; overflow:hidden;
+    clip-path:inset(50%); white-space:nowrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOPE ═══ -->
+<header class="tope">
+  <div class="wrap tope__in">
+    <div>
+      <p class="marca">Agrupación <span>Mapuescuela</span></p>
+      <p>Comprobantes por revisar</p>
+    </div>
+    <div class="quien">
+      <span class="quien__ini" aria-hidden="true">AM</span>
+      <div>
+        <strong>Ana Millán</strong>
+        <span>Lo que hagas queda anotado con tu nombre</span>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+<!-- ═══ COLA + DETALLE ═══ -->
+<div class="tablero">
+
+  <section class="panel panel--cola" aria-label="Comprobantes en la cola">
+    <div class="panel__head">
+      <h2 class="sub">En la cola</h2>
+      <span class="lbl" id="rotulo">—</span>
+    </div>
+    <div class="panel__scroll" id="cola"></div>
+    <p class="pista">
+      <span>Moverte <kbd>↑</kbd> <kbd>↓</kbd></span>
+      <span>Aprobar <kbd>A</kbd></span>
+      <span>Rechazar <kbd>R</kbd></span>
+    </p>
+  </section>
+
+  <section class="panel panel--detalle" aria-label="Detalle del comprobante">
+    <div class="panel__scroll" id="detalle"></div>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const YO = { ini:'AM', nombre:'Ana Millán', cargo:'Coordinadora' };
+
+  const siluetas = {
+    mueble: '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/><rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/><rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/><rect x="46" y="62" width="108" height="16" fill="#A79DBA"/></svg>',
+    libros: '<svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%"><rect x="52" y="92" width="96" height="20" fill="#C0B8CE"/><rect x="58" y="112" width="84" height="20" fill="#AEA4C0"/><rect x="48" y="132" width="104" height="20" fill="#CBC4D8"/><rect x="60" y="152" width="80" height="20" fill="#AEA4C0"/></svg>'
+  };
+
+  const plata = n => '$' + n.toLocaleString('es-CL');
+  const soloDigitos = t => Number(String(t).replace(/[^\d]/g, '')) || 0;
+
+  /* Comprobante de mentira, pero legible: se puede cotejar el monto de verdad */
+  function comprobanteSVG(t) {
+    return `<svg viewBox="0 0 320 430" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto"
+      role="img" aria-label="Comprobante de transferencia por ${plata(t.montoFoto)} a nombre de ${t.pagador}">
+      <rect width="320" height="430" rx="4" fill="#FFFFFF"/>
+      <rect x="0" y="0" width="320" height="46" fill="#E4E0EC"/>
+      <rect x="18" y="18" width="96" height="10" rx="2" fill="#A79DBA"/>
+      <rect x="18" y="66" width="150" height="8" rx="2" fill="#CBC4D8"/>
+      <text x="18" y="112" font-family="monospace" font-size="27" font-weight="600" fill="#1D1930">${plata(t.montoFoto)}</text>
+      <line x1="18" y1="136" x2="302" y2="136" stroke="#E3DFEA"/>
+      <rect x="18" y="152" width="64" height="7" rx="2" fill="#CBC4D8"/>
+      <text x="18" y="180" font-family="monospace" font-size="11" fill="#5D5670">${t.pagador}</text>
+      <rect x="18" y="200" width="52" height="7" rx="2" fill="#CBC4D8"/>
+      <text x="18" y="228" font-family="monospace" font-size="11" fill="#5D5670">Agrupacion Mapuescuela</text>
+      <rect x="18" y="248" width="70" height="7" rx="2" fill="#CBC4D8"/>
+      <text x="18" y="276" font-family="monospace" font-size="11" fill="#5D5670">Cta Corriente 12345678</text>
+      <rect x="18" y="296" width="58" height="7" rx="2" fill="#CBC4D8"/>
+      <text x="18" y="324" font-family="monospace" font-size="11" fill="#5D5670">${t.mensajeFoto || '(sin mensaje)'}</text>
+      <line x1="18" y1="346" x2="302" y2="346" stroke="#E3DFEA"/>
+      <text x="18" y="372" font-family="monospace" font-size="10" fill="#8C84A0">${t.cuandoFoto}</text>
+      <rect x="18" y="392" width="120" height="7" rx="2" fill="#E3DFEA"/>
+    </svg>`;
+  }
+
+  /* ════════════ LA COLA ════════════ */
+  const TAREAS = [
+    {
+      id:'t1', urg:'atrasado', espera:'6 h 40 min', min:400, estado:'pendiente',
+      pedido:'MAP-0151', cliente:'Rodrigo Sepúlveda', nombreCorto:'Rodrigo',
+      pagador:'Rodrigo Sepulveda Vera', tel:'+56 9 5544 3322',
+      monto:89000, montoFoto:89000, mensajeFoto:'MAP-0151',
+      cuandoFoto:'26/08/2026 09:22', subido:'Hoy 09:31', pedidoHecho:'Hoy 09:20',
+      porque:'Su reserva vence en poco más de una hora. Si nadie la revisa, el pedido se cancela solo con la plata ya pagada.',
+      objetos:[{ n:'0151', nom:'Cómoda de seis cajones', pre:89000, foto:siluetas.mueble }]
+    },
+    {
+      id:'t2', urg:'apura', espera:'3 h 05 min', min:185, estado:'pendiente',
+      pedido:'MAP-0148', cliente:'Camila Riquelme', nombreCorto:'Camila',
+      pagador:'Camila Riquelme Soto', tel:'+56 9 8765 4321',
+      monto:54500, montoFoto:45000, mensajeFoto:'MAP-0148',
+      cuandoFoto:'26/08/2026 09:38', subido:'Hoy 09:41', pedidoHecho:'Hoy 09:12',
+      porque:'Camila subió el comprobante a las 09:41 y desde entonces solo ve «estamos revisando». Le prometimos respuesta el mismo día.',
+      objetos:[
+        { n:'0148', nom:'Velador de madera con cajón', pre:48000, foto:siluetas.mueble },
+        { n:'0147', nom:'Lote de 4 novelas chilenas',  pre:6500,  foto:siluetas.libros }
+      ]
+    },
+    {
+      id:'t3', urg:'aldia', espera:'41 min', min:41, estado:'pendiente',
+      pedido:'MAP-0152', cliente:'Marcela Tapia', nombreCorto:'Marcela',
+      pagador:'Marcela Tapia Guzman', tel:'+56 9 7788 9900',
+      monto:12000, montoFoto:12000, mensajeFoto:'MAP-0152',
+      cuandoFoto:'26/08/2026 13:30', subido:'Hoy 13:35', pedidoHecho:'Hoy 13:20',
+      porque:'Llegó recién. Tiene tiempo de sobra, pero es rápido de cerrar.',
+      objetos:[{ n:'0152', nom:'Caja de 12 libros infantiles', pre:12000, foto:siluetas.libros }]
+    }
+  ];
+
+  const SELLO = { atrasado:'Atrasada', apura:'Apura' };
+  const RANGO = { atrasado:0, apura:1, aldia:2 };
+
+  /* ════════════ ESTADO DE LA PANTALLA ════════════ */
+  const $cola = document.getElementById('cola');
+  const $det  = document.getElementById('detalle');
+  const $rot  = document.getElementById('rotulo');
+
+  const vista = {
+    elegida: TAREAS[0].id,
+    modo: 'revisar',          // revisar · otraFoto · cancelar · resuelta
+    leido: '',                // el monto que ella tipea del comprobante
+    texto: '',                // el mensaje para el cliente
+    confirmado: false,        // marca extra para cancelar
+    apruebaIgual: false,      // marca extra cuando el monto no calza
+    resultado: null
+  };
+
+  const actual = () => TAREAS.find(t => t.id === vista.elegida);
+  const pendientes = () => TAREAS.filter(t => t.estado === 'pendiente').sort((a,b) =>
+    RANGO[a.urg] - RANGO[b.urg] || b.min - a.min);
+
+  /* ── Cotejo del monto ── */
+  function cotejar(t) {
+    if (!vista.leido) return null;
+    const leido = soloDigitos(vista.leido);
+    if (!leido) return null;
+    const dif = leido - t.monto;
+    if (dif === 0)  return { r:'igual', txt:'Calza exactamente con el pedido.' };
+    if (dif < 0)    return { r:'menos', txt:'Faltan ' + plata(-dif) + ' para completar el pedido.' };
+    return { r:'mas', txt:'Transfirió ' + plata(dif) + ' de más.' };
+  }
+
+  /* ── Textos sugeridos según lo que se vio ── */
+  function sugerido(t, modo) {
+    const c = cotejar(t);
+    if (modo === 'otraFoto')
+      return 'Hola ' + t.nombreCorto + '. No pude leer bien el comprobante que subiste. ' +
+             '¿Me mandas otra foto donde se vea el monto y la fecha? Te dejo doce horas más ' +
+             'y los objetos siguen apartados a tu nombre.';
+    if (c && c.r === 'menos')
+      return 'Hola ' + t.nombreCorto + '. Revisé el comprobante y la transferencia que nos llegó ' +
+             'fue de ' + plata(soloDigitos(vista.leido)) + ', no los ' + plata(t.monto) + ' del pedido. ' +
+             'Te escribí al WhatsApp para arreglarlo pero no logré ubicarte antes de que venciera el plazo. ' +
+             'Esa plata está en nuestra cuenta y es tuya: escríbeme y te la devuelvo hoy mismo.';
+    return 'Hola ' + t.nombreCorto + '. ';
+  }
+
+  /* ════════════ LA COLA ════════════ */
+  function pintarCola() {
+    const p = pendientes();
+    $rot.textContent = p.length === 1 ? '1 por revisar' : p.length + ' por revisar';
+
+    $cola.innerHTML = TAREAS.map(t => `
+      <button class="tarea" data-id="${t.id}" data-urg="${t.urg}"
+              data-hecha="${t.estado === 'pendiente' ? '0' : '1'}"
+              aria-current="${t.id === vista.elegida}">
+        <span>
+          <span class="tarea__quien">${t.cliente}</span>
+          <span class="tarea__meta">${t.pedido} · ${plata(t.monto)}</span>
+        </span>
+        <span class="tarea__der">
+          ${t.estado === 'aprobado'  ? '<span class="insignia insignia--aprobado">Aprobado</span>' :
+            t.estado === 'cancelado' ? '<span class="insignia insignia--cancelado">Cancelado</span>' :
+            SELLO[t.urg] ? `<span class="insignia insignia--${t.urg}">${SELLO[t.urg]}</span>` : ''}
+          <span class="tarea__espera">${t.espera}</span>
+        </span>
+      </button>`).join('');
+  }
+
+  /* ════════════ EL DETALLE ════════════ */
+  function pintarDetalle() {
+    const t = actual();
+    if (!t) { $det.innerHTML = '<div class="vacia"><strong>No queda nada por revisar</strong><p class="lead">Buen trabajo. Vuelve más tarde.</p></div>'; return; }
+
+    if (vista.modo === 'resuelta') { $det.innerHTML = resuelta(t); return; }
+
+    const c = cotejar(t);
+    const objetos = t.objetos.map(o => `
+      <div class="objeto">
+        <div class="objeto__foto">${o.foto}</div>
+        <div>
+          <p class="objeto__n">N° ${o.n}</p>
+          <p class="objeto__nom">${o.nom}</p>
+          <p class="objeto__precio">${plata(o.pre)}</p>
+        </div>
+      </div>`).join('');
+
+    $det.innerHTML = `
+      <div class="det">
+
+        <div class="det__cab">
+          <p class="lbl">Revisar comprobante</p>
+          <h2 class="det__titulo">${t.cliente} dice que transfirió ${plata(t.monto)}</h2>
+          <div class="det__meta">
+            <dl><dt class="lbl">Pedido</dt><dd>${t.pedido}</dd></dl>
+            <dl><dt class="lbl">Subió la foto</dt><dd>${t.subido}</dd></dl>
+            <dl><dt class="lbl">Esperando</dt><dd>${t.espera}</dd></dl>
+            ${SELLO[t.urg] ? `<span class="insignia insignia--${t.urg}">${SELLO[t.urg]}</span>` : ''}
+          </div>
+        </div>
+
+        <p class="aviso ${t.urg === 'atrasado' ? 'aviso--grave' : ''}">${t.porque}</p>
+
+        <div class="par">
+          <div class="comprobante">
+            <div class="comprobante__img">${comprobanteSVG(t)}</div>
+            <div class="comprobante__pie">
+              <span>transferencia-${t.pedido.toLowerCase()}.jpg</span>
+              <button class="btn btn--sec btn--sm">Ver más grande</button>
+            </div>
+          </div>
+
+          <div style="display:grid;gap:var(--sp-5)">
+            <div class="panel">
+              <div class="panel__head"><h3 class="sub">Lo que debería decir</h3></div>
+              <div class="filas">
+                <div class="fila fila--clave"><dt class="lbl">Monto</dt><dd>${plata(t.monto)}</dd></div>
+                <div class="fila fila--clave"><dt class="lbl">Mensaje</dt><dd>${t.pedido}</dd></div>
+                <div class="fila"><dt class="lbl">A nombre de</dt><dd>Agrup. Mapuescuela</dd></div>
+                <div class="fila"><dt class="lbl">Cuenta</dt><dd>Cta Corriente 12345678</dd></div>
+                <div class="fila"><dt class="lbl">Quién paga</dt><dd>${t.pagador}</dd></div>
+                <div class="fila"><dt class="lbl">Pedido hecho</dt><dd>${t.pedidoHecho}</dd></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel__head"><h3 class="sub">Cotejar el monto</h3></div>
+              <div class="panel__body">
+                <div class="cotejo">
+                  <div class="campo">
+                    <label class="lbl" for="leido">¿Qué monto dice el comprobante?</label>
+                    <div class="cotejo__campo">
+                      <input type="text" id="leido" inputmode="numeric" placeholder="$"
+                             value="${vista.leido}" autocomplete="off">
+                      ${c ? `<span class="veredicto" data-r="${c.r}">${c.txt}</span>` : ''}
+                    </div>
+                  </div>
+                  <p class="consecuencia">
+                    Opcional, pero es el error que más cuesta: aprobar una transferencia
+                    por un monto distinto al del pedido.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel__head"><h3 class="sub">Qué compró</h3></div>
+              <div class="panel__body">${objetos}</div>
+            </div>
+          </div>
+        </div>
+
+        ${acciones(t, c)}
+      </div>`;
+
+    enganchar(t);
+  }
+
+  /* ── Las acciones: aprobar en un clic, rechazar con un paso más ── */
+  function acciones(t, c) {
+    const desalineado = c && c.r !== 'igual';
+
+    /* ── Panel de "pedir otra foto": pide texto, pero no confirma ── */
+    if (vista.modo === 'otraFoto') return `
+      <div class="acciones">
+        <div class="campo">
+          <label class="lbl" for="texto">Qué le escribes a ${t.nombreCorto}</label>
+          <textarea id="texto" placeholder="Cuéntale qué pasó con la foto y qué necesitas.">${vista.texto}</textarea>
+          <p class="consecuencia">Los objetos siguen apartados y le damos doce horas más.</p>
+        </div>
+        ${previa(t, 'otraFoto')}
+        <div class="acciones__rapida">
+          <button class="btn btn--pri" id="hacerOtraFoto" ${vista.texto.trim().length < 15 ? 'disabled' : ''}>
+            Pedirle otra foto
+          </button>
+          <button class="btn btn--sec" id="volver">Volver</button>
+          ${vista.texto.trim().length < 15 ? '<span class="consecuencia">Escríbele unas palabras primero.</span>' : ''}
+        </div>
+      </div>`;
+
+    /* ── Panel de cancelar: texto obligatorio + marca de confirmación ── */
+    if (vista.modo === 'cancelar') {
+      const listo = vista.texto.trim().length >= 25 && vista.confirmado;
+      const nObj = t.objetos.length;
+      return `
+        <div class="acciones">
+          <p class="aviso aviso--grave">
+            <b>Cancelar termina la venta.</b>
+            <p>${nObj === 1 ? 'El objeto vuelve' : 'Los ' + nObj + ' objetos vuelven'} al registro y
+            otra persona los puede reservar en cualquier momento. Esto no se deshace desde acá.</p>
+          </p>
+
+          <div class="campo">
+            <label class="lbl" for="texto">Por qué lo cancelas</label>
+            <textarea id="texto" placeholder="Explícale qué pasó y qué puede hacer ahora. Si transfirió y hay que devolverle la plata, dile cómo.">${vista.texto}</textarea>
+            <p class="contador" id="contador"></p>
+          </div>
+
+          ${previa(t, 'cancelar')}
+
+          <label class="marca-check">
+            <input type="checkbox" id="confirmar" ${vista.confirmado ? 'checked' : ''}>
+            <span>Ya leí lo que va a ver ${t.nombreCorto} y entiendo que
+            ${nObj === 1 ? 'el objeto vuelve' : 'los objetos vuelven'} al registro.</span>
+          </label>
+
+          <div class="acciones__rapida">
+            <button class="btn btn--peligro" id="hacerCancelar" ${listo ? '' : 'disabled'}>
+              Cancelar el pedido de ${t.nombreCorto}
+            </button>
+            <button class="btn btn--sec" id="volver">Volver sin cancelar <kbd>Esc</kbd></button>
+          </div>
+        </div>`;
+    }
+
+    /* ── Estado normal: aprobar es un botón y nada más ── */
+    return `
+      <div class="acciones">
+        <div class="acciones__rapida">
+          <button class="btn btn--pri btn--grande" id="aprobar"
+                  ${desalineado && !vista.apruebaIgual ? 'disabled' : ''}>
+            Aprobar el pago <kbd>A</kbd>
+          </button>
+          <span class="consecuencia">
+            <b>Aprobar</b> le avisa a ${t.nombreCorto} al WhatsApp y la tarea pasa a preparar el pedido.
+            Puedes deshacerlo enseguida.
+          </span>
+        </div>
+
+        ${desalineado ? `
+          <p class="aviso aviso--ojo">
+            <b>El monto no calza: ${c.txt.toLowerCase()}</b>
+            <p>Lo más probable es que convenga pedirle otra foto o escribirle antes de aprobar.</p>
+          </p>
+          <label class="marca-check">
+            <input type="checkbox" id="apruebaIgual" ${vista.apruebaIgual ? 'checked' : ''}>
+            <span>Sé que el monto no calza y lo apruebo igual.</span>
+          </label>` : ''}
+
+        <div class="acciones__lentas">
+          <span class="lbl">Si algo no está bien</span>
+          <button class="btn btn--sec" id="irOtraFoto">Pedirle otra foto</button>
+          <button class="btn btn--sec" id="irCancelar">Cancelar el pedido <kbd>R</kbd></button>
+          <span class="consecuencia">
+            Las dos le escriben a ${t.nombreCorto}. La primera mantiene los objetos apartados; la segunda los libera.
+          </span>
+        </div>
+      </div>`;
+  }
+
+  /* ── La previa: lo mismo que va a ver el cliente en su página ── */
+  function previa(t, modo) {
+    const vacio = !vista.texto.trim();
+    const hora = new Intl.DateTimeFormat('es-CL', { hour:'2-digit', minute:'2-digit' }).format(new Date());
+    const cabecera = modo === 'cancelar'
+      ? { ins:'cancelado', txt:'Pedido cancelado',
+          tit:'Tuvimos que cancelar tu pedido, y te queremos explicar por qué' }
+      : { ins:'esperando', txt:'Esperando el pago',
+          tit:'Necesitamos otra foto del comprobante' };
+
+    return `
+      <div class="previa">
+        <div class="previa__cab">
+          <h4 class="sub" style="font-size:var(--t-sm)">Esto es lo que va a ver ${t.nombreCorto}</h4>
+          <span>${t.pedido}</span>
+        </div>
+        <div class="previa__in">
+          <span class="insignia insignia--${cabecera.ins}">${cabecera.txt}</span>
+          <p class="previa__titulo">${cabecera.tit}</p>
+          <div class="recado">
+            <p class="recado__texto" data-vacio="${vacio ? '1' : '0'}" id="previaTexto">${
+              vacio ? 'Acá va a aparecer, tal cual, lo que escribas arriba.' : escapar(vista.texto)
+            }</p>
+            <div class="recado__firma">
+              <span class="recado__ini" aria-hidden="true">${YO.ini}</span>
+              <div class="recado__quien">
+                <strong>${YO.nombre}</strong>
+                <span>${YO.cargo} · Hoy ${hora}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const escapar = s => s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
+
+  /* ── Pantalla de tarea resuelta, con deshacer ── */
+  function resuelta(t) {
+    const r = vista.resultado;
+    const quedan = pendientes().length;
+    return `
+      <div class="resuelta">
+        <span class="insignia insignia--${r === 'aprobado' ? 'aprobado' : r === 'cancelado' ? 'cancelado' : 'esperando'}">
+          ${r === 'aprobado' ? 'Pago aprobado' : r === 'cancelado' ? 'Pedido cancelado' : 'Le pediste otra foto'}
+        </span>
+        <p class="resuelta__titulo">${
+          r === 'aprobado'  ? 'Listo, le avisamos a ' + t.nombreCorto :
+          r === 'cancelado' ? 'Cancelado. ' + t.nombreCorto + ' ya puede leer tu explicación' :
+                              t.nombreCorto + ' recibió tu mensaje'
+        }</p>
+        <p class="lead">${
+          r === 'aprobado'  ? 'El pedido ' + t.pedido + ' pasó a la cola de preparar. Quedó anotado a tu nombre.' :
+          r === 'cancelado' ? (t.objetos.length === 1 ? 'El objeto volvió' : 'Los objetos volvieron') + ' al registro.' :
+                              'Los objetos siguen apartados y tiene doce horas más.'
+        }</p>
+        <div class="resuelta__fila">
+          ${quedan ? `<button class="btn btn--pri btn--grande" id="siguiente">
+            Siguiente comprobante · ${quedan} ${quedan === 1 ? 'esperando' : 'esperando'}
+          </button>` : '<p class="lead">No queda nada más en la cola.</p>'}
+          <button class="btn btn--sec" id="deshacer">Deshacer</button>
+        </div>
+        <p class="consecuencia" id="notaDeshacer">Puedes deshacerlo por unos segundos.</p>
+      </div>`;
+  }
+
+  /* ════════════ ENGANCHES ════════════ */
+  let temporizador = null;
+
+  function enganchar(t) {
+    const el = id => document.getElementById(id);
+
+    el('leido')?.addEventListener('input', e => {
+      vista.leido = e.target.value;
+      vista.apruebaIgual = false;
+      const pos = e.target.selectionStart;
+      pintarDetalle();
+      const nuevo = document.getElementById('leido');
+      if (nuevo) { nuevo.focus(); nuevo.setSelectionRange(pos, pos); }
+    });
+
+    el('apruebaIgual')?.addEventListener('change', e => {
+      vista.apruebaIgual = e.target.checked; pintarDetalle();
+    });
+
+    el('aprobar')?.addEventListener('click', () => cerrar(t, 'aprobado'));
+    el('irOtraFoto')?.addEventListener('click', () => abrir(t, 'otraFoto'));
+    el('irCancelar')?.addEventListener('click', () => abrir(t, 'cancelar'));
+    el('volver')?.addEventListener('click', () => {
+      vista.modo = 'revisar'; vista.confirmado = false; pintarDetalle();
+    });
+
+    const $texto = el('texto');
+    if ($texto) {
+      $texto.focus();
+      $texto.setSelectionRange($texto.value.length, $texto.value.length);
+      $texto.addEventListener('input', e => {
+        vista.texto = e.target.value;
+        // Actualizo solo la previa y los botones, para no perder el cursor
+        const p = document.getElementById('previaTexto');
+        if (p) {
+          const vacio = !vista.texto.trim();
+          p.dataset.vacio = vacio ? '1' : '0';
+          p.textContent = vacio ? 'Acá va a aparecer, tal cual, lo que escribas arriba.' : vista.texto;
+        }
+        const cont = document.getElementById('contador');
+        if (cont) {
+          const n = vista.texto.trim().length;
+          cont.textContent = n < 25
+            ? 'Escribe al menos unas líneas: faltan ' + (25 - n) + ' caracteres.'
+            : n + ' caracteres. Se lee completo en su página.';
+        }
+        const bo = document.getElementById('hacerOtraFoto');
+        if (bo) bo.disabled = vista.texto.trim().length < 15;
+        const bc = document.getElementById('hacerCancelar');
+        if (bc) bc.disabled = !(vista.texto.trim().length >= 25 && vista.confirmado);
+      });
+      $texto.dispatchEvent(new Event('input'));
+    }
+
+    el('confirmar')?.addEventListener('change', e => {
+      vista.confirmado = e.target.checked;
+      const bc = document.getElementById('hacerCancelar');
+      if (bc) bc.disabled = !(vista.texto.trim().length >= 25 && vista.confirmado);
+    });
+
+    el('hacerOtraFoto')?.addEventListener('click', () => cerrar(t, 'otraFoto'));
+    el('hacerCancelar')?.addEventListener('click', () => cerrar(t, 'cancelado'));
+
+    el('siguiente')?.addEventListener('click', () => {
+      const p = pendientes();
+      if (p.length) elegir(p[0].id);
+    });
+
+    el('deshacer')?.addEventListener('click', () => {
+      t.estado = 'pendiente';
+      vista.modo = 'revisar'; vista.resultado = null;
+      vista.confirmado = false;
+      clearTimeout(temporizador);
+      pintarCola(); pintarDetalle();
+    });
+  }
+
+  function abrir(t, modo) {
+    vista.modo = modo;
+    vista.confirmado = false;
+    vista.texto = sugerido(t, modo);
+    pintarDetalle();
+  }
+
+  function cerrar(t, resultado) {
+    t.estado = resultado === 'otraFoto' ? 'pendiente' : resultado;
+    vista.resultado = resultado;
+    vista.modo = 'resuelta';
+    pintarCola(); pintarDetalle();
+
+    clearTimeout(temporizador);
+    temporizador = setTimeout(() => {
+      const b = document.getElementById('deshacer');
+      const n = document.getElementById('notaDeshacer');
+      if (b) b.hidden = true;
+      if (n) n.textContent = 'Ya no se puede deshacer desde acá.';
+    }, 12000);
+  }
+
+  function elegir(id) {
+    vista.elegida = id;
+    vista.modo = 'revisar';
+    vista.leido = ''; vista.texto = '';
+    vista.confirmado = false; vista.apruebaIgual = false; vista.resultado = null;
+    pintarCola(); pintarDetalle();
+    document.querySelector('.tarea[aria-current="true"]')?.scrollIntoView({ block:'nearest' });
+  }
+
+  $cola.addEventListener('click', e => {
+    const b = e.target.closest('.tarea');
+    if (b) elegir(b.dataset.id);
+  });
+
+  /* ── Teclado: la usa muchas veces al día ── */
+  document.addEventListener('keydown', e => {
+    const escribiendo = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+
+    if (e.key === 'Escape' && (vista.modo === 'cancelar' || vista.modo === 'otraFoto')) {
+      vista.modo = 'revisar'; vista.confirmado = false; pintarDetalle(); return;
+    }
+    if (escribiendo) return;
+
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const i = TAREAS.findIndex(t => t.id === vista.elegida);
+      const j = e.key === 'ArrowDown' ? Math.min(i + 1, TAREAS.length - 1) : Math.max(i - 1, 0);
+      elegir(TAREAS[j].id); return;
+    }
+    if (vista.modo !== 'revisar') return;
+    const t = actual();
+    if (!t || t.estado !== 'pendiente') return;
+
+    if (e.key.toLowerCase() === 'a') {
+      const c = cotejar(t);
+      if (c && c.r !== 'igual' && !vista.apruebaIgual) return;
+      e.preventDefault(); cerrar(t, 'aprobado');
+    }
+    if (e.key.toLowerCase() === 'r') { e.preventDefault(); abrir(t, 'cancelar'); }
+  });
+
+  pintarCola(); pintarDetalle();
+})();
+</script>
+</body>
+</html>

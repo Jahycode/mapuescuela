@@ -65,3 +65,20 @@ El enunciado no pide cuentas de cliente y el profesor recomendó no gastar tiemp
 contraseña, porque estos emprendedores son una sola persona operando todo. El cliente compra sin
 registrarse y sigue su pedido con un link con token. Me ahorro usuarios, roles y recuperación de
 contraseñas, y ese tiempo se me va en el proceso, que es lo que evalúan.
+
+### ADR-009 · Las pantallas son para computador de escritorio
+
+El curso no cubre soporte para móviles y la rúbrica no lo menciona en ninguna parte, así que diseño
+todas las pantallas pensando en una de escritorio. Aprovecho además que el panel del voluntario
+funciona mejor así: en una pantalla ancha caben la lista de tareas y el detalle de la que eligió al
+mismo tiempo, y se puede resolver una tras otra sin navegar de ida y vuelta.
+
+Dejo constancia de que no es un olvido. El cliente va a llegar desde Instagram, y quien navega
+Instagram lo hace desde el teléfono, así que las pantallas públicas se van a ver angostas. Lo asumo a
+propósito, porque adaptarlas es trabajo que el ramo no evalúa. Lo único que sí hago es no fijar anchos
+en píxeles, sino usar un ancho máximo con márgenes flexibles, de modo que en una pantalla chica se vea
+apretado pero legible en vez de quedar cortado. Eso no cuesta nada y evita que se vea roto si alguien
+lo abre desde el celular.
+
+Cuando tenga contacto con la organización pienso preguntar desde dónde revisan los pedidos, porque si
+resulta que lo hacen del teléfono habría que revisar esta decisión.
