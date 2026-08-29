@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El registro · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+@layer reset, tokens, base, layout, components, states, utilities;
+
+/* ───────────── RESET ───────────── */
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  * { margin: 0; }
+  img, svg { display: block; max-width: 100%; }
+  button, select, input { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; }
+  ul { list-style: none; padding: 0; }
+}
+
+/* ───────────── TOKENS (idénticos al resto del sistema) ───────────── */
+@layer tokens {
+  :root {
+    /* ── Superficies ── */
+    --paper:#EEEDF3; --card:#FFFFFF; --bed:#E4E0EC;
+    --rule:#CFC9DA;  --rule-soft:#E3DFEA;
+    --ink:#1D1930;   --ink-2:#5D5670;
+    --violeta:#4B2A82; --violeta-hondo:#3A1F68; --violeta-suave:#F7F5FC;
+    --mostaza:#E8A81C;
+
+    /* ── Estados: un solo par de nombres para todo el sistema ── */
+    --esp-fg:#8A4B10; --esp-bg:#FBEBD5;   /* esperando el pago · reservado · apura */
+    --rev-fg:#4B2A82; --rev-bg:#E6E1F3;   /* revisando */
+    --apr-fg:#1D6B4A; --apr-bg:#DCEDE3;   /* aprobado · listo */
+    --can-fg:#A32718; --can-bg:#FBE3DF;   /* cancelado · atrasado */
+    --ven-fg:#5D5670; --ven-bg:#E7E4EE;   /* vendido · encontró casa */
+
+    /* ── Tipografía ── */
+    --display:"Bricolage Grotesque","Helvetica Neue",system-ui,sans-serif;
+    --body:"Instrument Sans",system-ui,-apple-system,sans-serif;
+    --mono:"DM Mono",ui-monospace,"SF Mono",Consolas,monospace;
+
+    --t-micro:.6875rem; --t-sm:.8125rem; --t-base:.9375rem; --t-md:1.0625rem;
+    --t-lg:clamp(1.35rem, 1.1rem + .6vw, 1.75rem);
+    --t-xl:clamp(1.75rem, 1.3rem + 1.2vw, 2.5rem);
+    --t-portada:clamp(2.6rem, 1.9rem + 2.6vw, 4.6rem);
+
+    /* ── Espacio y medidas ── */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+    --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+
+    --radius:2px;
+    --wrap:78rem;        /* pantallas del cliente */
+    --wrap-ancho:96rem;  /* pantallas de trabajo interno */
+  }
+}
+
+/* ───────────── BASE ───────────── */
+@layer base {
+  body {
+    font-family: var(--body); font-size: var(--t-base); line-height: 1.55;
+    color: var(--ink); background-color: var(--paper);
+    background-image:
+      linear-gradient(to right,  rgba(35,26,63,.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(35,26,63,.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  a { color: var(--violeta); text-underline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--violeta); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition-duration:.01ms !important; } }
+}
+
+/* ───────────── MARCO ───────────── */
+@layer layout {
+  .wrap { width:100%; max-width:var(--wrap); margin-inline:auto;
+    padding-inline:clamp(var(--sp-4), 3vw, var(--sp-10)); }
+
+  /* ── PORTADA: banda violeta sólida, no fondo de papel ── */
+  .portada {
+    background-color:var(--violeta);
+    /* la cuadrícula del registro sigue, pero violeta sobre violeta */
+    background-image:
+      linear-gradient(to right,  rgba(255,255,255,.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,.055) 1px, transparent 1px);
+    background-size:24px 24px;
+    color:#fff;
+  }
+
+  .portada__tira { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end;
+    gap:var(--sp-2) var(--sp-5); padding-block:var(--sp-3);
+    font-size:var(--t-sm); border-bottom:1px solid rgba(255,255,255,.14); }
+  .portada__tira a { color:#D3C9E6; text-decoration:none; }
+  .portada__tira a:hover { color:#fff; text-decoration:underline; }
+
+  .portada__in { display:grid; gap:clamp(var(--sp-6), 4vw, var(--sp-12));
+    grid-template-columns:minmax(0, 1fr) minmax(0, 26rem);
+    align-items:end; padding-block:var(--sp-10) var(--sp-10); }
+  @media (max-width:62rem) {
+    .portada__in { grid-template-columns:minmax(0,1fr); align-items:start; }
+  }
+
+  .antetitulo { font-family:var(--mono); font-size:var(--t-micro);
+    letter-spacing:.14em; text-transform:uppercase; color:#C9BCE0;
+    padding-bottom:var(--sp-4); }
+
+  .rotulo { font-family:var(--display); font-weight:800; font-size:var(--t-portada);
+    line-height:.88; letter-spacing:-.035em; font-stretch:92%; color:#fff; }
+  .rotulo small { display:block; font-size:.3em; font-weight:600; font-stretch:100%;
+    letter-spacing:.01em; color:#C9BCE0; margin-top:var(--sp-4); }
+
+  /* La frase que explica de qué se trata esto */
+  .tesis { font-size:var(--t-md); line-height:1.5; color:#fff;
+    padding-left:clamp(var(--sp-4), 2vw, var(--sp-6)); border-left:3px solid var(--mostaza); }
+  .tesis b { font-weight:600; }
+  .tesis span { color:#D3C9E6; }
+
+  .trazo { height:4px; background:var(--mostaza); }
+
+  /* Las tres reglas: alineadas con el resto del contenido, no pegadas al borde */
+  .reglas { border-bottom:1px solid var(--rule); }
+  .reglas__in { display:grid; gap:var(--sp-5) 0;
+    grid-template-columns:repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    padding-block:var(--sp-5); }
+  .reglas__in > div + div { padding-left:clamp(var(--sp-4), 2vw, var(--sp-6));
+    border-left:1px solid var(--rule-soft); }
+  .reglas__in > div + div + div { padding-left:clamp(var(--sp-4), 2vw, var(--sp-6)); }
+  .reglas p { font-size:var(--t-sm); color:var(--ink-2); margin-top:2px; }
+  .reglas strong { color:var(--ink); font-weight:600; }
+
+  /* Barra del registro */
+  .barra { border-bottom:1px solid var(--rule); background:var(--card); }
+  .barra__in { display:grid; gap:var(--sp-4); padding-block:var(--sp-5); }
+  .cuentas { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--sp-2) var(--sp-6); }
+  .cuenta { display:flex; align-items:baseline; gap:var(--sp-2); }
+  .cuenta b { font-family:var(--mono); font-weight:500; font-size:1.35rem; line-height:1;
+    font-variant-numeric:tabular-nums; letter-spacing:-.03em; }
+  .cuenta span { font-size:var(--t-sm); color:var(--ink-2); }
+  .cuenta--sordo b, .cuenta--sordo span { color:var(--ink-2); }
+
+  .controles { display:flex; flex-wrap:wrap; align-items:center;
+    gap:var(--sp-3) var(--sp-6); padding-top:var(--sp-4); border-top:1px solid var(--rule-soft); }
+  .chips { display:flex; flex-wrap:wrap; gap:var(--sp-1) var(--sp-5); }
+  .chip { padding:var(--sp-2) 2px; font-size:var(--t-sm); font-weight:500; color:var(--ink-2);
+    border-bottom:2px solid transparent; }
+  .chip:hover { color:var(--ink); }
+  .chip[aria-pressed="true"] { color:var(--ink); font-weight:600; border-bottom-color:var(--mostaza); }
+  .campo-sel { display:flex; align-items:center; gap:var(--sp-2); }
+  select { font-size:var(--t-sm); padding:var(--sp-2) var(--sp-3); background:var(--card);
+    border:1px solid var(--rule); border-radius:var(--radius); }
+  .conteo { margin-left:auto; font-family:var(--mono); font-size:var(--t-sm); color:var(--ink-2); }
+}
+
+/* ───────────── LAS FICHAS ───────────── */
+@layer components {
+  .seccion { padding-block:var(--sp-10) 0; }
+  .seccion__cab { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between;
+    gap:var(--sp-3); padding-bottom:var(--sp-5); }
+  .seccion h2 { font-family:var(--display); font-weight:700; font-size:var(--t-lg);
+    letter-spacing:-.015em; }
+  .seccion__nota { font-size:var(--t-sm); color:var(--ink-2); max-width:56ch; }
+
+  .rejilla { display:grid; gap:clamp(var(--sp-4), 2vw, var(--sp-6));
+    grid-template-columns:repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); }
+
+  .ficha { display:flex; flex-direction:column; background:var(--card);
+    border:1px solid var(--rule); border-radius:var(--radius); }
+
+  .ficha__cab { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-2);
+    padding:var(--sp-2) var(--sp-3); border-bottom:1px solid var(--rule-soft); }
+  .ficha__n { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+  .ojo { font-size:var(--t-micro); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+    background:var(--mostaza); color:#1D1A14; padding:2px var(--sp-2); border-radius:var(--radius); }
+  .insignia { font-size:var(--t-micro); font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    padding:2px var(--sp-2); border-radius:var(--radius); white-space:nowrap; }
+  .insignia--esperando { color:var(--esp-fg); background:var(--esp-bg); }
+
+  .ficha__foto { position:relative; aspect-ratio:4/5; background:var(--bed); overflow:hidden; }
+  .ficha__fotos { position:absolute; inset:auto var(--sp-2) var(--sp-2) auto;
+    font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2);
+    background:rgba(255,255,255,.86); padding:1px var(--sp-2); border-radius:var(--radius); }
+  .ficha[data-estado="reservado"] .ficha__foto { opacity:.72; }
+
+  .ficha__cuerpo { flex:1; display:flex; flex-direction:column; gap:var(--sp-3);
+    padding:var(--sp-3) var(--sp-4) var(--sp-4); }
+  .ficha__nom { font-family:var(--display); font-weight:600; font-size:var(--t-md);
+    line-height:1.15; letter-spacing:-.01em; text-wrap:balance; }
+
+  .datos { display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-2) var(--sp-3); }
+  .datos dd { font-family:var(--mono); font-size:var(--t-sm); margin-top:1px; }
+
+  /* De dónde vino: esto es lo que una tienda no puede decir */
+  .origen { font-size:var(--t-sm); color:var(--ink-2); padding-top:var(--sp-3);
+    border-top:1px solid var(--rule-soft); }
+  .marca-uso { font-size:var(--t-sm); color:var(--esp-fg); }
+
+  .ficha__pie { margin-top:auto; padding-top:var(--sp-3); border-top:1px solid var(--rule-soft);
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--sp-2); }
+  .precio { font-family:var(--mono); font-weight:500; font-size:1.1rem;
+    font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .libera { font-family:var(--mono); font-size:var(--t-micro); color:var(--esp-fg); }
+
+  .vacio { grid-column:1/-1; padding:var(--sp-12) var(--sp-5); text-align:center;
+    background:var(--card); border:1px dashed var(--rule); border-radius:var(--radius); }
+  .vacio strong { display:block; font-family:var(--display); font-size:var(--t-md); font-weight:600; }
+  .vacio p { margin-top:var(--sp-2); font-size:var(--t-sm); color:var(--ink-2); }
+}
+
+/* ───────────── EL ARCHIVO DE VENDIDOS ─────────────
+   Formato distinto a propósito: no son ofertas, son registros. */
+@layer components {
+  .archivo { margin-top:var(--sp-12); padding-block:var(--sp-8) var(--sp-10);
+    border-top:1px solid var(--rule); }
+  .archivo__lista { display:grid; gap:var(--sp-3);
+    grid-template-columns:repeat(auto-fill, minmax(min(100%, 21rem), 1fr)); }
+
+  .idos { display:flex; gap:var(--sp-3); align-items:center;
+    padding:var(--sp-2) var(--sp-3);
+    background:var(--card); border:1px solid var(--rule-soft); border-radius:var(--radius); }
+  .idos__foto { flex:0 0 2.75rem; aspect-ratio:1; background:var(--bed);
+    filter:grayscale(1); opacity:.55; overflow:hidden; }
+  .idos__datos { min-width:0; flex:1; }
+  .idos__n { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+  .idos__nom { font-size:var(--t-sm); font-weight:500; color:var(--ink-2);
+    line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .idos__cuando { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2);
+    white-space:nowrap; }
+}
+
+/* ───────────── PIEZAS ───────────── */
+@layer components {
+  .lbl { font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ink-2); }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center;
+    padding:9px var(--sp-4); font-size:var(--t-sm); font-weight:600; border-radius:var(--radius);
+    transition:background-color .15s ease, border-color .15s ease; }
+  .btn--pri { background:var(--violeta); color:#fff; }
+  .btn--pri:hover { background:var(--violeta-hondo); }
+  .btn--sec { border:1px solid var(--rule); color:var(--ink); }
+  .btn--sec:hover { border-color:var(--ink); }
+
+  .pie { margin-top:var(--sp-12); border-top:1px solid var(--rule); background:var(--card); }
+  .pie__rejilla { display:grid; gap:var(--sp-8);
+    grid-template-columns:repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    padding-block:var(--sp-10); }
+  .pie p { font-size:var(--t-sm); color:var(--ink-2); max-width:46ch; }
+  .pie dd { font-family:var(--mono); font-size:var(--t-sm); color:var(--ink); margin-top:var(--sp-1); }
+  .pie strong { color:var(--ink); font-weight:600; }
+
+  /* La regla del sistema, escrita para que se entienda */
+  .regla-numeros { border-top:1px solid var(--rule-soft); }
+  .regla-numeros p { padding-block:var(--sp-5); max-width:70ch;
+    font-family:var(--mono); font-size:var(--t-sm); color:var(--ink-2); }
+}
+
+@layer utilities { [hidden]{ display:none !important; } }
+</style>
+</head>
+<body>
+
+<header class="portada">
+  <nav class="wrap portada__tira" aria-label="Contacto">
+    <a href="#">Instagram · @mapuescuela</a>
+    <a href="#">WhatsApp · +56 9 1234 5678</a>
+    <a href="#">Quiénes somos</a>
+    <a href="#">Quiero donar algo</a>
+  </nav>
+
+  <div class="wrap portada__in">
+    <div>
+      <p class="antetitulo">Objetos donados · Rancagua · desde 2019</p>
+      <h1 class="rotulo">Mapuescuela<small>El registro</small></h1>
+    </div>
+    <p class="tesis">
+      <b>Esto no es una tienda.</b> Cada objeto de acá existe uno solo: alguien lo donó,
+      lo revisamos, le dimos un número y se vende una vez.
+      <span>No hay más unidades, no hay otra talla, no hay reposición. Si te gusta, es ese.</span>
+    </p>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+<section class="reglas" aria-label="Cómo funciona">
+  <div class="wrap reglas__in">
+    <div>
+      <span class="lbl">Pago</span>
+      <p><strong>Por transferencia.</strong> Subes una foto del comprobante y lo revisa una persona.</p>
+    </div>
+    <div>
+      <span class="lbl">Reserva</span>
+      <p><strong>24 horas.</strong> Mientras corre el plazo, nadie más puede comprarlo.</p>
+    </div>
+    <div>
+      <span class="lbl">Entrega</span>
+      <p><strong>Retiro en Rancagua.</strong> Libros y juguetes también van por encomienda.</p>
+    </div>
+  </div>
+</section>
+
+<section class="barra" aria-label="Qué hay">
+  <div class="wrap barra__in">
+    <div class="cuentas">
+      <p class="cuenta"><b>{{ disponibles|length }}</b><span>objetos en el registro ahora</span></p>
+      <p class="cuenta cuenta--sordo"><b>{{ idos|length }}</b><span>ya encontraron casa</span></p>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <section class="seccion">
+    <div class="seccion__cab">
+      <h2>En el registro ahora</h2>
+      <p class="seccion__nota">
+        Las fotos son las que les sacamos nosotros, con las marcas del uso a la vista.
+      </p>
+    </div>
+
+    <ul class="rejilla">
+      {% for p in disponibles %}
+      <li class="ficha" data-estado="disponible">
+        <div class="ficha__cab">
+          <span class="ficha__n">N° {{ '%04d' % p.id }}</span>
+        </div>
+
+        <div class="ficha__foto">
+          <svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%">
+            <rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/>
+            <rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/>
+            <rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/>
+            <rect x="46" y="62" width="108" height="16" fill="#A79DBA"/>
+          </svg>
+        </div>
+
+        <div class="ficha__cuerpo">
+          <h3 class="ficha__nom">{{ p.nombre }}</h3>
+
+          {% if p.condicion or p.medida %}
+          <dl class="datos">
+            {% if p.condicion %}<div><dt class="lbl">Estado</dt><dd>{{ p.condicion }}</dd></div>{% endif %}
+            {% if p.medida %}<div><dt class="lbl">Medidas</dt><dd>{{ p.medida }}</dd></div>{% endif %}
+          </dl>
+          {% endif %}
+
+          {% if p.origen %}<p class="origen">{{ p.origen }}</p>{% endif %}
+          {% if p.marcaUso %}<p class="marca-uso">{{ p.marcaUso }}</p>{% endif %}
+
+          <div class="ficha__pie">
+            <span class="precio">{{ p.precio|plata }}</span>
+            <button class="btn btn--pri">Reservar</button>
+          </div>
+        </div>
+      </li>
+      {% else %}
+      <li class="vacio">
+        <strong>No queda nada en el registro</strong>
+        <p>Entran cosas nuevas casi todas las semanas, y las avisamos primero por Instagram.</p>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% if idos %}
+  <section class="archivo" aria-labelledby="tit-archivo">
+    <div class="seccion__cab">
+      <h2 id="tit-archivo">Ya encontraron casa</h2>
+      <p class="seccion__nota">
+        Los últimos que se fueron. No están en venta y no vuelven:
+        quedan acá porque son la prueba de que esto funciona.
+      </p>
+    </div>
+    <ul class="archivo__lista">
+      {% for p in idos %}
+      <li class="idos">
+        <div class="idos__foto">
+          <svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%">
+            <rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/>
+            <rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/>
+            <rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/>
+          </svg>
+        </div>
+        <div class="idos__datos">
+          <p class="idos__n">N° {{ '%04d' % p.id }}</p>
+          <p class="idos__nom">{{ p.nombre }}</p>
+        </div>
+        <span class="idos__cuando">{{ p.precio|plata }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+</main>
+
+<footer class="pie">
+  <div class="wrap pie__rejilla">
+    <div>
+      <span class="lbl">Para qué es la plata</span>
+      <p style="margin-top:var(--sp-2)">
+        Todo lo que juntamos vendiendo estos objetos donados financia el acompañamiento escolar de
+        <strong>34 jóvenes de Rancagua</strong> que dejaron el colegio. Nadie acá recibe sueldo por vender.
+      </p>
+    </div>
+    <dl>
+      <span class="lbl">Datos de la agrupación</span>
+      <dd>Agrupación Mapuescuela</dd>
+      <dd>RUT 65.123.456-7</dd>
+      <dd>Av. República 1180, Rancagua</dd>
+    </dl>
+    <dl>
+      <span class="lbl">Escríbenos</span>
+      <dd>+56 9 1234 5678</dd>
+      <dd>contacto@mapuescuela.cl</dd>
+      <p style="margin-top:var(--sp-2)">Contestamos de lunes a viernes, de 9 a 20 horas.</p>
+    </dl>
+    <div>
+      <span class="lbl">¿Tienes algo que donar?</span>
+      <p style="margin-top:var(--sp-2)">
+        Recibimos muebles, libros y juguetes en buen estado o restaurables. Pasamos a buscarlos
+        en Rancagua y alrededores. Escríbenos con una foto y te decimos al tiro.
+      </p>
+    </div>
+  </div>
+  <div class="wrap regla-numeros">
+    <p>Los números no se repiten nunca. Cada uno es ese objeto y no va a ser nada más.</p>
+  </div>
+</footer>
+
+</body>
+</html>
