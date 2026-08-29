@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class Db {
     
-    private static final String URL = "jdbc:h2:mem:pedidos;DB_CLOSE_DELAY=-1";
+    private static final String URL = "jdbc:h2:./data/pedidos;DB_CLOSE_DELAY=-1";
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL);

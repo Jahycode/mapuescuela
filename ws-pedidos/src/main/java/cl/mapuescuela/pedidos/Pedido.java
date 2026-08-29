@@ -1,6 +1,7 @@
 package cl.mapuescuela.pedidos;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Pedido {
 
@@ -9,13 +10,12 @@ public class Pedido {
     private String clienteEmail;
     private int montoTotal;
     private String modalidadEntrega;
-    private int productoId;
-    private int cantidad;
     private String processInstanceId;
     private LocalDateTime creado;
     private String desenlace;
     private String desenlaceMotivo;
     private LocalDateTime desenlaceEn;
+    private List<PedidoItem> items;
 
     public int getId() {
         return id;
@@ -55,22 +55,6 @@ public class Pedido {
 
     public void setModalidadEntrega(String modalidadEntrega) {
         this.modalidadEntrega = modalidadEntrega;
-    }
-
-    public int getProductoId() {
-        return productoId;
-    }
-
-    public void setProductoId(int productoId) {
-        this.productoId = productoId;
-    }
-
-    public int getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
     }
 
     public String getProcessInstanceId() {
@@ -115,6 +99,15 @@ public class Pedido {
     public void setDesenlaceEn(LocalDateTime desenlaceEn) {
         this.desenlaceEn = desenlaceEn;
     }
+
+    public List<PedidoItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<PedidoItem> items) {
+        this.items = items;
+    }
+
 
 
 }

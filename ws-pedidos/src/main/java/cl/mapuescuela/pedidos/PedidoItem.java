@@ -1,19 +1,18 @@
 package cl.mapuescuela.pedidos;
 
-public class Producto {
+public class PedidoItem {
 
-    private int id;
+    private int productoId;
     private String nombre;
     private int precio;
-    private int stock;
 
     // Getters and Setters
-    public int getId() {
-        return id;
+    public int getProductoId() {
+        return productoId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setProductoId(int productoId) {
+        this.productoId = productoId;
     }
 
     public String getNombre() {
@@ -24,14 +23,7 @@ public class Producto {
         this.nombre = nombre;
     }
 
-    public int getStock() {
-        return stock;
-    }
-
-    public void setStock(int stock) {
-        this.stock = stock;
-    }
-        public int getPrecio() {
+    public int getPrecio() {
         return precio;
     }
 

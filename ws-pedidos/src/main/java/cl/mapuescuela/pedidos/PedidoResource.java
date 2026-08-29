@@ -12,9 +12,11 @@ import jakarta.ws.rs.core.Response;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 
 @Path("/pedidos")
 public class PedidoResource {
@@ -29,14 +31,6 @@ public class PedidoResource {
         "SIN_STOCK", "Lo sentimos: el articulo se agoto antes de completar tu pedido." + " No se te cobro nada."
     );
 
-    static {
-       try (Connection conn = Db.getConnection()) {
-            new PedidoDAO(conn).crearTablas();
-       }
-         catch (Exception e) {
-                e.printStackTrace();
-         }
-    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -52,28 +46,51 @@ public class PedidoResource {
     public Response crear(Pedido pedido) throws Exception {
         try (Connection conn = Db.getConnection()) {
             PedidoDAO dao = new PedidoDAO(conn);
-        if (!dao.existeProducto(pedido.getProductoId())) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                           .entity(Map.of("error", "El producto " + pedido.getProductoId() + " no existe"))
-                           .build();          
-        }
-        if (pedido.getClienteEmail() == null || pedido.getClienteEmail().isBlank()){
-            return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(Map.of("error", "El email del cliente es obligatorio"))
-                        .build();
-        }
 
-        if (pedido.getCantidad() <= 0) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(Map.of("error", "La cantidad debe ser mayor que cero, llego "
-                                        + pedido.getCantidad()))
-                        .build();
-        }
-        pedido.setCreado(LocalDateTime.now());
-        pedido.setId(dao.insertar(pedido));
-        return Response.status(Response.Status.CREATED).entity(pedido).build();
+            if (pedido == null || pedido.getClienteEmail() == null || pedido.getClienteEmail().isBlank()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                               .entity(Map.of("error", "El email del cliente es obligatorio"))
+                               .build();
+            }
+
+            List<PedidoItem> items = pedido.getItems();
+            if (items == null || items.isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                               .entity(Map.of("error", "El pedido tiene que llevar al menos un objeto"))
+                               .build();
+            }
+
+            Set<Integer> vistos = new HashSet<>();
+            int total = 0;
+
+            for (PedidoItem item : items) {
+                if (!vistos.add(item.getProductoId())) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                                   .entity(Map.of("error", "El objeto " + item.getProductoId()
+                                                  + " viene repetido, y cada objeto existe uno solo"))
+                                   .build();
+                }
+
+                Producto producto = dao.buscarProducto(item.getProductoId());
+                if (producto == null) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                                   .entity(Map.of("error", "El objeto " + item.getProductoId() + " no existe"))
+                                   .build();
+                }
+
+                item.setNombre(producto.getNombre());
+                item.setPrecio(producto.getPrecio());
+                total += producto.getPrecio();
+            }
+
+            pedido.setMontoTotal(total);
+            pedido.setCreado(LocalDateTime.now());
+            pedido.setId(dao.insertar(pedido));
+
+            return Response.status(Response.Status.CREATED).entity(pedido).build();
         }
     }
+    
 
     @POST
     @Path("/{id}/descontar-stock")
@@ -81,22 +98,22 @@ public class PedidoResource {
     public Response descontarStock(@PathParam("id") int id) throws Exception {
         try (Connection conn = Db.getConnection()) {
             PedidoDAO dao = new PedidoDAO(conn);
-            Pedido pedido = dao.buscarPorId(id);
 
-        if (pedido == null) {
-            return Response.status(Response.Status.NOT_FOUND)
-                           .entity(Map.of("error", "No existe el pedido " + id))
-                           .build();
-        }
-        if (!dao.existeProducto(pedido.getProductoId())) {
-            return Response.status(Response.Status.NOT_FOUND)
-                        .entity(Map.of("error", "El pedido " + id + " apunta al producto "
-                                        + pedido.getProductoId() + ", que no existe"))
-                        .build();
-        }
+            if (dao.buscarPorId(id) == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity(Map.of("error", "No existe el pedido " + id))
+                               .build();
+            }
 
-        boolean stockOk = dao.descontarStock(pedido.getProductoId(), pedido.getCantidad());
-        return Response.ok(Map.of("stockOk", stockOk)).build();
+            List<PedidoItem> items = dao.listarItems(id);
+            if (items.isEmpty()) {
+                return Response.status(Response.Status.CONFLICT)
+                               .entity(Map.of("error", "El pedido " + id + " no tiene objetos"))
+                               .build();
+            }
+
+            boolean stockOk = dao.reservarObjetos(items);
+            return Response.ok(Map.of("stockOk", stockOk)).build();
         }
     }
 
@@ -172,6 +189,7 @@ public class PedidoResource {
                         .entity(Map.of("error", "No existe el pedido " + id))
                         .build();
             }
+            pedido.setItems(dao.listarItems(id));
             return Response.ok(pedido).build();
         }
     }
