@@ -7,6 +7,24 @@ Acá están los dos modelos BPMN del proyecto, hechos en Flowable Design.
 | `ventaManualAsIs.bpmn` | Cómo venden **hoy**: Instagram, WhatsApp y cuaderno. Solo documenta, no se ejecuta |
 | `ventaMapuescuela.bpmn` | El proceso **automatizado**. Es el que se despliega y corre en Flowable |
 
+## Por qué el AS-IS tiene dos procesos
+
+En la retroalimentación de la Entrega 1 el profesor observó que publicar un producto es un proceso
+distinto del de venderlo, y que conviene separarlos. Tiene razón, y la forma más clara de verlo es
+esta: **una publicación no equivale a una venta.**
+
+Publican un sofá en Instagram. Escriben cuatro personas interesadas y compra una. Eso es *una*
+publicación y *cuatro* ventas intentadas, tres de ellas perdidas. Modelarlo como un solo proceso
+afirmaba que publicar lleva a vender, y no es así: son dos cosas con ritmos distintos, y una puede
+repetirse muchas veces por cada vuelta de la otra.
+
+Así que el archivo contiene los dos recorridos, dibujados por separado en el mismo diagrama:
+
+| Proceso | Empieza cuando | Termina cuando |
+|---|---|---|
+| **Publicación** | llega un artículo donado | queda publicado en Instagram |
+| **Venta** | un cliente escribe interesado | se entrega el producto, o se pierde la venta |
+
 ## El proceso automatizado
 
 ```
