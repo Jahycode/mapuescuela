@@ -1,5 +1,6 @@
 # ===== Notas y apuntes personales (no forman parte de la entrega) =====
 _notas/
+actas/_formato.md
 
 # ===== Credenciales y configuración local (NUNCA al repo) =====
 .env

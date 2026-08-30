@@ -82,3 +82,30 @@ lo abre desde el celular.
 
 Cuando tenga contacto con la organización pienso preguntar desde dónde revisan los pedidos, porque si
 resulta que lo hacen del teléfono habría que revisar esta decisión.
+
+### ADR-010 · Cómo trabajo con las herramientas de IA
+
+Uso varias herramientas generativas en paralelo y no una sola: Claude Design, Grok, ChatGPT y Stitch
+para las pantallas, y Claude Code para el desarrollo. La razón práctica es que producen propuestas que
+no se parecen entre sí, y comparar cuatro resultados distintos deja ver rápido cuál resuelve el problema
+y cuál solo se ve bien. El lenguaje visual del sistema salió de esa comparación, y no fue la propuesta
+que me gustó primero.
+
+Antes de pedir algo importante investigo por mi cuenta. Para el catálogo revisé guías y videos sobre
+diseño de páginas de catálogo y sobre construcción de paletas antes de escribir el primer prompt, porque
+quería dirigir la herramienta en vez de quedarme con lo primero que devolviera. Y cuando pido una vista
+nueva le entrego el modelo que ya tengo construido —el proceso, los estados del pedido, los endpoints
+existentes— para que se ajuste a lo que existe en lugar de proponer una aplicación distinta que después
+habría que reconciliar.
+
+No doy una respuesta por cierta solo porque venga con seguridad. Estas herramientas se equivocan, y el
+tono no distingue una respuesta verificada de una inventada. Cuando algo me parece dudoso, o cuando me
+cambia una decisión que ya había tomado, lo contrasto: hago la misma pregunta en otra herramienta y
+comparo, reviso la documentación de la tecnología, o lo verifico contra lo que ya tengo escrito en el
+proyecto. Ese último caso es el que más me ha servido. Al decidir si la columna `stock` se mantenía, lo
+que zanjó la discusión no fue ninguna respuesta sino mi propio catálogo, donde ya había registrado dos
+sillas donadas juntas como una sola ficha con un número.
+
+Lo dejo escrito porque el uso de estas herramientas atraviesa todo el proyecto y conviene que quede
+claro cómo: no como un generador al que le pido resultados y pego, sino como algo que dirijo con
+contexto y cuyas salidas verifico antes de incorporar.
