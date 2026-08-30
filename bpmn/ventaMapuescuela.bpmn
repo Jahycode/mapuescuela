@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:design="http://flowable.org/design" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://flowable.org/test" exporter="Flowable Design" exporterVersion="2025.2.06" design:palette="flowable-work-process-palette">
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:design="http://flowable.org/design" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://flowable.org/test" exporter="Flowable Design" exporterVersion="2026.1.2" design:palette="flowable-work-process-palette">
   <process id="ventaMapuescuela" name="TO-BE Venta automatizada" isExecutable="true" flowable:candidateStarterGroups="flowableUser">
     <documentation>Sistema de gestión de ventas de artículos donados</documentation>
     <extensionElements>
       <design:stencilid><![CDATA[BPMNDiagram]]></design:stencilid>
       <design:creationdate><![CDATA[2026-08-10T01:15:13.233Z]]></design:creationdate>
       <design:description><![CDATA[Sistema de gestión de ventas de artículos donados]]></design:description>
-      <design:modificationdate><![CDATA[2026-08-16T21:55:08.262Z]]></design:modificationdate>
+      <design:modificationdate><![CDATA[2026-08-30T17:29:02.611Z]]></design:modificationdate>
     </extensionElements>
-    <userTask id="FormTask_1" name="Adjuntar comprobante de transferencia" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
+    <serviceTask id="ServiceTask_17" name="Notificar cliente" flowable:type="external-worker" flowable:topic="notificarCliente">
+      <extensionElements>
+        <design:stencilid><![CDATA[ExternalWorkerTask]]></design:stencilid>
+        <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
+      </extensionElements>
+    </serviceTask>
+    <userTask id="FormTask_1" name="Adjuntar comprobante de transferencia" flowable:assignee="${initiator}" flowable:formKey="adjuntarComprobante" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
@@ -28,40 +34,34 @@
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </serviceTask>
-    <serviceTask id="ServiceTask_17" name="Notificar cliente" flowable:type="external-worker" flowable:topic="notificarCliente">
-      <extensionElements>
-        <design:stencilid><![CDATA[ExternalWorkerTask]]></design:stencilid>
-        <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
-      </extensionElements>
-    </serviceTask>
     <serviceTask id="ServiceTask_21" name="Descontar inventario" flowable:type="external-worker" flowable:topic="descontarInventario">
       <extensionElements>
         <design:stencilid><![CDATA[ExternalWorkerTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </serviceTask>
-    <userTask id="FormTask_23" name="Preparar pedido" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
+    <userTask id="FormTask_23" name="Preparar pedido" flowable:assignee="${initiator}" flowable:formKey="preparacionDelPedido" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </userTask>
-    <userTask id="FormTask_27" name="Marcar listo para retiro" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
+    <userTask id="FormTask_27" name="Marcar listo para retiro" flowable:assignee="${initiator}" flowable:formKey="avisoDeRetiroListo" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </userTask>
-    <userTask id="FormTask_29" name="Registrar retiro" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
+    <userTask id="FormTask_29" name="Registrar retiro" flowable:assignee="${initiator}" flowable:formKey="registroDelRetiro" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </userTask>
-    <userTask id="FormTask_39" name="Registrar datos de envío" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
+    <userTask id="FormTask_39" name="Registrar datos de envío" flowable:assignee="${initiator}" flowable:formKey="datosDelEnvio" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
@@ -74,7 +74,7 @@
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </serviceTask>
-    <userTask id="FormTask_35" name="Registrar despacho por voluntario" flowable:assignee="${initiator}" flowable:formFieldValidation="false">
+    <userTask id="FormTask_35" name="Registrar despacho por voluntario" flowable:assignee="${initiator}" flowable:formKey="despachoPorVoluntario" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
@@ -161,6 +161,11 @@
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </endEvent>
+    <sequenceFlow id="SequenceFlow_20" sourceRef="ServiceTask_17" targetRef="EndNoneEvent_19">
+      <extensionElements>
+        <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
+      </extensionElements>
+    </sequenceFlow>
     <boundaryEvent id="IntermediateTimerEventBoundary_9" name="Timer de 24 hrs" attachedToRef="FormTask_1" cancelActivity="true">
       <extensionElements>
         <design:stencilid><![CDATA[IntermediateTimerEventBoundary]]></design:stencilid>
@@ -186,11 +191,6 @@
       </extensionElements>
     </sequenceFlow>
     <sequenceFlow id="SequenceFlow_18" sourceRef="ServiceTask_15" targetRef="ServiceTask_17">
-      <extensionElements>
-        <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
-      </extensionElements>
-    </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_20" sourceRef="ServiceTask_17" targetRef="EndNoneEvent_19">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
@@ -304,6 +304,9 @@
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_ventaMapuescuela">
     <bpmndi:BPMNPlane bpmnElement="ventaMapuescuela" id="BPMNPlane_ventaMapuescuela">
+      <bpmndi:BPMNShape bpmnElement="ServiceTask_17" id="BPMNShape_ServiceTask_17">
+        <omgdc:Bounds height="80.0" width="100.00000000000011" x="955.0054334798332" y="-236.77052504936302"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="FormTask_1" id="BPMNShape_FormTask_1">
         <omgdc:Bounds height="80.0" width="100.0" x="534.0" y="53.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
@@ -311,13 +314,10 @@
         <omgdc:Bounds height="80.0" width="100.0" x="684.0" y="53.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="ServiceTask_15" id="BPMNShape_ServiceTask_15">
-        <omgdc:Bounds height="80.0" width="100.0" x="804.0" y="-227.47226288969756"></omgdc:Bounds>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="ServiceTask_17" id="BPMNShape_ServiceTask_17">
-        <omgdc:Bounds height="80.0" width="100.0" x="963.5793683991592" y="-227.41714150100717"></omgdc:Bounds>
+        <omgdc:Bounds height="80.0" width="100.0" x="804.0" y="-237.24899701137437"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="ServiceTask_21" id="BPMNShape_ServiceTask_21">
-        <omgdc:Bounds height="80.0" width="100.0" x="954.0" y="53.0"></omgdc:Bounds>
+        <omgdc:Bounds height="80.0" width="100.0" x="963.5793683991592" y="53.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="FormTask_23" id="BPMNShape_FormTask_23">
         <omgdc:Bounds height="80.0" width="100.0" x="1213.028231312725" y="53.0"></omgdc:Bounds>
@@ -374,9 +374,9 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="EndNoneEvent_19" id="BPMNShape_EndNoneEvent_19">
-        <omgdc:Bounds height="28.0" width="28.0" x="1113.5793683991592" y="-201.41714150100717"></omgdc:Bounds>
+        <omgdc:Bounds height="28.0" width="28.0" x="1105.0054334798333" y="-210.77052504936302"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="97.0" x="1077.81080153218" y="-167.9014249344968"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="97.0" x="1069.236866612854" y="-177.25480848285264"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="EndNoneEvent_31" id="BPMNShape_EndNoneEvent_31">
@@ -416,7 +416,7 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_48" id="BPMNEdge_SequenceFlow_48" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
-        <omgdi:waypoint x="1054.0" y="93.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1063.5793683991592" y="93.0"></omgdi:waypoint>
         <omgdi:waypoint x="1104.0" y="93.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_26" id="BPMNEdge_SequenceFlow_26" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
@@ -429,7 +429,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_16" id="BPMNEdge_SequenceFlow_16" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="854.0" y="73.0"></omgdi:waypoint>
-        <omgdi:waypoint x="854.0" y="-147.47226288969756"></omgdi:waypoint>
+        <omgdi:waypoint x="854.0" y="-157.24899701137437"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="18.0" width="16.0" x="832.6601797213394" y="17.66338184116897"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
@@ -442,14 +442,14 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_18" id="BPMNEdge_SequenceFlow_18" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="904.0" y="-187.47226288969756"></omgdi:waypoint>
-        <omgdi:waypoint x="933.7896841995796" y="-187.47226288969756"></omgdi:waypoint>
-        <omgdi:waypoint x="933.7896841995796" y="-187.41714150100717"></omgdi:waypoint>
-        <omgdi:waypoint x="963.5793683991592" y="-187.41714150100717"></omgdi:waypoint>
+        <omgdi:waypoint x="904.0" y="-197.24899701137437"></omgdi:waypoint>
+        <omgdi:waypoint x="929.5027167399167" y="-197.24899701137437"></omgdi:waypoint>
+        <omgdi:waypoint x="929.5027167399167" y="-196.77052504936302"></omgdi:waypoint>
+        <omgdi:waypoint x="955.0054334798332" y="-196.77052504936302"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_22" id="BPMNEdge_SequenceFlow_22" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="874.0" y="93.0"></omgdi:waypoint>
-        <omgdi:waypoint x="954.0" y="93.0"></omgdi:waypoint>
+        <omgdi:waypoint x="963.5793683991592" y="93.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="18.0" width="10.0" x="900.9042879940966" y="71.63495506966511"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
@@ -506,8 +506,8 @@
         <omgdi:waypoint x="1265.5633654187336" y="-65.15835496434332"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_20" id="BPMNEdge_SequenceFlow_20" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="14.0" flowable:targetDockerY="14.0">
-        <omgdi:waypoint x="1063.5793683991592" y="-187.41714150100717"></omgdi:waypoint>
-        <omgdi:waypoint x="1113.5793683991592" y="-187.41714150100717"></omgdi:waypoint>
+        <omgdi:waypoint x="1055.0054334798333" y="-196.77052504936302"></omgdi:waypoint>
+        <omgdi:waypoint x="1105.0054334798333" y="-196.77052504936302"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_42" id="BPMNEdge_SequenceFlow_42" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="14.0" flowable:targetDockerY="14.0">
         <omgdi:waypoint x="1743.755824189182" y="-65.15835496434332"></omgdi:waypoint>
