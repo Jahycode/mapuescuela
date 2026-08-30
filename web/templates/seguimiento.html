@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu pedido MAP-{{ '%04d' % pedido.id }} · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='seguimiento.css') }}">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap masthead__inner">
+    <div>
+      <p class="brand">Agrupación <span>Mapuescuela</span></p>
+      <p class="lbl" style="margin-top:6px">Seguimiento de tu pedido</p>
+    </div>
+    <dl class="masthead__meta">
+      <div>
+        <dt class="lbl">Pedido</dt>
+        <dd class="mono" style="font-size:var(--t-md);font-weight:500">MAP-{{ '%04d' % pedido.id }}</dd>
+      </div>
+      <div>
+        <dt class="lbl">Total</dt>
+        <dd class="mono" style="font-size:var(--t-md)">{{ pedido.montoTotal|plata }}</dd>
+      </div>
+    </dl>
+  </div>
+  <div class="stroke" role="presentation"></div>
+</header>
+
+<div class="wrap cols">
+
+  <main class="main">
+    <div class="apilar-5">
+
+      <div class="cabecera">
+        <div class="cabecera__ins">
+          <span class="insignia insignia--esperando">Esperando el pago</span>
+        </div>
+        <h1 class="titular">
+          Guardamos
+          {% if pedido['items']|length == 1 %}tu objeto{% else %}tus {{ pedido['items']|length }} objetos{% endif %}
+          a tu nombre por 24 horas
+        </h1>
+        <p class="lead lead--grande">
+          Nadie más los puede comprar mientras corra el plazo. Transfiere los
+          {{ pedido.montoTotal|plata }} y después sube una foto del comprobante acá mismo.
+        </p>
+      </div>
+
+      <div class="panel">
+        <div class="panel__head"><h2 class="sub">Datos para transferir</h2></div>
+        <div class="panel__body apilar-4">
+          <div class="datos">
+            <div class="dato"><span class="lbl">Banco</span><span class="dato__v">Banco Estado</span></div>
+            <div class="dato"><span class="lbl">Tipo de cuenta</span><span class="dato__v">Cuenta Corriente</span></div>
+            <div class="dato"><span class="lbl">Número</span><span class="dato__v">12345678</span></div>
+            <div class="dato"><span class="lbl">RUT</span><span class="dato__v">65.123.456-7</span></div>
+            <div class="dato"><span class="lbl">A nombre de</span><span class="dato__v">Agrupación Mapuescuela</span></div>
+            <div class="dato dato--clave">
+              <span class="lbl">Monto exacto</span>
+              <span class="dato__v">{{ pedido.montoTotal|plata }}</span>
+            </div>
+            <div class="dato dato--clave">
+              <span class="lbl">Mensaje</span>
+              <span class="dato__v">MAP-{{ '%04d' % pedido.id }}</span>
+            </div>
+          </div>
+
+          <p class="nota">
+            <strong>Escribe MAP-{{ '%04d' % pedido.id }} en el mensaje de la transferencia.</strong>
+            Es lo único que nos permite reconocer que el pago es tuyo. Si tu banco no tiene ese campo,
+            mándanos el comprobante y listo.
+          </p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__head"><h2 class="sub">Qué viene después</h2></div>
+        <div class="panel__body">
+          <ul class="lista">
+            <li><span><strong>Transfieres desde tu banco</strong> el monto exacto, con el número del pedido en el mensaje.</span></li>
+            <li><span><strong>Subes una foto del comprobante</strong> en esta misma página.</span></li>
+            <li><span><strong>Lo revisa una persona del equipo</strong>, no una máquina, de lunes a viernes entre 9 y 20 horas.</span></li>
+            <li><span><strong>Coordinamos el retiro</strong> en Rancagua, el día y la hora que te acomode.</span></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <aside class="aside">
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Tu pedido</h2></div>
+      <div class="panel__body">
+        {% for item in pedido['items'] %}
+        <div class="objeto">
+          <div class="objeto__media">
+            <svg viewBox="0 0 200 250" aria-hidden="true">
+              <rect width="200" height="250" fill="#E4E0EC"/>
+              <rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/>
+              <rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/>
+              <rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/>
+              <rect x="46" y="62" width="108" height="16" fill="#A79DBA"/>
+            </svg>
+          </div>
+          <div>
+            <p class="objeto__num">N° {{ '%04d' % item.productoId }}</p>
+            <p class="objeto__nombre">{{ item.nombre }}</p>
+            <p class="objeto__precio">{{ item.precio|plata }}</p>
+          </div>
+        </div>
+        {% endfor %}
+
+        <div class="total">
+          <span class="lbl">Total</span>
+          <span class="total__cifra">{{ pedido.montoTotal|plata }}</span>
+        </div>
+
+        <p class="aside__pie" style="margin-top:var(--sp-3)">
+          Cada objeto es único y se vende una sola vez.
+          {% if pedido['items']|length == 1 %}Este es el que reservaste.
+          {% else %}Estos son los que reservaste.{% endif %}
+        </p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">A nombre de quién</h2></div>
+      <div class="panel__body ficha-datos">
+        <div>
+          <dt class="lbl">Nombre</dt>
+          <dd>{{ pedido.clienteNombre }}</dd>
+        </div>
+        <div>
+          <dt class="lbl">Correo</dt>
+          <dd>{{ pedido.clienteEmail }}</dd>
+        </div>
+        <div>
+          <dt class="lbl">Entrega</dt>
+          <dd>{{ pedido.modalidadEntrega }}</dd>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Quiénes somos</h2></div>
+      <div class="panel__body ficha-datos">
+        <div><dt class="lbl">Nombre</dt><dd>Agrupación Mapuescuela</dd></div>
+        <div><dt class="lbl">RUT</dt><dd>65.123.456-7</dd></div>
+        <div><dt class="lbl">Dirección</dt><dd>Av. República 1180, Rancagua</dd></div>
+        <div>
+          <dt class="lbl">Teléfono y WhatsApp</dt>
+          <dd>+56 9 1234 5678</dd>
+          <p>Te contestamos de lunes a viernes, de 9 a 20 horas.</p>
+        </div>
+      </div>
+    </section>
+
+  </aside>
+</div>
+
+</body>
+</html>

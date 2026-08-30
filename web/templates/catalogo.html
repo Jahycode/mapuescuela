@@ -340,8 +340,8 @@
 
           {% if p.condicion or p.medida %}
           <dl class="datos">
-            {% if p.condicion %}<div><dt class="lbl">Estado</dt><dd>{{ p.condicion }}</dd></div>{% endif %}
-            {% if p.medida %}<div><dt class="lbl">Medidas</dt><dd>{{ p.medida }}</dd></div>{% endif %}
+            {% if p.condicion %}<div><dt class="lbl">Estado</dt><dd>{{ p.condicion|etiqueta_condicion }}</dd></div>{% endif %}
+            {% if p.medida %}<div><dt class="lbl">{{ p.categoria|rotulo_medida }}</dt><dd>{{ p.medida }}</dd></div>{% endif %}
           </dl>
           {% endif %}
 
@@ -350,7 +350,13 @@
 
           <div class="ficha__pie">
             <span class="precio">{{ p.precio|plata }}</span>
-            <button class="btn btn--pri">Reservar</button>
+            {% if p.id in seleccionados %}
+              <a class="btn btn--sec" href="{{ url_for('checkout') }}">Ya está en tu lista</a>
+            {% else %}
+              <form method="post" action="{{ url_for('agregar', producto_id=p.id) }}">
+                <button class="btn btn--pri" type="submit">Reservar</button>
+              </form>
+            {% endif %}
           </div>
         </div>
       </li>

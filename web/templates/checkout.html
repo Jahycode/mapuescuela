@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reservar tu pedido · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='checkout.css') }}">
+</head>
+<body>
+
+<header class="tope">
+  <div class="wrap tope__in">
+    <p class="marca">Agrupación <span>Mapuescuela</span></p>
+    <p class="ruta"><a href="{{ url_for('catalogo') }}">El registro</a> · <b>Reservar tu pedido</b></p>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+{% if not elegidos and not tomados %}
+
+<div class="wrap" style="padding-block:var(--sp-12)">
+  <section class="panel">
+    <div class="panel__body">
+      <h1 class="titular">No has elegido nada todavía</h1>
+      <p class="lead">
+        Anda al registro y aprieta «Reservar» en el objeto que te guste. Puedes juntar varios
+        en el mismo pedido.
+      </p>
+      <div><a class="btn btn--pri" href="{{ url_for('catalogo') }}">Ir al registro</a></div>
+    </div>
+  </section>
+</div>
+
+{% else %}
+
+<form method="post" action="{{ url_for('reservar') }}">
+<div class="wrap cols">
+
+  <main class="principal">
+
+    <div>
+      <h1 class="titular">Reserva tu pedido</h1>
+      <p class="lead" style="margin-top:var(--sp-3)">
+        Acá no se paga. Dejas tus datos, apartamos los objetos a tu nombre y en la pantalla
+        siguiente te mostramos la cuenta para transferir.
+      </p>
+    </div>
+
+    {% if error %}
+    <div class="aviso" style="border-left-color:var(--can-fg);background:var(--can-bg)">
+      <b>No pudimos crear tu pedido.</b> {{ error }}
+    </div>
+    {% endif %}
+
+    {% if tomados %}
+    <div class="aviso" style="border-left-color:var(--can-fg);background:var(--can-bg)">
+      <b>
+        {% if tomados|length == 1 %}Uno de tus objetos ya no está disponible.
+        {% else %}Algunos de tus objetos ya no están disponibles.{% endif %}
+      </b>
+      Mientras mirabas, otra persona alcanzó a reservar
+      {% for p in tomados %}«{{ p.nombre }}»{% if not loop.last %}, {% endif %}{% endfor %}.
+      Cada objeto existe uno solo, así que no lo podemos reponer. El resto de tu pedido sigue en pie.
+    </div>
+    {% endif %}
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Todavía no estás comprando nada</h2></div>
+      <div class="panel__body">
+        <ol class="umbrales">
+          <li class="umbral" data-ahora="1">
+            <div>
+              <strong>Ahora reservas, y no pagas.</strong>
+              <p>Cuando aprietes el botón, apartamos estos objetos a tu nombre y salen del registro.
+              En esta página no se cobra nada y no pedimos datos de tarjeta.</p>
+            </div>
+          </li>
+          <li class="umbral">
+            <div>
+              <strong>Después transfieres, dentro de 24 horas.</strong>
+              <p>Te mostramos el banco, la cuenta y el monto exacto. Transfieres desde tu banco
+              y subes una foto del comprobante en la misma página.</p>
+            </div>
+          </li>
+          <li class="umbral">
+            <div>
+              <strong>Al final confirmamos, y ahí el pedido es tuyo.</strong>
+              <p>Una persona del equipo revisa el comprobante y te avisamos el mismo día.
+              Recién entonces está comprado.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="aviso">
+          <b>Si no transfieres, no pasa nada malo.</b>
+          <p style="margin-top:var(--sp-2);font-size:var(--t-sm);color:var(--ink-2)">
+            Al cumplirse las 24 horas los objetos vuelven al registro y quedan disponibles para
+            otra persona. No hay multa, no hay cargo y no queda anotado en tu contra en ninguna parte.
+          </p>
+        </div>
+
+        <p class="consecuencia">
+          <b>Ojo con una cosa:</b> hasta que aprietes el botón, esto no está apartado.
+          Cada objeto es uno solo, así que otra persona podría reservarlo antes que tú.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head">
+        <h2 class="sub">Qué llevas</h2>
+        <span class="lbl">
+          {% if elegidos|length == 1 %}1 objeto{% else %}{{ elegidos|length }} objetos{% endif %}
+        </span>
+      </div>
+      <div class="panel__body">
+        {% for p in elegidos %}
+        <div class="objeto">
+          <div class="objeto__foto">
+            <svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%">
+              <rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/>
+              <rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/>
+              <rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/>
+              <rect x="46" y="62" width="108" height="16" fill="#A79DBA"/>
+            </svg>
+          </div>
+          <div>
+            <p class="objeto__n">N° {{ '%04d' % p.id }}</p>
+            <p class="objeto__nom">{{ p.nombre }}</p>
+            <p class="objeto__det">
+              {{ p.condicion|etiqueta_condicion }}{% if p.medida %} · {{ p.medida }}{% endif %}
+            </p>
+          </div>
+          <div class="objeto__der">
+            <span class="objeto__precio">{{ p.precio|plata }}</span>
+            <button class="btn btn--peligro btn--sm" type="submit"
+                    formaction="{{ url_for('quitar', producto_id=p.id) }}">
+              Sacar de la lista
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+
+        <p class="consecuencia">
+          No hay cantidades que elegir: cada objeto del registro existe uno solo.
+          Lo único que puedes hacer acá es sacar algo de la lista.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Tus datos</h2></div>
+      <div class="panel__body">
+        <div class="campos">
+          <div class="campo">
+            <label class="lbl" for="nombre">Nombre y apellido</label>
+            <input type="text" id="nombre" name="nombre" autocomplete="name"
+                   placeholder="Camila Riquelme" required>
+          </div>
+          <div class="campo">
+            <label class="lbl" for="correo">Correo</label>
+            <input type="email" id="correo" name="correo" autocomplete="email"
+                   placeholder="camila@correo.cl" required>
+            <p class="ayuda">Acá te llega el enlace para volver a ver tu pedido cuando quieras.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Cómo lo recibes</h2></div>
+      <div class="panel__body">
+        <div class="opciones">
+          <label class="opcion">
+            <input type="radio" name="entrega" value="retiro" checked>
+            <div>
+              <strong>Lo retiras en la sede</strong>
+              <p>Pasas cuando te acomode, dentro del horario. Te lo guardamos siete días.</p>
+            </div>
+            <span class="opcion__precio">Sin costo</span>
+          </label>
+        </div>
+
+        <div>
+          <span class="lbl">Dónde queda la sede</span>
+          <div class="sede" style="margin-top:var(--sp-3)">
+            <div><dt class="lbl">Dirección</dt><dd>Av. República 1180</dd></div>
+            <div><dt class="lbl">Comuna</dt><dd>Rancagua</dd></div>
+            <div><dt class="lbl">Horario</dt><dd>Lu a Vi, 10 a 18 hrs</dd></div>
+          </div>
+        </div>
+
+        <p class="consecuencia">
+          Por ahora solo hacemos retiro en la sede. El despacho por encomienda viene pronto.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <aside class="aside">
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Tu pedido</h2></div>
+      <div class="panel__body">
+        <div class="resumen__objetos">
+          {% for p in elegidos %}
+          <p class="resumen__obj">
+            <span>{{ p.nombre }}<em>N° {{ '%04d' % p.id }}</em></span>
+            <b>{{ p.precio|plata }}</b>
+          </p>
+          {% endfor %}
+        </div>
+
+        <div style="display:grid;gap:var(--sp-2)">
+          <p class="linea"><span>Los objetos</span><span>{{ total|plata }}</span></p>
+          <p class="linea linea--total">
+            <span class="lbl">Total a transferir</span><b>{{ total|plata }}</b>
+          </p>
+        </div>
+
+        <ul class="pasos-cortos">
+          <li data-ahora="1">Reservas acá, sin pagar</li>
+          <li>Transfieres dentro de 24 horas</li>
+          <li>Confirmamos y es tuyo</li>
+        </ul>
+
+        <div class="aviso aviso--plazo">
+          <b>El plazo empieza a correr cuando aprietes el botón, no antes.</b>
+          <p style="margin-top:var(--sp-2);font-size:var(--t-sm)">
+            Desde ahí tienes 24 horas para transferir.
+          </p>
+        </div>
+
+        <div style="display:grid;gap:var(--sp-3)">
+          <button class="btn btn--pri btn--block" type="submit">
+            Reservar y ver los datos para transferir
+          </button>
+          <p class="consecuencia">
+            <b>Al apretar el botón</b> apartamos
+            {% if elegidos|length == 1 %}el objeto{% else %}los {{ elegidos|length }} objetos{% endif %}
+            a tu nombre por 24 horas. No se cobra nada acá.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2 class="sub">Quiénes somos</h2></div>
+      <div class="panel__body confianza">
+        <div><dt class="lbl">Nombre</dt><dd>Agrupación Mapuescuela</dd></div>
+        <div><dt class="lbl">RUT</dt><dd>65.123.456-7</dd></div>
+        <div>
+          <dt class="lbl">Teléfono</dt>
+          <dd>+56 9 1234 5678</dd>
+          <p>Puedes llamarnos antes de reservar y te atendemos. De lunes a viernes, de 9 a 20 horas.</p>
+        </div>
+        <p>
+          Lo que juntamos vendiendo estos objetos donados financia el acompañamiento escolar
+          de 34 jóvenes de Rancagua que dejaron el colegio.
+        </p>
+      </div>
+    </section>
+
+  </aside>
+</div>
+</form>
+
+{% endif %}
+
+</body>
+</html>
