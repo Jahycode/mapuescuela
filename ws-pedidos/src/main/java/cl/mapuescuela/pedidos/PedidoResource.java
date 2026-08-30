@@ -338,7 +338,7 @@ public class PedidoResource {
         }
     }
 
-        @POST
+    @POST
     @Path("/{id}/revision")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
