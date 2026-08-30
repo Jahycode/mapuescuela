@@ -2,6 +2,7 @@ import os
 
 import requests
 from flask import Flask, abort, redirect, render_template, request, session, url_for
+from flowable_client import arrancar_instancia
 
 WS_PEDIDOS = os.environ.get("WS_PEDIDOS", "http://localhost:9090")
 
@@ -117,8 +118,18 @@ def reservar():
     if respuesta.status_code != 201:
         return ver_checkout(error=respuesta.json().get("error")), 400
 
+    pedido = respuesta.json()
     session["seleccion"] = []
-    return redirect(url_for("seguimiento", pedido_id=respuesta.json()["id"]))
+
+    instancia = arrancar_instancia(pedido["id"], pedido["modalidadEntrega"])
+
+    requests.put(
+        f"{WS_PEDIDOS}/pedidos/{pedido['id']}/instancia",
+        json={"processInstanceId": instancia},
+        timeout=5,
+    )
+
+    return redirect(url_for("seguimiento", pedido_id=pedido["id"]))
 
 @app.get("/pedido/<int:pedido_id>")
 def seguimiento(pedido_id):
