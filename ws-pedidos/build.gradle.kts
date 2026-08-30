@@ -24,3 +24,7 @@ java {
 application {
     mainClass = "cl.mapuescuela.pedidos.App"
 }
+
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}
