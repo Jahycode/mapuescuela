@@ -306,6 +306,21 @@
       <p class="cuenta"><b>{{ disponibles|length }}</b><span>objetos en el registro ahora</span></p>
       <p class="cuenta cuenta--sordo"><b>{{ idos|length }}</b><span>ya encontraron casa</span></p>
     </div>
+
+    {% if elegidos %}
+    <div class="controles">
+      <p class="cuenta">
+        <b>{{ elegidos|length }}</b>
+        <span>
+          {% if elegidos|length == 1 %}objeto elegido{% else %}objetos elegidos{% endif %}
+          · {{ total_elegido|plata }}
+        </span>
+      </p>
+      <a class="btn btn--pri" href="{{ url_for('checkout') }}" style="margin-left:auto">
+        Ir a reservar
+      </a>
+    </div>
+    {% endif %}
   </div>
 </section>
 
@@ -321,7 +336,7 @@
 
     <ul class="rejilla">
       {% for p in disponibles %}
-      <li class="ficha" data-estado="disponible">
+      <li class="ficha" id="objeto-{{ p.id }}" data-estado="disponible">
         <div class="ficha__cab">
           <span class="ficha__n">N° {{ '%04d' % p.id }}</span>
         </div>

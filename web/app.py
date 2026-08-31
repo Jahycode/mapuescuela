@@ -56,11 +56,16 @@ def productos():
 @app.get("/")
 def catalogo():
     todos = productos()
+    seleccion = session.get("seleccion", [])
+    elegidos = [p for p in todos if p["id"] in seleccion]
+
     return render_template(
         "catalogo.html",
         disponibles=[p for p in todos if p["stock"] > 0],
         idos=[p for p in todos if p["stock"] == 0],
-        seleccionados=session.get("seleccion", []),
+        seleccionados=seleccion,
+        elegidos=elegidos,
+        total_elegido=sum(p["precio"] for p in elegidos),
     )
 
 
@@ -70,7 +75,8 @@ def agregar(producto_id):
     if producto_id not in seleccion:
         seleccion.append(producto_id)
         session["seleccion"] = seleccion
-    return redirect(url_for("checkout"))
+
+    return redirect(url_for("catalogo") + f"#objeto-{producto_id}")
 
 
 @app.post("/seleccion/<int:producto_id>/quitar")
