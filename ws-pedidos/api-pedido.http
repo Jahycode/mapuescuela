@@ -1,60 +1,163 @@
 # Peticiones al ws-pedidos (Java + Jersey, puerto 9090).
+# Se usa con la extensión "REST Client" de VS Code (humao.rest-client).
+#
+# Los bloques están en el orden en que se usan de verdad: primero se mira el catálogo,
+# después se crea un pedido, se le sube el comprobante y se registra la revisión.
+# Los que terminan en letra son casos de error, y tienen que fallar.
 
 @baseUrl = http://localhost:9090
 
-### 1) Listar pedidos
+### 1) El catálogo
+# Lo que muestra la primera pantalla de la web. Cada objeto trae su origen y sus marcas
+# de uso, y el stock siempre es 1 porque cada objeto existe uno solo.
+GET {{baseUrl}}/productos
+Accept: application/json
+
+### 2) Listar todos los pedidos
+# Sin los objetos de cada uno: para eso está el bloque 4.
 GET {{baseUrl}}/pedidos
 Accept: application/json
 
-### 2) Crear un pedido
+### 3) Crear un pedido
+# El servidor calcula el total y pone los precios; lo que venga en el cuerpo se ignora.
+# Responde 201 con el pedido completo, incluidos sus items con nombre y precio.
 POST {{baseUrl}}/pedidos
 Content-Type: application/json
 Accept: application/json
 
 {
-  "clienteNombre": "Juan Perez",
-  "clienteEmail": "juan@example.com",
-  "montoTotal": 15000,
-  "modalidadEntrega": "RETIRO",
-  "productoId": 1,
-  "cantidad": 1
+  "clienteNombre": "Camila Riquelme",
+  "clienteEmail": "camila@correo.cl",
+  "modalidadEntrega": "retiro",
+  "items": [
+    { "productoId": 2 },
+    { "productoId": 3 }
+  ]
 }
 
-### 3) Descontar stock de un pedido
-# El producto 1 (el sofa) tiene stock 1:
-@pedidoId = 1
+### 3a) Sin objetos (debe dar 400)
+POST {{baseUrl}}/pedidos
+Content-Type: application/json
+
+{ "clienteEmail": "camila@correo.cl", "items": [] }
+
+### 3b) El mismo objeto repetido (debe dar 400)
+# Cada objeto existe uno solo, así que pedirlo dos veces no tiene sentido.
+POST {{baseUrl}}/pedidos
+Content-Type: application/json
+
+{ "clienteEmail": "camila@correo.cl", "items": [ { "productoId": 4 }, { "productoId": 4 } ] }
+
+### 3c) Precio falso (debe ignorarlo y guardar el de la base)
+# El cliente manda precio 1 y el servidor responde con el precio real.
+POST {{baseUrl}}/pedidos
+Content-Type: application/json
+
+{ "clienteEmail": "vivo@correo.cl", "items": [ { "productoId": 4, "precio": 1 } ] }
+
+### 4) Ver un pedido con sus objetos
+# Cambiar el número por el que devolvió el bloque 3.
+@pedidoId = 97
+GET {{baseUrl}}/pedidos/{{pedidoId}}
+Accept: application/json
+
+### 5) Vincular el pedido con su instancia del proceso
+# Es lo que hace la web después de arrancar la instancia en Flowable.
+PUT {{baseUrl}}/pedidos/{{pedidoId}}/instancia
+Content-Type: application/json
+
+{ "processInstanceId": "PEGAR-AQUI-EL-ID-DE-LA-INSTANCIA" }
+
+### 6) Reservar los objetos del pedido
+# Lo llama el worker cuando el proceso ejecuta "Descontar inventario".
+# Es todo o nada: si un objeto ya está tomado, ninguno baja.
 POST {{baseUrl}}/pedidos/{{pedidoId}}/descontar-stock
 Accept: application/json
 
-### 4) Descontar stock de un pedido que no existe
+### 6a) Reservar un pedido que no existe (debe dar 404)
 POST {{baseUrl}}/pedidos/999/descontar-stock
 Accept: application/json
 
+### 7) Subir el comprobante
+# El cuerpo son los bytes del archivo tal cual, sin multipart.
+# El servidor genera el nombre con el que lo guarda; nunca usa el del cliente.
+POST {{baseUrl}}/pedidos/{{pedidoId}}/comprobante
+Content-Type: image/png
 
-### 5) Registrar el desenalce de un pedido
-POST http://localhost:9090/pedidos/1/desenlace
+< ./comprobante-de-prueba.png
+
+### 7a) Un tipo que no aceptamos (debe dar 415)
+POST {{baseUrl}}/pedidos/{{pedidoId}}/comprobante
+Content-Type: text/plain
+
+esto no es un comprobante
+
+### 8) El historial de comprobantes del pedido
+# Del más nuevo al más viejo. Si se pidió otra foto, quedan los dos.
+GET {{baseUrl}}/pedidos/{{pedidoId}}/comprobantes
+Accept: application/json
+
+### 9) Ver el comprobante más reciente
+# Devuelve los bytes con su Content-Type; en el navegador se ve la imagen.
+GET {{baseUrl}}/pedidos/{{pedidoId}}/comprobante
+
+### 10) Registrar la revisión del pago
+# Lo que hace la voluntaria al mirar el comprobante. El monto leído es opcional,
+# pero si la decisión no es APROBADO el mensaje es obligatorio.
+POST {{baseUrl}}/pedidos/{{pedidoId}}/revision
 Content-Type: application/json
+Accept: application/json
+
+{
+  "revisor": "Ana Millan",
+  "decision": "APROBADO",
+  "montoLeido": 54500
+}
+
+### 10a) Cancelar sin explicarle nada al cliente (debe dar 400)
+POST {{baseUrl}}/pedidos/{{pedidoId}}/revision
+Content-Type: application/json
+
+{ "revisor": "Ana Millan", "decision": "CANCELADO" }
+
+### 10b) Una decisión que no existe (debe dar 400)
+POST {{baseUrl}}/pedidos/{{pedidoId}}/revision
+Content-Type: application/json
+
+{ "revisor": "Ana Millan", "decision": "MAS_O_MENOS" }
+
+### 11) El historial de revisiones
+# Quién decidió qué y cuándo. Es lo que responde "¿y esto por qué se canceló?".
+GET {{baseUrl}}/pedidos/{{pedidoId}}/revisiones
+Accept: application/json
+
+### 12) Registrar el desenlace del pedido
+# Uno de los seis finales del proceso. Lo llama el worker.
+POST {{baseUrl}}/pedidos/{{pedidoId}}/desenlace
+Content-Type: application/json
+Accept: application/json
+
 {
   "valor": "RECHAZADO",
   "motivo": "el comprobante no coincide con el monto"
 }
 
-### 6) Registrar un desenlace inválido
-POST http://localhost:9090/pedidos/1/desenlace
+### 12a) Un desenlace inválido (debe dar 400)
+POST {{baseUrl}}/pedidos/{{pedidoId}}/desenlace
 Content-Type: application/json
-{
-  "valor": "INVENTADO",
-}
 
-### 7) Registrar un aviso al cliente
-POST http://localhost:9090/pedidos/1/notificaciones
+{ "valor": "INVENTADO" }
+
+### 13) Registrar un aviso al cliente
+# Responde 201 si lo creó y 200 si ese aviso ya existía: se puede repetir sin duplicar.
+POST {{baseUrl}}/pedidos/{{pedidoId}}/notificaciones
 Content-Type: application/json
+Accept: application/json
 
 { "tipo": "PAGO_RECHAZADO" }
 
-### 8) Tipo invalido (debe dar 400)
-POST http://localhost:9090/pedidos/1/notificaciones
+### 13a) Un tipo de aviso que no existe (debe dar 400)
+POST {{baseUrl}}/pedidos/{{pedidoId}}/notificaciones
 Content-Type: application/json
 
 { "tipo": "INVENTADO" }
-

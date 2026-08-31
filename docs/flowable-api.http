@@ -55,7 +55,7 @@ Authorization: {{authorization}}
 Accept: application/json
 
 ### 5) Tareas activas de una instancia (¿dónde está el token?)
-@processInstanceId = 2604690e-9d00-11f1-961c-fa1358949da8
+@processInstanceId = 22d11e80-a4b2-11f1-9180-1aa83d15a4cf
 GET {{baseUrl}}/service/runtime/tasks?processInstanceId={{processInstanceId}}
 Authorization: {{authorization}}
 Accept: application/json
@@ -67,7 +67,7 @@ Accept: application/json
 #  Antes de cada uno: correr el bloque 5 y actualizar @taskId (cambia siempre).
 # ----------------------------------------------------------------------------
 
-@taskId = 68df6e7c-9d00-11f1-961c-fa1358949da8
+@taskId = 04ab920a-a4b3-11f1-9180-1aa83d15a4cf
 
 ### 6) Tarea que NO decide nada -> solo se cierra
 # Sirve para: Adjuntar comprobante · Preparar pedido · Marcar listo para retiro
@@ -185,3 +185,17 @@ Authorization: {{authorization}}
 Content-Type: application/json
 
 { "workerId": "worker-manual" }
+
+
+### 15) Limpiar el motor antes de grabar
+# Paso 1: listar las instancias vivas y copiar el id de la que se quiere borrar.
+GET {{baseUrl}}/service/runtime/process-instances
+Authorization: {{authorization}}
+Accept: application/json
+
+### 15b) Borrar una instancia
+# Responde 204 sin cuerpo. El historial NO se pierde: la instancia pasa de "en
+# ejecucion" a "terminada" y sigue contando como evidencia del recorrido.
+@instanciaABorrar = PEGAR-EL-ID
+DELETE {{baseUrl}}/service/runtime/process-instances/{{instanciaABorrar}}
+Authorization: {{authorization}}

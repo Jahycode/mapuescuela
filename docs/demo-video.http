@@ -1,0 +1,123 @@
+# DEMO — el recorrido completo, en el orden exacto en que se graba.
+#
+# Este archivo es solo para el video. Los archivos completos, con todos los endpoints
+# y los casos de error, son:
+#   · ws-pedidos/api-pedido.http    (el web service)
+#   · docs/flowable-api.http        (el motor)
+#
+# Antes de empezar: los cuatro servicios arriba, en este orden.
+#   1. docker start flowable
+#   2. cd ws-pedidos  →  .\gradlew.bat run     (esperar "Tablas listas.")
+#   3. cd worker      →  .\.venv\Scripts\python.exe worker.py
+#   4. cd web         →  .\.venv\Scripts\python.exe app.py
+#
+# Solo hay que actualizar TRES variables durante la grabación, y están todas acá arriba.
+
+@ws = http://localhost:9090
+@motor = http://localhost:8080/flowable-rest
+@auth = Basic rest-admin:test
+
+# ─── Se completan sobre la marcha ───────────────────────────────────────────
+@pedidoId = 1
+@processInstanceId = 5db25462-a4c0-11f1-9180-1aa83d15a4cf
+@taskId = b6c0558a-a4c0-11f1-9180-1aa83d15a4cf
+
+
+# ════════════════════════════════════════════════════════════════════════════
+#  ANTES: en el navegador, reservar dos objetos en http://localhost:5000
+#  Al llegar a la pagina del pedido, leer el numero de la URL: /pedido/1 -> @pedidoId = 1
+# ════════════════════════════════════════════════════════════════════════════
+
+
+### 1) El pedido que acabo de crear
+# Mostrar: los dos objetos con su precio, el total, y el processInstanceId.
+# → COPIAR el processInstanceId a la variable de arriba.
+GET {{ws}}/pedidos/{{pedidoId}}
+Accept: application/json
+
+
+### 2) ¿Dónde está el proceso ahora?
+# Mostrar: la tarea "Adjuntar comprobante de transferencia" con su formKey.
+# → COPIAR el "id" de la tarea a @taskId.
+GET {{motor}}/service/runtime/tasks?processInstanceId={{processInstanceId}}
+Authorization: {{auth}}
+Accept: application/json
+
+
+### 3) Las variables que la web le pasó al motor
+# Mostrar: pedidoId como número, modalidadEntrega en MAYÚSCULAS, plazoPago PT24H.
+GET {{motor}}/service/runtime/process-instances/{{processInstanceId}}/variables
+Authorization: {{auth}}
+Accept: application/json
+
+
+### 4) Cerrar la tarea del cliente
+# Esta tarea no decide nada: solo se completa.
+POST {{motor}}/service/runtime/tasks/{{taskId}}
+Authorization: {{auth}}
+Content-Type: application/json
+
+{ "action": "complete" }
+
+
+### 5) ¿Dónde quedó el proceso?
+# Mostrar: ahora la tarea es "Revisar comprobante de pago", con otro formKey.
+# → ACTUALIZAR @taskId con el id de esta tarea nueva.
+GET {{motor}}/service/runtime/tasks?processInstanceId={{processInstanceId}}
+Authorization: {{auth}}
+Accept: application/json
+
+
+### 6) La voluntaria registra su revisión
+# Esto queda en el web service: quién revisó y qué decidió.
+POST {{ws}}/pedidos/{{pedidoId}}/revision
+Content-Type: application/json
+Accept: application/json
+
+{
+  "revisor": "Ana Millán",
+  "decision": "APROBADO"
+}
+
+
+### 7) Y aprueba la tarea en el motor
+# La variable esAprobado es la que lee el gateway "¿Pago aprobado?".
+POST {{motor}}/service/runtime/tasks/{{taskId}}
+Authorization: {{auth}}
+Content-Type: application/json
+
+{
+  "action": "complete",
+  "variables": [
+    { "name": "esAprobado", "type": "boolean", "value": true }
+  ]
+}
+
+
+### 8) Lo que devolvió el worker
+# Mostrar: stockOk en true. Nadie lo escribió a mano; lo puso el worker.
+GET {{motor}}/service/runtime/process-instances/{{processInstanceId}}/variables
+Authorization: {{auth}}
+Accept: application/json
+
+
+### 9) El proceso siguió solo
+# Mostrar: la tarea activa ahora es "Preparar pedido". El token pasó por el gateway,
+# la tarea automática y volvió a una tarea de persona, sin que nadie lo empujara.
+GET {{motor}}/service/runtime/tasks?processInstanceId={{processInstanceId}}
+Authorization: {{auth}}
+Accept: application/json
+
+
+### 10) El recorrido completo del token
+# La evidencia de todo el camino, paso por paso y con sus tiempos.
+GET {{motor}}/service/history/historic-activity-instances?processInstanceId={{processInstanceId}}&sort=startTime&order=asc
+Authorization: {{auth}}
+Accept: application/json
+
+
+# ════════════════════════════════════════════════════════════════════════════
+#  CIERRE: recargar http://localhost:5000
+#  Los dos objetos ya no están en el catálogo. Bajaron a "Ya encontraron casa",
+#  y nadie los movió: su stock quedó en cero porque el proceso lo decidió.
+# ════════════════════════════════════════════════════════════════════════════
