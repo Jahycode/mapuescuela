@@ -17,7 +17,7 @@ public class App {
         } catch (Exception e) {
             System.err.println("No pude crear las tablas. No levanto el servicio.");
             e.printStackTrace();
-            return;
+            System.exit(1);
         }
 
         URI baseUri = UriBuilder.fromUri("http://localhost/").port(9090).build();
