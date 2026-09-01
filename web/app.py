@@ -2,7 +2,7 @@ import os
 
 import requests
 from flask import Flask, abort, redirect, render_template, request, session, url_for
-from flowable_client import arrancar_instancia
+from flowable_client import arrancar_instancia, tareas_pendientes
 
 WS_PEDIDOS = os.environ.get("WS_PEDIDOS", "http://localhost:9090")
 
@@ -23,6 +23,31 @@ ROTULO_MEDIDA = {
     "otros": "Detalle",
 }
 
+# Cada tarea humana se dibuja segun su grupo. El formKey lo declara el BPMN.
+GRUPOS_TAREA = {
+    "adjuntarComprobante": "comprobante",
+    "revisionDelPago": "comprobante",
+    "preparacionDelPedido": "preparar",
+    "avisoDeRetiroListo": "entrega",
+    "registroDelRetiro": "entrega",
+    "datosDelEnvio": "despacho",
+    "despachoPorVoluntario": "despacho",
+    "gestionDelDespacho": "despacho",
+}
+
+# Como se le nombra cada grupo a la voluntaria. El formKey es nombre interno.
+ETIQUETA_GRUPO = {
+    "comprobante": "Pago",
+    "preparar": "Preparación",
+    "despacho": "Despacho",
+    "entrega": "Entrega",
+}
+
+# Desde cuando una tarea se muestra apurada o atrasada. El plazo de pago es de
+# 24 horas, asi que a las doce ya va la mitad del reloj corriendo.
+APURA_MIN = 4 * 60
+ATRASADO_MIN = 12 * 60
+
 
 @app.template_filter("plata")
 def plata(monto):
@@ -42,6 +67,19 @@ def rotulo_medida(categoria):
     return ROTULO_MEDIDA.get(categoria, "Medidas")
 
 
+@app.template_filter("rotulo_grupo")
+def rotulo_grupo(grupo):
+    """El formKey es nombre interno; en pantalla va la etiqueta."""
+    return ETIQUETA_GRUPO.get(grupo, "Tarea")
+
+
+@app.template_filter("espera")
+def espera(minutos):
+    """125 -> 2 h 05 min. Los minutos los calcula flowable_client."""
+    horas, resto = divmod(minutos, 60)
+    return f"{horas} h {resto:02d} min" if horas else f"{resto} min"
+
+
 @app.errorhandler(requests.RequestException)
 def sin_backend(e):
     """Si ws-pedidos no responde, una pagina que lo explica en vez de un stack trace."""
@@ -52,6 +90,10 @@ def productos():
     """La web no guarda nada por su cuenta: el catalogo se le pregunta a ws-pedidos."""
     return requests.get(f"{WS_PEDIDOS}/productos", timeout=5).json()
 
+
+def pedidos():
+    """La web no guarda nada por su cuenta: el catalogo se le pregunta a ws-pedidos."""
+    return requests.get(f"{WS_PEDIDOS}/pedidos", timeout=5).json()
 
 @app.get("/")
 def catalogo():
@@ -147,6 +189,49 @@ def seguimiento(pedido_id):
     return render_template("seguimiento.html", pedido=respuesta.json())
 
 
+def urgencia(espera_min):
+    """En que tramo cae una tarea segun lo que lleva esperando."""
+    if espera_min >= ATRASADO_MIN:
+        return "atrasado"
+    if espera_min >= APURA_MIN:
+        return "apura"
+    return "normal"
+
+
+@app.get("/bandeja")
+def bandeja():
+    """Las tareas pendientes: el motor dice cuales son, ws-pedidos de que tratan"""
+    por_id = {p["id"]: p for p in pedidos()}
+
+    tareas = []
+    for tarea in tareas_pendientes():
+        pedido = por_id.get(tarea["pedido_id"])
+        if pedido is None:
+            continue
+        tarea["pedido"] = pedido
+        tarea["grupo"] = GRUPOS_TAREA.get(tarea["form_key"], "entrega")
+        tarea["urgencia"] = urgencia(tarea["espera_min"])
+        tareas.append(tarea)
+
+    tareas.sort(key=lambda t: t["espera_min"], reverse=True)
+
+    elegida = request.args.get("tarea")
+    seleccionada = next((t for t in tareas if t["id"] == elegida), None)
+
+    # Los objetos solo se piden cuando hay una tarea abierta: la lista no los usa.
+    objetos = []
+    if seleccionada:
+        pedido_id = seleccionada["pedido_id"]
+        detalle = requests.get(f"{WS_PEDIDOS}/pedidos/{pedido_id}", timeout=5).json()
+        objetos = detalle.get("items", [])
+
+    return render_template(
+        "bandeja.html",
+        tareas=tareas,
+        atrasadas=sum(1 for t in tareas if t["urgencia"] == "atrasado"),
+        seleccionada=seleccionada,
+        objetos=objetos,
+    )
 
 
 if __name__ == "__main__":

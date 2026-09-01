@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tareas pendientes · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='bandeja.css') }}">
+</head>
+<body>
+
+{# Un dibujito por grupo de tarea. El grupo lo decide app.py a partir del formKey. #}
+{% macro icono(grupo) -%}
+  {%- if grupo == 'comprobante' -%}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 13h7M9 17h5"/></svg>
+  {%- elif grupo == 'preparar' -%}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path d="M3 8l9-5 9 5-9 5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+  {%- elif grupo == 'despacho' -%}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path d="M2 7h11v10H2z"/><path d="M13 10h4l4 4v3h-8z"/>
+      <circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+  {%- else -%}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path d="M20 7L9 18l-5-5"/></svg>
+  {%- endif -%}
+{%- endmacro %}
+
+
+<header class="tope">
+  <div class="wrap tope__in">
+    <div>
+      <p class="marca">Agrupación <span>Mapuescuela</span></p>
+      <p>Tareas pendientes</p>
+    </div>
+    <p class="lbl"><a href="{{ url_for('catalogo') }}">Ver el registro</a></p>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+
+<section class="resumen" aria-label="Resumen del día">
+  <div class="wrap resumen__in">
+    <div class="cifra">
+      <b>{{ tareas|length }}</b>
+      <span>{% if tareas|length == 1 %}tarea pendiente{% else %}tareas pendientes{% endif %}</span>
+    </div>
+    {% if atrasadas %}
+    <div class="cifra cifra--tarde">
+      <b>{{ atrasadas }}</b>
+      <span>{% if atrasadas == 1 %}atrasada{% else %}atrasadas{% endif %}</span>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+
+<div class="tablero">
+
+  {# ═══ IZQUIERDA · LA LISTA ═══ #}
+  <section class="panel panel--lista" aria-label="Lista de tareas">
+    <div class="panel__head">
+      <h2 class="sub">Por hacer</h2>
+      <span class="lbl">Lo que más espera, primero</span>
+    </div>
+
+    <div class="panel__scroll">
+      {% for t in tareas %}
+      <a class="tarea"
+         href="{{ url_for('bandeja', tarea=t.id) }}"
+         data-urg="{{ t.urgencia }}"
+         {% if seleccionada and seleccionada.id == t.id %}aria-current="true"{% endif %}>
+
+        <span class="tarea__icono">{{ icono(t.grupo) }}</span>
+
+        <div>
+          <p class="tarea__titulo">{{ t.nombre }}</p>
+          <p class="tarea__pedido">N° {{ '%04d' % t.pedido.id }} · {{ t.pedido.clienteNombre }}</p>
+          <p class="tarea__porque">{{ t.pedido.montoTotal|plata }} · {{ t.pedido.modalidadEntrega|lower }}</p>
+        </div>
+
+        <span class="tarea__derecha">
+          {% if t.urgencia != 'normal' %}
+          <span class="insignia insignia--{{ t.urgencia }}">
+            {{ 'Atrasado' if t.urgencia == 'atrasado' else 'Apura' }}
+          </span>
+          {% endif %}
+          <span class="espera">{{ t.espera_min|espera }}</span>
+        </span>
+      </a>
+      {% else %}
+      <div class="vacio-lista">
+        <strong>No hay nada pendiente</strong>
+        <p>Cuando alguien reserve algo, la tarea aparece acá sola.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+
+  {# ═══ DERECHA · EL DETALLE ═══ #}
+  <section class="panel panel--detalle" aria-label="Detalle de la tarea">
+    <div class="panel__scroll">
+
+      {% if not seleccionada %}
+      <div class="sin-tarea">
+        <strong>Elige una tarea</strong>
+        <p>Acá aparece de qué se trata, quién está esperando y qué objetos lleva el pedido.</p>
+      </div>
+
+      {% else %}
+      <div class="det">
+
+        <div class="det__cab">
+          <p class="det__marca">{{ icono(seleccionada.grupo) }} {{ seleccionada.grupo|rotulo_grupo }}</p>
+          <h2 class="det__titulo">{{ seleccionada.nombre }}</h2>
+          <div class="det__meta">
+            <dl><dt class="lbl">Pedido</dt><dd>N° {{ '%04d' % seleccionada.pedido.id }}</dd></dl>
+            <dl><dt class="lbl">Esperando</dt><dd>{{ seleccionada.espera_min|espera }}</dd></dl>
+          </div>
+        </div>
+
+        {% if seleccionada.urgencia != 'normal' %}
+        <p class="porque" data-urg="{{ seleccionada.urgencia }}">
+          Esta tarea lleva <b>{{ seleccionada.espera_min|espera }}</b> esperando.
+          {% if seleccionada.form_key == 'adjuntarComprobante' %}
+          El plazo para transferir es de 24 horas: pasado ese rato el pedido se cancela solo
+          y los objetos vuelven al registro.
+          {% else %}
+          Quien hizo el pedido ya pagó y está esperando noticias.
+          {% endif %}
+        </p>
+        {% endif %}
+
+        <div class="panel">
+          <div class="panel__head"><h3 class="sub">Quién está esperando</h3></div>
+          <div class="filas">
+            <dl class="fila-d"><dt class="lbl">Nombre</dt><dd>{{ seleccionada.pedido.clienteNombre }}</dd></dl>
+            <dl class="fila-d"><dt class="lbl">Correo</dt><dd>{{ seleccionada.pedido.clienteEmail }}</dd></dl>
+            <dl class="fila-d"><dt class="lbl">Entrega</dt><dd>{{ seleccionada.pedido.modalidadEntrega|lower }}</dd></dl>
+            <dl class="fila-d fila-d--clave"><dt class="lbl">Total</dt><dd>{{ seleccionada.pedido.montoTotal|plata }}</dd></dl>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head">
+            <h3 class="sub">Los objetos</h3>
+            <span class="lbl">{{ objetos|length }} en el pedido</span>
+          </div>
+          <div class="panel__body">
+            {% for o in objetos %}
+            <div class="objeto">
+              <div class="objeto__foto" role="presentation"></div>
+              <div>
+                <p class="objeto__n">N° {{ '%04d' % o.productoId }}</p>
+                <p class="objeto__nom">{{ o.nombre }}</p>
+                <p class="objeto__precio">{{ o.precio|plata }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+      {% endif %}
+
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>
