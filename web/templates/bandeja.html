@@ -34,9 +34,23 @@
   <div class="wrap tope__in">
     <div>
       <p class="marca">Agrupación <span>Mapuescuela</span></p>
-      <p>Tareas pendientes</p>
+      <p>Tareas pendientes · <a href="{{ url_for('catalogo') }}">ver el registro</a></p>
     </div>
-    <p class="lbl"><a href="{{ url_for('catalogo') }}">Ver el registro</a></p>
+
+    <form class="quien" method="post" action="{{ url_for('cambiar_voluntaria') }}">
+      <span class="quien__ini" aria-hidden="true">{{ voluntaria|iniciales }}</span>
+      <div>
+        <label class="oculto" for="quien">Quién está trabajando</label>
+        <select id="quien" name="voluntaria">
+          {% for v in voluntarias %}
+          <option {% if v == voluntaria %}selected{% endif %}>{{ v }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn--sec btn--sm">Cambiar</button>
+        <input type="hidden" name="tarea" value="{{ seleccionada.id if seleccionada else '' }}">
+        <p>Lo que hagas queda anotado con tu nombre.</p>
+      </div>
+    </form>
   </div>
 </header>
 <div class="trazo" role="presentation"></div>
@@ -162,6 +176,64 @@
             </div>
             {% endfor %}
           </div>
+        </div>
+
+        {# ═══ LAS ACCIONES ═══ #}
+        <div class="acciones">
+        {% if seleccionada.form_key == 'revisionDelPago' %}
+          <form method="post" action="{{ url_for('revisar_pago', tarea_id=seleccionada.id) }}">
+            <input type="hidden" name="pedido_id" value="{{ seleccionada.pedido.id }}">
+
+            <div class="campo">
+              <label class="lbl" for="montoLeido">Monto que dice el comprobante</label>
+              <input type="text" id="montoLeido" name="montoLeido" inputmode="numeric"
+                     placeholder="{{ seleccionada.pedido.montoTotal }}" autocomplete="off">
+              <p class="ayuda">Opcional. Sirve para dejar escrito si el monto no calzaba con el total.</p>
+            </div>
+
+            <div class="campo">
+              <label class="lbl" for="mensaje">Qué le decimos si no se aprueba</label>
+              <textarea id="mensaje" name="mensaje"
+                        placeholder="El monto transferido no coincide con el total del pedido."></textarea>
+              <p class="ayuda">Obligatorio para cancelar. Lo va a leer quien hizo el pedido.</p>
+            </div>
+
+            {% if error %}<p class="consecuencia"><b>{{ error }}</b></p>{% endif %}
+
+            {# Se lleva el Enter: no manda decision, asi que la ruta rebota sin hacer nada. #}
+            <button type="submit" class="oculto" tabindex="-1" aria-hidden="true">No decidir</button>
+
+            <div class="acciones__fila">
+              <button class="btn btn--pri" name="decision" value="APROBADO">Aprobar el pago</button>
+              <button class="btn btn--peligro" name="decision" value="CANCELADO">Cancelar el pedido</button>
+            </div>
+            <p class="consecuencia">
+              <b>Aprobar</b> descuenta los objetos del registro y manda el pedido a preparación.
+              <b>Cancelar</b> los devuelve al registro y le avisa a quien lo pidió.
+            </p>
+          </form>
+
+        {% elif seleccionada.form_key == 'gestionDelDespacho' %}
+          <form method="post" action="{{ url_for('elegir_despacho', tarea_id=seleccionada.id) }}">
+            <div class="acciones__fila">
+              <button class="btn btn--pri" name="tipoDespacho" value="VOLUNTARIO">Lo lleva un voluntario</button>
+              <button class="btn btn--sec" name="tipoDespacho" value="COURIER">Va por courier</button>
+            </div>
+            <p class="consecuencia">
+              Con <b>courier</b> hay que registrar los datos del envío en el paso siguiente.
+            </p>
+          </form>
+
+        {% else %}
+          <form method="post" action="{{ url_for('completar', tarea_id=seleccionada.id) }}">
+            <div class="acciones__fila">
+              <button class="btn btn--pri">Listo, hecho</button>
+            </div>
+            <p class="consecuencia">
+              Esta tarea no decide nada: al cerrarla el proceso avanza al paso siguiente.
+            </p>
+          </form>
+        {% endif %}
         </div>
 
       </div>

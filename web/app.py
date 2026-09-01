@@ -2,7 +2,7 @@ import os
 
 import requests
 from flask import Flask, abort, redirect, render_template, request, session, url_for
-from flowable_client import arrancar_instancia, tareas_pendientes
+from flowable_client import arrancar_instancia, completar_tarea, tareas_pendientes
 
 WS_PEDIDOS = os.environ.get("WS_PEDIDOS", "http://localhost:9090")
 
@@ -35,6 +35,13 @@ GRUPOS_TAREA = {
     "gestionDelDespacho": "despacho",
 }
 
+# Quienes atienden la bandeja. Cada accion queda firmada con este nombre.
+VOLUNTARIAS = ("Ana Millán", "Diego Paredes", "Rosa Yáñez")
+
+ERRORES = {
+    "mensaje": "Para no aprobar el pago hay que escribirle algo al cliente.",
+}
+
 # Como se le nombra cada grupo a la voluntaria. El formKey es nombre interno.
 ETIQUETA_GRUPO = {
     "comprobante": "Pago",
@@ -65,6 +72,12 @@ def etiqueta_condicion(codigo):
 def rotulo_medida(categoria):
     """La columna medida guarda cosas distintas segun el tipo de objeto."""
     return ROTULO_MEDIDA.get(categoria, "Medidas")
+
+
+@app.template_filter("iniciales")
+def iniciales(nombre):
+    """Ana Millán -> AM, para el circulito del encabezado."""
+    return "".join(parte[0] for parte in nombre.split()[:2]).upper()
 
 
 @app.template_filter("rotulo_grupo")
@@ -231,7 +244,78 @@ def bandeja():
         atrasadas=sum(1 for t in tareas if t["urgencia"] == "atrasado"),
         seleccionada=seleccionada,
         objetos=objetos,
+        voluntaria=session.get("voluntaria", VOLUNTARIAS[0]),
+        voluntarias=VOLUNTARIAS,
+        error=ERRORES.get(request.args.get("error")),
     )
+
+
+@app.post("/bandeja/quien")
+def cambiar_voluntaria():
+    """Quien esta atendiendo la bandeja. Se guarda en la sesion, como la seleccion del catalogo."""
+    elegida = request.form.get("voluntaria")
+    if elegida in VOLUNTARIAS:
+        session["voluntaria"] = elegida
+    return redirect(url_for("bandeja", tarea=request.form.get("tarea") or None))
+
+
+@app.post("/bandeja/<tarea_id>/completar")
+def completar(tarea_id):
+    """Las seis tareas que no deciden nada: se cierran y el proceso sigue solo."""
+    completar_tarea(tarea_id)
+    return redirect(url_for("bandeja"))
+
+
+@app.post("/bandeja/<tarea_id>/revision")
+def revisar_pago(tarea_id):
+    """Primero queda escrito quien decidio, despues avanza el motor. Ese orden importa:
+    si ws-pedidos esta caido el proceso no avanza, en vez de avanzar sin dejar rastro."""
+    pedido_id = int(request.form["pedido_id"])
+    mensaje = request.form.get("mensaje", "").strip()
+
+    # Sin una decision explicita no se hace nada. Es lo que hace inofensivo
+    # apretar Enter dentro del formulario.
+    decision = request.form.get("decision")
+    if decision not in ("APROBADO", "CANCELADO"):
+        return redirect(url_for("bandeja", tarea=tarea_id))
+
+    aprobado = decision == "APROBADO"
+
+    if not aprobado and not mensaje:
+        return redirect(url_for("bandeja", tarea=tarea_id, error="mensaje"))
+
+    revision = {
+        "revisor": session.get("voluntaria", VOLUNTARIAS[0]),
+        "decision": "APROBADO" if aprobado else "CANCELADO",
+    }
+    if mensaje:
+        revision["mensaje"] = mensaje
+
+    leido = request.form.get("montoLeido", "").replace(".", "").strip()
+    if leido.isdigit():
+        revision["montoLeido"] = int(leido)
+
+    requests.post(
+        f"{WS_PEDIDOS}/pedidos/{pedido_id}/revision", json=revision, timeout=5
+    ).raise_for_status()
+
+    variables = [{"name": "esAprobado", "type": "boolean", "value": aprobado}]
+    if not aprobado:
+        variables.append({"name": "motivoRechazo", "value": mensaje})
+    completar_tarea(tarea_id, variables)
+
+    return redirect(url_for("bandeja"))
+
+
+@app.post("/bandeja/<tarea_id>/despacho")
+def elegir_despacho(tarea_id):
+    """El gateway compara con 'COURIER'; cualquier otra cosa cae al voluntario por defecto."""
+    tipo = request.form.get("tipoDespacho")
+    if tipo not in ("COURIER", "VOLUNTARIO"):
+        abort(400)
+
+    completar_tarea(tarea_id, [{"name": "tipoDespacho", "value": tipo}])
+    return redirect(url_for("bandeja"))
 
 
 if __name__ == "__main__":

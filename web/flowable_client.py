@@ -58,3 +58,18 @@ def tareas_pendientes():
         })
 
     return pendientes
+
+
+def completar_tarea(tarea_id, variables=None):
+    """Cierra una tarea en el motor. Las variables son las que leen los gateways."""
+    cuerpo = {"action": "complete"}
+    if variables:
+        cuerpo["variables"] = variables
+
+    respuesta = requests.post(
+        f"{FLOWABLE}/runtime/tasks/{tarea_id}",
+        auth=AUTH,
+        json=cuerpo,
+        timeout=10,
+    )
+    respuesta.raise_for_status()
