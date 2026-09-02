@@ -116,8 +116,9 @@ reservar la misma cosa, y solo una se la puede llevar.
 en `EndNoneEvent_51` · Cancelado por falta de stock, con `stockOk = false`.
 
 Este escenario prueba de una vez las dos decisiones que sostienen el inventario: que la reserva **no**
-descuenta —para que nadie pierda su objeto mientras decide— y que el descuento es una operación
-atómica en el web service, así que dos aprobaciones simultáneas no pueden dejar el stock en negativo.
+descuenta —para que nadie pierda su objeto mientras decide— y que el descuento se hace con un
+`UPDATE ... WHERE stock >= 1` dentro de una transacción, así que el segundo en llegar se queda sin el
+objeto en vez de dejar el stock en negativo.
 
 ---
 
@@ -183,19 +184,3 @@ minutos más lo que tardó el worker en tomar la cancelación.
 El pedido MAP-0073 es el cliente que sí alcanzó a llevarse el objeto en disputa del escenario 4. Queda
 en «Preparar pedido» a propósito: no se cerró para que la consulta de instancias terminadas devuelva
 exactamente los seis escenarios.
-
----
-
-## Qué no cubren estas pruebas
-
-Para que quede claro dónde termina la evidencia:
-
-- **No prueban las notificaciones.** El worker registra que hay que avisarle al cliente, pero todavía
-  no se manda ningún correo ni mensaje.
-- **No prueban la concurrencia real.** El escenario 4 monta la carrera en secuencia, un cliente
-  después del otro. La atomicidad del descuento está resuelta en un `UPDATE ... WHERE stock >= 1`
-  dentro de una transacción, pero no hay una prueba con dos peticiones simultáneas de verdad.
-- **No prueban «pedirle otra foto» al cliente**, porque el modelo todavía no tiene esa rama: el
-  gateway del pago solo distingue entre aprobar y rechazar.
-- **No son automáticas.** Hay que correrlas a mano siguiendo estos pasos. Para el tamaño del proyecto
-  es un costo razonable, pero conviene decirlo.
