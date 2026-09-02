@@ -73,3 +73,19 @@ def completar_tarea(tarea_id, variables=None):
         timeout=10,
     )
     respuesta.raise_for_status()
+
+def tarea_activa(instancia_id):
+    """La tarea humana donde esta parada una instancia, o None si no hay ninguna."""
+    respuesta = requests.get(
+        f"{FLOWABLE}/runtime/tasks",
+        auth=AUTH,
+        params={"processInstanceId": instancia_id},
+        timeout=10,
+    )
+    respuesta.raise_for_status()
+
+    tareas = respuesta.json()["data"]
+    if not tareas:
+        return None
+
+    return {"id": tareas[0]["id"], "form_key": tareas[0].get("formKey")}

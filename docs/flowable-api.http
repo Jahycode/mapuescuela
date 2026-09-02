@@ -67,6 +67,18 @@ Accept: application/json
 #  Antes de cada uno: correr el bloque 5 y actualizar @taskId (cambia siempre).
 # ----------------------------------------------------------------------------
 
+
+### 5b) Todas las tareas pendientes del proceso, con sus variables
+# Esta es la consulta que va a alimentar la bandeja de las voluntarias.
+# El includeProcessVariables es lo importante: sin el habria que preguntar
+# las variables tarea por tarea.
+GET {{baseUrl}}/service/runtime/tasks?processDefinitionKey=ventaMapuescuela&includeProcessVariables=true
+Authorization: {{authorization}}
+Accept: application/json
+
+
+
+
 @taskId = 04ab920a-a4b3-11f1-9180-1aa83d15a4cf
 
 ### 6) Tarea que NO decide nada -> solo se cierra
