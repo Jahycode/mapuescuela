@@ -39,10 +39,23 @@
   <main class="main">
     <div class="apilar-5">
 
+      {# En que paso va el pedido. Sin tarea: o termino, o hay una automatica corriendo. #}
+      {% set paso = tarea.form_key if tarea else none %}
+
       <div class="cabecera">
         <div class="cabecera__ins">
-          <span class="insignia insignia--esperando">Esperando el pago</span>
+          {% if paso == 'adjuntarComprobante' %}
+          <span class="insignia insignia--esperando">Esperando tu comprobante</span>
+          {% elif paso == 'revisionDelPago' %}
+          <span class="insignia insignia--revisando">Revisando tu pago</span>
+          {% elif paso %}
+          <span class="insignia insignia--aprobado">Pago aprobado</span>
+          {% else %}
+          <span class="insignia insignia--revisando">Procesando</span>
+          {% endif %}
         </div>
+
+        {% if paso == 'adjuntarComprobante' %}
         <h1 class="titular">
           Guardamos
           {% if pedido['items']|length == 1 %}tu objeto{% else %}tus {{ pedido['items']|length }} objetos{% endif %}
@@ -52,6 +65,12 @@
           Nadie más los puede comprar mientras corra el plazo. Transfiere los
           {{ pedido.montoTotal|plata }} y después sube una foto del comprobante acá mismo.
         </p>
+        {% else %}
+        <h1 class="titular">En qué va tu pedido</h1>
+        <p class="lead lead--grande">
+          Acá abajo está el estado actual y los objetos que reservaste.
+        </p>
+        {% endif %}
       </div>
 
       <div class="panel">
@@ -81,6 +100,49 @@
         </div>
       </div>
 
+      {% if paso == 'adjuntarComprobante' %}
+      <div class="panel">
+        <div class="panel__head"><h2 class="sub">Sube tu comprobante</h2></div>
+        <div class="panel__body">
+          <form class="subir" method="post" enctype="multipart/form-data"
+                action="{{ url_for('subir_comprobante', pedido_id=pedido.id) }}">
+            <label class="zona" for="comprobante">
+              <strong>Elige la foto de tu transferencia</strong>
+              <p>JPG o PNG, hasta 5 MB. Que se vea el monto y la fecha.</p>
+            </label>
+            <input class="oculto-visual" type="file" id="comprobante" name="comprobante"
+                   accept="image/png,image/jpeg" required>
+            <button class="btn btn--pri btn--block">Enviar el comprobante</button>
+          </form>
+        </div>
+      </div>
+
+      {% elif paso == 'revisionDelPago' %}
+      <div class="panel">
+        <div class="panel__head"><h2 class="sub">Recibimos tu comprobante</h2></div>
+        <div class="panel__body">
+          <p>Lo está revisando una persona del equipo, no una máquina. Te escribimos
+          apenas quede confirmado; por ahora no tienes que hacer nada.</p>
+        </div>
+      </div>
+
+      {% elif paso %}
+      <div class="panel">
+        <div class="panel__head"><h2 class="sub">Tu pago quedó aprobado</h2></div>
+        <div class="panel__body">
+          <p>Estamos preparando tu pedido. Te vamos a escribir para coordinar la entrega.</p>
+        </div>
+      </div>
+
+      {% else %}
+      <div class="panel">
+        <div class="panel__head"><h2 class="sub">Estamos procesando tu pedido</h2></div>
+        <div class="panel__body">
+          <p>No hay nada pendiente de tu parte en este momento.</p>
+        </div>
+      </div>
+      {% endif %}
+
       <div class="panel">
         <div class="panel__head"><h2 class="sub">Qué viene después</h2></div>
         <div class="panel__body">
@@ -88,7 +150,11 @@
             <li><span><strong>Transfieres desde tu banco</strong> el monto exacto, con el número del pedido en el mensaje.</span></li>
             <li><span><strong>Subes una foto del comprobante</strong> en esta misma página.</span></li>
             <li><span><strong>Lo revisa una persona del equipo</strong>, no una máquina, de lunes a viernes entre 9 y 20 horas.</span></li>
+            {% if pedido.modalidadEntrega == 'despacho' %}
+            <li><span><strong>Coordinamos el despacho</strong> contigo: la dirección, la forma de envío y el costo.</span></li>
+            {% else %}
             <li><span><strong>Coordinamos el retiro</strong> en Rancagua, el día y la hora que te acomode.</span></li>
+            {% endif %}
           </ul>
         </div>
       </div>

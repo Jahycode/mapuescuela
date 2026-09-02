@@ -2,12 +2,13 @@ import os
 
 import requests
 from flask import Flask, abort, redirect, render_template, request, session, url_for
-from flowable_client import arrancar_instancia, completar_tarea, tareas_pendientes
+from flowable_client import arrancar_instancia, completar_tarea, tarea_activa, tareas_pendientes
 
 WS_PEDIDOS = os.environ.get("WS_PEDIDOS", "http://localhost:9090")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "clave-solo-para-desarrollo")
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
 
 CONDICIONES = {
@@ -23,7 +24,6 @@ ROTULO_MEDIDA = {
     "otros": "Detalle",
 }
 
-# Cada tarea humana se dibuja segun su grupo. El formKey lo declara el BPMN.
 GRUPOS_TAREA = {
     "adjuntarComprobante": "comprobante",
     "revisionDelPago": "comprobante",
@@ -37,6 +37,8 @@ GRUPOS_TAREA = {
 
 # Quienes atienden la bandeja. Cada accion queda firmada con este nombre.
 VOLUNTARIAS = ("Ana Millán", "Diego Paredes", "Rosa Yáñez")
+# Las dos formas de entrega que el proceso sabe manejar.
+MODALIDADES = ("retiro", "despacho")
 
 ERRORES = {
     "mensaje": "Para no aprobar el pago hay que escribirle algo al cliente.",
@@ -165,12 +167,16 @@ def reservar():
     if not seleccion:
         return redirect(url_for("catalogo"))
 
+    modalidad = request.form.get("entrega")
+    if modalidad not in MODALIDADES:
+        modalidad = "retiro"
+
     respuesta = requests.post(
         f"{WS_PEDIDOS}/pedidos",
         json={
             "clienteNombre": request.form.get("nombre", "").strip(),
             "clienteEmail": request.form.get("correo", "").strip(),
-            "modalidadEntrega": "retiro",
+            "modalidadEntrega": modalidad,
             "items": [{"productoId": i} for i in seleccion],
         },
         timeout=5,
@@ -199,7 +205,12 @@ def seguimiento(pedido_id):
     if respuesta.status_code == 404:
         abort(404)
 
-    return render_template("seguimiento.html", pedido=respuesta.json())
+    pedido = respuesta.json()
+
+    instancia = pedido.get("processInstanceId")
+    tarea = tarea_activa(instancia) if instancia else None
+
+    return render_template("seguimiento.html", pedido=pedido, tarea=tarea)
 
 
 def urgencia(espera_min):
@@ -316,6 +327,30 @@ def elegir_despacho(tarea_id):
 
     completar_tarea(tarea_id, [{"name": "tipoDespacho", "value": tipo}])
     return redirect(url_for("bandeja"))
+
+@app.post("/pedido/<int:pedido_id>/comprobante")
+def subir_comprobante(pedido_id):
+    """Guarda el comprobante y recien despues avanza el proceso, en ese orden."""
+    archivo = request.files.get("comprobante")
+    if archivo is None or not archivo.filename:
+        return redirect(url_for("seguimiento", pedido_id=pedido_id))
+
+    subida = requests.post(
+        f"{WS_PEDIDOS}/pedidos/{pedido_id}/comprobante",
+        data=archivo.read(),
+        headers={"Content-Type": archivo.mimetype},
+        timeout=15,
+    )
+    subida.raise_for_status()
+
+    pedido = requests.get(f"{WS_PEDIDOS}/pedidos/{pedido_id}", timeout=5).json()
+    instancia = pedido.get("processInstanceId")
+    tarea = tarea_activa(instancia) if instancia else None
+
+    if tarea and tarea["form_key"] == "adjuntarComprobante":
+        completar_tarea(tarea["id"])
+
+    return redirect(url_for("seguimiento", pedido_id=pedido_id))
 
 
 if __name__ == "__main__":
