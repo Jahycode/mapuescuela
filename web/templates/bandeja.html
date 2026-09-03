@@ -48,7 +48,6 @@
         </select>
         <button class="btn btn--sec btn--sm">Cambiar</button>
         <input type="hidden" name="tarea" value="{{ seleccionada.id if seleccionada else '' }}">
-        <p>Lo que hagas queda anotado con tu nombre.</p>
       </div>
     </form>
   </div>
@@ -188,14 +187,14 @@
               <label class="lbl" for="montoLeido">Monto que dice el comprobante</label>
               <input type="text" id="montoLeido" name="montoLeido" inputmode="numeric"
                      placeholder="{{ seleccionada.pedido.montoTotal }}" autocomplete="off">
-              <p class="ayuda">Opcional. Sirve para dejar escrito si el monto no calzaba con el total.</p>
+              <p class="ayuda">Opcional.</p>
             </div>
 
             <div class="campo">
               <label class="lbl" for="mensaje">Qué le decimos si no se aprueba</label>
               <textarea id="mensaje" name="mensaje"
                         placeholder="El monto transferido no coincide con el total del pedido."></textarea>
-              <p class="ayuda">Obligatorio para cancelar. Lo va a leer quien hizo el pedido.</p>
+              <p class="ayuda">Obligatorio para cancelar.</p>
             </div>
 
             {% if error %}<p class="consecuencia"><b>{{ error }}</b></p>{% endif %}
@@ -207,10 +206,6 @@
               <button class="btn btn--pri" name="decision" value="APROBADO">Aprobar el pago</button>
               <button class="btn btn--peligro" name="decision" value="CANCELADO">Cancelar el pedido</button>
             </div>
-            <p class="consecuencia">
-              <b>Aprobar</b> descuenta los objetos del registro y manda el pedido a preparación.
-              <b>Cancelar</b> los devuelve al registro y le avisa a quien lo pidió.
-            </p>
           </form>
 
         {% elif seleccionada.form_key == 'gestionDelDespacho' %}
@@ -227,11 +222,8 @@
         {% else %}
           <form method="post" action="{{ url_for('completar', tarea_id=seleccionada.id) }}">
             <div class="acciones__fila">
-              <button class="btn btn--pri">Listo, hecho</button>
+              <button class="btn btn--pri">Listo</button>
             </div>
-            <p class="consecuencia">
-              Esta tarea no decide nada: al cerrarla el proceso avanza al paso siguiente.
-            </p>
           </form>
         {% endif %}
         </div>

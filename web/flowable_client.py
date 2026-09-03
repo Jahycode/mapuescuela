@@ -89,3 +89,12 @@ def tarea_activa(instancia_id):
         return None
 
     return {"id": tareas[0]["id"], "form_key": tareas[0].get("formKey")}
+
+
+def instancia_de_tarea(tarea_id):
+    """A que instancia pertenece una tarea. Hay que preguntarlo ANTES de completarla:
+    una vez completada, la tarea desaparece de /runtime/tasks."""
+    respuesta = requests.get(f"{FLOWABLE}/runtime/tasks/{tarea_id}", auth=AUTH, timeout=10)
+    respuesta.raise_for_status()
+    return respuesta.json()["processInstanceId"]
+

@@ -81,9 +81,9 @@
   .quien__ini { width:2.1rem; height:2.1rem; flex:0 0 auto; display:grid; place-items:center;
     border-radius:50%; background:var(--violeta); color:#fff;
     font-family:var(--display); font-weight:600; font-size:var(--t-sm); }
-  .quien select { font-size:var(--t-sm); padding:var(--sp-1) var(--sp-2);
+  .quien > div { display:flex; align-items:center; gap:var(--sp-2); }
+  .quien select { font-size:var(--t-sm); padding:var(--sp-2) var(--sp-3);
     border:1px solid var(--rule); border-radius:var(--radius); background:var(--card); }
-  .quien p { font-size:var(--t-micro); color:var(--ink-2); margin-top:2px; }
 
   .trazo { height:4px; background:var(--mostaza); flex:0 0 auto; }
 

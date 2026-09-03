@@ -233,6 +233,12 @@
     background: var(--paper); cursor: pointer; }
   .zona:hover { border-color: var(--violeta); }
   .zona p { font-size: var(--t-sm); color: var(--ink-2); }
+  .zona input[type=file] { font-size: var(--t-sm); max-width: 100%; }
+  .zona input[type=file]::file-selector-button {
+    margin-right: var(--sp-3); padding: var(--sp-2) var(--sp-4);
+    border: 1px solid var(--rule); border-radius: var(--radius);
+    background: var(--card); color: var(--ink); font: inherit; cursor: pointer; }
+  .zona input[type=file]::file-selector-button:hover { border-color: var(--violeta); color: var(--violeta); }
 
   .adjunto { display: flex; gap: var(--sp-4); align-items: flex-start;
     padding: var(--sp-4); border: 1px solid var(--rule); border-radius: var(--radius); }

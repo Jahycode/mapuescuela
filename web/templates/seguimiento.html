@@ -106,12 +106,12 @@
         <div class="panel__body">
           <form class="subir" method="post" enctype="multipart/form-data"
                 action="{{ url_for('subir_comprobante', pedido_id=pedido.id) }}">
-            <label class="zona" for="comprobante">
+            <div class="zona">
               <strong>Elige la foto de tu transferencia</strong>
               <p>JPG o PNG, hasta 5 MB. Que se vea el monto y la fecha.</p>
-            </label>
-            <input class="oculto-visual" type="file" id="comprobante" name="comprobante"
-                   accept="image/png,image/jpeg" required>
+              <input type="file" id="comprobante" name="comprobante"
+                     accept="image/png,image/jpeg" required>
+            </div>
             <button class="btn btn--pri btn--block">Enviar el comprobante</button>
           </form>
         </div>

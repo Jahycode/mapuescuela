@@ -164,7 +164,6 @@
             <label class="lbl" for="correo">Correo</label>
             <input type="email" id="correo" name="correo" autocomplete="email"
                    placeholder="camila@correo.cl" required>
-            <p class="ayuda">Acá te llega el enlace para volver a ver tu pedido cuando quieras.</p>
           </div>
         </div>
       </div>
@@ -201,10 +200,6 @@
           </div>
         </div>
 
-        <p class="consecuencia">
-          Si eliges despacho, te escribimos para coordinar la dirección y la forma de envío.
-          El retiro en la sede no tiene costo.
-        </p>
       </div>
     </section>
 
@@ -248,11 +243,6 @@
           <button class="btn btn--pri btn--block" type="submit">
             Reservar y ver los datos para transferir
           </button>
-          <p class="consecuencia">
-            <b>Al apretar el botón</b> apartamos
-            {% if elegidos|length == 1 %}el objeto{% else %}los {{ elegidos|length }} objetos{% endif %}
-            a tu nombre por 24 horas. No se cobra nada acá.
-          </p>
         </div>
       </div>
     </section>

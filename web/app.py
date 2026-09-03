@@ -2,7 +2,13 @@ import os
 
 import requests
 from flask import Flask, abort, redirect, render_template, request, session, url_for
-from flowable_client import arrancar_instancia, completar_tarea, tarea_activa, tareas_pendientes
+from flowable_client import (
+    arrancar_instancia,
+    completar_tarea,
+    instancia_de_tarea,
+    tarea_activa,
+    tareas_pendientes,
+)
 
 WS_PEDIDOS = os.environ.get("WS_PEDIDOS", "http://localhost:9090")
 
@@ -213,6 +219,12 @@ def seguimiento(pedido_id):
     return render_template("seguimiento.html", pedido=pedido, tarea=tarea)
 
 
+def seguir_en_el_pedido(instancia):
+    """Deja abierta la siguiente tarea del mismo pedido, o la lista si ya no hay ninguna."""
+    siguiente = tarea_activa(instancia) if instancia else None
+    return redirect(url_for("bandeja", tarea=siguiente["id"] if siguiente else None))
+
+
 def urgencia(espera_min):
     """En que tramo cae una tarea segun lo que lleva esperando."""
     if espera_min >= ATRASADO_MIN:
@@ -273,8 +285,9 @@ def cambiar_voluntaria():
 @app.post("/bandeja/<tarea_id>/completar")
 def completar(tarea_id):
     """Las seis tareas que no deciden nada: se cierran y el proceso sigue solo."""
+    instancia = instancia_de_tarea(tarea_id)
     completar_tarea(tarea_id)
-    return redirect(url_for("bandeja"))
+    return seguir_en_el_pedido(instancia)
 
 
 @app.post("/bandeja/<tarea_id>/revision")
@@ -313,9 +326,10 @@ def revisar_pago(tarea_id):
     variables = [{"name": "esAprobado", "type": "boolean", "value": aprobado}]
     if not aprobado:
         variables.append({"name": "motivoRechazo", "value": mensaje})
+    instancia = instancia_de_tarea(tarea_id)
     completar_tarea(tarea_id, variables)
 
-    return redirect(url_for("bandeja"))
+    return seguir_en_el_pedido(instancia)
 
 
 @app.post("/bandeja/<tarea_id>/despacho")
@@ -325,8 +339,9 @@ def elegir_despacho(tarea_id):
     if tipo not in ("COURIER", "VOLUNTARIO"):
         abort(400)
 
+    instancia = instancia_de_tarea(tarea_id)
     completar_tarea(tarea_id, [{"name": "tipoDespacho", "value": tipo}])
-    return redirect(url_for("bandeja"))
+    return seguir_en_el_pedido(instancia)
 
 @app.post("/pedido/<int:pedido_id>/comprobante")
 def subir_comprobante(pedido_id):
