@@ -211,3 +211,13 @@ Accept: application/json
 @instanciaABorrar = PEGAR-EL-ID
 DELETE {{baseUrl}}/service/runtime/process-instances/{{instanciaABorrar}}
 Authorization: {{authorization}}
+
+
+### 16) La evidencia de las pruebas de escenarios
+# Seis instancias terminadas, seis finales distintos. Es lo que respalda
+# docs/pruebas-de-escenarios.md, y se lee en el campo endActivityId de cada una.
+# Las dos fechas acotan la ventana en que se corrieron los seis escenarios:
+# sin la de abajo, cualquier instancia borrada despues aparece tambien aca.
+GET {{baseUrl}}/service/history/historic-process-instances?processDefinitionKey=ventaMapuescuela&startedAfter=2026-09-02T01:55:38Z&finishedBefore=2026-09-02T03:00:00Z&finished=true
+Authorization: {{authorization}}
+Accept: application/json

@@ -154,15 +154,20 @@ despacho, y solo dentro del despacho se decide quién lo lleva.
 
 ## La evidencia
 
-Una sola petición al historial del motor, filtrando desde la hora en que se empezó:
+Una sola petición al historial del motor, acotada a la ventana en que se corrieron los escenarios:
 
 ```
 GET http://localhost:8080/flowable-rest/service/history/historic-process-instances
     ?processDefinitionKey=ventaMapuescuela
     &startedAfter=2026-09-02T01:55:38Z
+    &finishedBefore=2026-09-02T03:00:00Z
     &finished=true
 Authorization: Basic rest-admin:test
 ```
+
+Los dos filtros de tiempo hacen falta. El de abajo existe porque **borrar una instancia viva también
+la manda al historial como terminada**, así que cualquier limpieza posterior aparecería en esta
+consulta. Con la ventana cerrada, devuelve exactamente los seis escenarios.
 
 El campo que importa de cada instancia es **`endActivityId`**: dice en qué evento de fin terminó. Si
 los seis escenarios se corrieron bien, salen seis instancias con seis valores distintos.
