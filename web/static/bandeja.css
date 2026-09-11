@@ -76,6 +76,9 @@
   .marca span { color:var(--violeta); }
   .marca + p { font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
     text-transform:uppercase; color:var(--ink-2); margin-top:3px; }
+  .volver { margin-top:var(--sp-2); font-size:var(--t-sm); }
+
+  .tope__acciones { display:flex; align-items:center; gap:var(--sp-4); flex-wrap:wrap; }
 
   .quien { display:flex; align-items:center; gap:var(--sp-3); }
   .quien__ini { width:2.1rem; height:2.1rem; flex:0 0 auto; display:grid; place-items:center;
@@ -193,6 +196,63 @@
   .porque[data-urg="atrasado"] { border-left-color:var(--can-fg); background:var(--can-bg); }
   .porque b { font-weight:600; }
 
+  .aviso { margin-block:var(--sp-4) 0; padding:var(--sp-3) var(--sp-4);
+    border-left:3px solid var(--apr-fg); border-radius:var(--radius);
+    background:var(--apr-bg); color:var(--apr-fg);
+    font-size:var(--t-base); font-weight:500; }
+
+  .fases { display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--sp-4);
+    list-style:none; padding:0; }
+  .paso { display:grid; gap:var(--sp-2); }
+  .paso__marca { display:flex; align-items:center; gap:var(--sp-2); }
+  .paso__punto { width:11px; height:11px; border-radius:50%; flex:0 0 auto;
+    background:var(--card); border:2px solid var(--rule); }
+  .paso__linea { flex:1; height:1px; background:var(--rule-soft); }
+  .paso__nombre { font-size:var(--t-sm); font-weight:600; color:var(--ink-2); }
+
+  .paso[data-e="hecho"] .paso__punto { background:var(--apr-fg); border-color:var(--apr-fg); }
+  .paso[data-e="hecho"] .paso__linea { background:var(--apr-fg); opacity:.35; }
+  .paso[data-e="hecho"] .paso__nombre { color:var(--ink); }
+  .paso[data-e="ahora"] .paso__punto { background:var(--violeta); border-color:var(--violeta);
+    box-shadow:0 0 0 4px var(--rev-bg); }
+  .paso[data-e="ahora"] .paso__nombre { color:var(--violeta); }
+
+  .modal { width:min(34rem, 92vw); max-height:85vh; margin:auto; padding:var(--sp-6);
+    border:1px solid var(--rule); border-radius:var(--radius);
+    background:var(--card); color:var(--ink); }
+  .modal::backdrop { background:rgb(29 25 48 / .45); }
+  .modal form { display:grid; gap:var(--sp-4); }
+
+  .hist-seccion { padding-block:var(--sp-6) var(--sp-10); display:grid; gap:var(--sp-4); }
+  .hist-cab { display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp-3); }
+  .hist-lista { display:grid; gap:var(--sp-3); }
+
+  .hist { display:grid; grid-template-columns:minmax(0,1fr) auto auto;
+    gap:var(--sp-5); align-items:center;
+    padding:var(--sp-4) var(--sp-5);
+    background:var(--card); border:1px solid var(--rule); border-radius:var(--radius);
+    border-left-width:3px; border-left-style:solid; }
+  .hist[data-cerrada="si"] { border-left-color:var(--apr-fg); }
+  .hist[data-cerrada="no"] { border-left-color:var(--can-fg); }
+  .hist--vacio { border-left-color:var(--rule); color:var(--ink-2); }
+
+  .hist__pedido { font-weight:600; }
+  .hist__n { font-family:var(--mono); font-weight:500; color:var(--ink-2); margin-right:var(--sp-2); }
+  .hist__motivo { font-size:var(--t-sm); color:var(--ink-2); margin-top:3px; }
+
+  .hist__cierre { display:grid; justify-items:end; gap:2px; }
+  .hist__monto { font-family:var(--mono); font-weight:600; white-space:nowrap; }
+  .hist__cuando { font-family:var(--mono); font-size:var(--t-micro);
+    color:var(--ink-2); white-space:nowrap; }
+
+  .insignia--vendido { color:var(--apr-fg); background:var(--apr-bg); }
+  .insignia--perdido { color:var(--can-fg); background:var(--can-bg); }
+
+  @media (max-width: 60rem) {
+    .hist { grid-template-columns:minmax(0,1fr) auto; row-gap:var(--sp-3); }
+    .hist__cierre { grid-column:1 / -1; justify-items:start; }
+  }
+
   /* El comprobante al lado de los datos: no hay que mover la vista */
   .par { display:grid; gap:var(--sp-5);
     grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); align-items:start; }
@@ -264,6 +324,7 @@
   .acciones__fila { display:flex; flex-wrap:wrap; gap:var(--sp-3); align-items:center; }
   .btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
     padding:12px var(--sp-5); font-size:var(--t-base); font-weight:600; border-radius:var(--radius);
+    text-decoration:none; white-space:nowrap;
     transition:background-color .15s ease, border-color .15s ease, color .15s ease; }
   .btn--pri { background:var(--violeta); color:#fff; }
   .btn--pri:hover { background:var(--violeta-hondo); }

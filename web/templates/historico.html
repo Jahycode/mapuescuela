@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Histórico · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='bandeja.css') }}">
+</head>
+<body>
+
+<header class="tope">
+  <div class="wrap tope__in">
+    <div>
+      <p class="marca">Agrupación <span>Mapuescuela</span></p>
+      <p>Histórico</p>
+    </div>
+
+    <div class="tope__acciones">
+      <a class="btn btn--sec btn--sm" href="{{ url_for('bandeja') }}">← Volver a las tareas</a>
+    </div>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+
+<section class="resumen" aria-label="Resumen del histórico">
+  <div class="wrap resumen__in">
+    <div class="cifra">
+      <b>{{ vendidos }}</b>
+      <span>{% if vendidos == 1 %}venta cerrada{% else %}ventas cerradas{% endif %}</span>
+    </div>
+    <div class="cifra">
+      <b>{{ recaudado|plata }}</b>
+      <span>recaudado</span>
+    </div>
+    {% if perdidos %}
+    <div class="cifra cifra--tarde">
+      <b>{{ perdidos }}</b>
+      <span>{% if perdidos == 1 %}pedido perdido{% else %}pedidos perdidos{% endif %}</span>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+
+<div class="wrap hist-seccion">
+
+  <div class="hist-cab">
+    <h2 class="sub">Pedidos cerrados</h2>
+    <span class="lbl">Lo más reciente, primero</span>
+  </div>
+
+  <div class="hist-lista">
+    {% for p in cerrados %}
+    {% set vendido = p.desenlace in ventas %}
+    <article class="hist" data-cerrada="{{ 'si' if vendido else 'no' }}">
+      <div>
+        <p class="hist__pedido"><span class="hist__n">N° {{ '%04d' % p.id }}</span> {{ p.clienteNombre }}</p>
+        <p class="hist__motivo">
+          {% if p.desenlaceMotivo %}{{ p.desenlaceMotivo }}{% else %}{{ p.modalidadEntrega|lower }} · {{ p.clienteEmail }}{% endif %}
+        </p>
+      </div>
+
+      <span class="insignia insignia--{{ 'vendido' if vendido else 'perdido' }}">
+        {{ p.desenlace|rotulo_desenlace }}
+      </span>
+
+      <div class="hist__cierre">
+        <span class="hist__monto">{{ p.montoTotal|plata }}</span>
+        <span class="hist__cuando">{{ p.desenlaceEn|fecha }}</span>
+      </div>
+    </article>
+    {% else %}
+    <div class="hist hist--vacio">
+      <div>
+        <p class="hist__pedido">Todavía no hay nada cerrado</p>
+        <p class="hist__motivo">Acá van a quedar los pedidos entregados y los que se perdieron.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+</body>
+</html>

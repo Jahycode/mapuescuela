@@ -398,4 +398,56 @@ public class PedidoResource {
             return Response.ok(dao.listarRevisiones(id)).build();
         }
     }
+
+    @POST
+    @Path("/{id}/envio")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response registrarEnvio(@PathParam("id") int id, Envio envio) throws Exception {
+
+        if (envio == null || envio.getTransportista() == null || envio.getTransportista().isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity(Map.of("error", "Falta quien lleva el pedido"))
+                           .build();
+        }
+
+        if (envio.getDireccion() == null || envio.getDireccion().isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity(Map.of("error", "Falta la direccion de destino"))
+                           .build();
+        }
+
+        try (Connection conn = Db.getConnection()) {
+            PedidoDAO dao = new PedidoDAO(conn);
+
+            if (dao.buscarPorId(id) == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity(Map.of("error", "No existe el pedido " + id))
+                               .build();
+            }
+
+            envio.setPedidoId(id);
+            envio.setRegistradoEn(LocalDateTime.now());
+            envio.setId(dao.insertarEnvio(envio));
+
+            return Response.status(Response.Status.CREATED).entity(envio).build();
+        }
+    }
+
+    @GET
+    @Path("/{id}/envio")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response verEnvio(@PathParam("id") int id) throws Exception {
+        try (Connection conn = Db.getConnection()) {
+            Envio envio = new PedidoDAO(conn).buscarEnvio(id);
+
+            if (envio == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity(Map.of("error", "El pedido " + id + " no tiene envio registrado"))
+                               .build();
+            }
+
+            return Response.ok(envio).build();
+        }
+    }
 }

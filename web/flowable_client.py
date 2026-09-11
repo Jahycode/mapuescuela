@@ -5,7 +5,7 @@ import requests
 FLOWABLE = os.environ.get("FLOWABLE", "http://localhost:8080/flowable-rest/service")
 AUTH = ("rest-admin", "test")
 PROCESO = "ventaMapuescuela"
-PLAZO_PAGO = os.environ.get("PLAZO_PAGO", "PT24H")
+PLAZO_PAGO = os.environ.get("PLAZO_PAGO", "PT2M")
 
 
 def arrancar_instancia(pedido_id, modalidad_entrega):
@@ -88,7 +88,31 @@ def tarea_activa(instancia_id):
     if not tareas:
         return None
 
-    return {"id": tareas[0]["id"], "form_key": tareas[0].get("formKey")}
+    return {
+        "id": tareas[0]["id"],
+        "nombre": tareas[0]["name"],
+        "form_key": tareas[0].get("formKey"),
+    }
+
+
+def fin_del_proceso(instancia_id):
+    """Si la instancia termino y en que evento de fin. Distingue "ya no hay nada"
+    de "hay una tarea automatica corriendo"."""
+    respuesta = requests.get(
+        f"{FLOWABLE}/history/historic-process-instances/{instancia_id}",
+        auth=AUTH,
+        timeout=10,
+    )
+    if respuesta.status_code == 404:
+        return {"terminado": True, "final": None}
+
+    respuesta.raise_for_status()
+    datos = respuesta.json()
+
+    return {
+        "terminado": datos.get("endTime") is not None,
+        "final": datos.get("endActivityId"),
+    }
 
 
 def instancia_de_tarea(tarea_id):

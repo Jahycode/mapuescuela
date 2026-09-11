@@ -34,22 +34,27 @@
   <div class="wrap tope__in">
     <div>
       <p class="marca">Agrupación <span>Mapuescuela</span></p>
-      <p>Tareas pendientes · <a href="{{ url_for('catalogo') }}">ver el registro</a></p>
+      <p>Tareas pendientes</p>
+      <p class="volver"><a href="{{ url_for('catalogo') }}">← Volver al registro</a></p>
     </div>
 
-    <form class="quien" method="post" action="{{ url_for('cambiar_voluntaria') }}">
-      <span class="quien__ini" aria-hidden="true">{{ voluntaria|iniciales }}</span>
-      <div>
-        <label class="oculto" for="quien">Quién está trabajando</label>
-        <select id="quien" name="voluntaria">
-          {% for v in voluntarias %}
-          <option {% if v == voluntaria %}selected{% endif %}>{{ v }}</option>
-          {% endfor %}
-        </select>
-        <button class="btn btn--sec btn--sm">Cambiar</button>
-        <input type="hidden" name="tarea" value="{{ seleccionada.id if seleccionada else '' }}">
-      </div>
-    </form>
+    <div class="tope__acciones">
+      <a class="btn btn--sec btn--sm" href="{{ url_for('historico') }}">Ver el histórico</a>
+
+      <form class="quien" method="post" action="{{ url_for('cambiar_voluntaria') }}">
+        <span class="quien__ini" aria-hidden="true">{{ voluntaria|iniciales }}</span>
+        <div>
+          <label class="oculto" for="quien">Quién está trabajando</label>
+          <select id="quien" name="voluntaria">
+            {% for v in voluntarias %}
+            <option {% if v == voluntaria %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn--sec btn--sm">Cambiar</button>
+          <input type="hidden" name="tarea" value="{{ seleccionada.id if seleccionada else '' }}">
+        </div>
+      </form>
+    </div>
   </div>
 </header>
 <div class="trazo" role="presentation"></div>
@@ -69,6 +74,16 @@
     {% endif %}
   </div>
 </section>
+
+{% with avisos = get_flashed_messages() %}
+{% if avisos %}
+<div class="wrap">
+  {% for aviso in avisos %}
+  <p class="aviso" role="status">{{ aviso }}</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
 
 
 <div class="tablero">
@@ -136,6 +151,15 @@
           </div>
         </div>
 
+        <ol class="fases">
+          {% for f in fases %}
+          <li class="paso" data-e="{{ f.estado }}">
+            <span class="paso__marca"><span class="paso__punto"></span><span class="paso__linea"></span></span>
+            <span class="paso__nombre">{{ f.numero }} · {{ f.nombre }}</span>
+          </li>
+          {% endfor %}
+        </ol>
+
         {% if seleccionada.urgencia != 'normal' %}
         <p class="porque" data-urg="{{ seleccionada.urgencia }}">
           Esta tarea lleva <b>{{ seleccionada.espera_min|espera }}</b> esperando.
@@ -182,34 +206,49 @@
         {% if seleccionada.form_key == 'revisionDelPago' %}
           <form method="post" action="{{ url_for('revisar_pago', tarea_id=seleccionada.id) }}">
             <input type="hidden" name="pedido_id" value="{{ seleccionada.pedido.id }}">
-
-            <div class="campo">
-              <label class="lbl" for="montoLeido">Monto que dice el comprobante</label>
-              <input type="text" id="montoLeido" name="montoLeido" inputmode="numeric"
-                     placeholder="{{ seleccionada.pedido.montoTotal }}" autocomplete="off">
-              <p class="ayuda">Opcional.</p>
-            </div>
-
-            <div class="campo">
-              <label class="lbl" for="mensaje">Qué le decimos si no se aprueba</label>
-              <textarea id="mensaje" name="mensaje"
-                        placeholder="El monto transferido no coincide con el total del pedido."></textarea>
-              <p class="ayuda">Obligatorio para cancelar.</p>
-            </div>
-
-            {% if error %}<p class="consecuencia"><b>{{ error }}</b></p>{% endif %}
-
-            {# Se lleva el Enter: no manda decision, asi que la ruta rebota sin hacer nada. #}
-            <button type="submit" class="oculto" tabindex="-1" aria-hidden="true">No decidir</button>
-
             <div class="acciones__fila">
               <button class="btn btn--pri" name="decision" value="APROBADO">Aprobar el pago</button>
-              <button class="btn btn--peligro" name="decision" value="CANCELADO">Cancelar el pedido</button>
+              <button class="btn btn--peligro" type="button" data-abre="no-aprobar">Cancelar el pedido</button>
             </div>
+            <p class="consecuencia">
+              Aprobar descuenta los objetos del registro y no se puede deshacer solo.
+            </p>
           </form>
+
+          <dialog id="no-aprobar" class="modal" {% if error %}data-abrir{% endif %}>
+            <form method="post" action="{{ url_for('revisar_pago', tarea_id=seleccionada.id) }}">
+              <input type="hidden" name="pedido_id" value="{{ seleccionada.pedido.id }}">
+
+              <h3 class="sub">No aprobar el pago del N° {{ '%04d' % seleccionada.pedido.id }}</h3>
+              <p class="consecuencia">
+                Para cancelar hay que decirle al cliente por qué. Ese texto le llega tal cual.
+              </p>
+
+              <div class="campo">
+                <label class="lbl" for="mensaje">Qué le decimos al cliente</label>
+                <textarea id="mensaje" name="mensaje" required
+                          placeholder="El monto transferido no coincide con el total del pedido."></textarea>
+              </div>
+
+              <div class="campo">
+                <label class="lbl" for="montoLeido">Monto que dice el comprobante</label>
+                <input type="text" id="montoLeido" name="montoLeido" inputmode="numeric"
+                       placeholder="{{ seleccionada.pedido.montoTotal }}" autocomplete="off">
+                <p class="ayuda">Opcional. Queda guardado junto a tu nombre como lo que leiste.</p>
+              </div>
+
+              {% if error %}<p class="consecuencia"><b>{{ error }}</b></p>{% endif %}
+
+              <div class="acciones__fila">
+                <button class="btn btn--peligro" name="decision" value="CANCELADO">Cancelar el pedido</button>
+                <button class="btn btn--sec" type="button" data-cierra>Volver</button>
+              </div>
+            </form>
+          </dialog>
 
         {% elif seleccionada.form_key == 'gestionDelDespacho' %}
           <form method="post" action="{{ url_for('elegir_despacho', tarea_id=seleccionada.id) }}">
+            <input type="hidden" name="pedido_id" value="{{ seleccionada.pedido.id }}">
             <div class="acciones__fila">
               <button class="btn btn--pri" name="tipoDespacho" value="VOLUNTARIO">Lo lleva un voluntario</button>
               <button class="btn btn--sec" name="tipoDespacho" value="COURIER">Va por courier</button>
@@ -219,8 +258,46 @@
             </p>
           </form>
 
+        {% elif seleccionada.form_key == 'datosDelEnvio' %}
+          <form method="post" action="{{ url_for('registrar_envio', tarea_id=seleccionada.id) }}">
+            <input type="hidden" name="pedido_id" value="{{ seleccionada.pedido.id }}">
+
+            <div class="campo">
+              <label class="lbl" for="transportista">Quién lo lleva</label>
+              <input type="text" id="transportista" name="transportista" required
+                     placeholder="Starken, Chilexpress, Correos de Chile…" autocomplete="off">
+            </div>
+
+            <div class="campo">
+              <label class="lbl" for="direccion">Dirección de destino</label>
+              <input type="text" id="direccion" name="direccion" required
+                     placeholder="Calle, número, comuna" autocomplete="off">
+              <p class="ayuda">El cliente no la deja al reservar: hay que pedírsela.</p>
+            </div>
+
+            <div class="campo">
+              <label class="lbl" for="numeroSeguimiento">Número de seguimiento</label>
+              <input type="text" id="numeroSeguimiento" name="numeroSeguimiento" autocomplete="off">
+              <p class="ayuda">Opcional. Si el courier lo entrega después, déjalo vacío.</p>
+            </div>
+
+            {% if error %}<p class="consecuencia"><b>{{ error }}</b></p>{% endif %}
+
+            <div class="acciones__fila">
+              <button class="btn btn--pri">Registrar el envío</button>
+            </div>
+          </form>
+
+        {% elif seleccionada.form_key == 'adjuntarComprobante' %}
+          <p class="porque">
+            Esta tarea no la cierra la agrupación. Se cierra sola cuando
+            <b>{{ seleccionada.pedido.clienteNombre }}</b> suba su comprobante,
+            o se cancela sola si pasan las 24 horas sin que llegue.
+          </p>
+
         {% else %}
           <form method="post" action="{{ url_for('completar', tarea_id=seleccionada.id) }}">
+            <input type="hidden" name="pedido_id" value="{{ seleccionada.pedido.id }}">
             <div class="acciones__fila">
               <button class="btn btn--pri">Listo</button>
             </div>
@@ -235,6 +312,21 @@
   </section>
 
 </div>
+
+<script>
+  document.querySelectorAll("[data-abre]").forEach(boton =>
+    boton.addEventListener("click", () =>
+      document.getElementById(boton.dataset.abre).showModal()));
+
+  document.querySelectorAll("[data-cierra]").forEach(boton =>
+    boton.addEventListener("click", () => boton.closest("dialog").close()));
+
+  document.querySelector("dialog[data-abrir]")?.showModal();
+
+  if ({{ 'true' if esperando else 'false' }}) {
+    setTimeout(() => location.assign("{{ url_for('bandeja') }}"), 4000);
+  }
+</script>
 
 </body>
 </html>

@@ -240,6 +240,19 @@
     background: var(--card); color: var(--ink); font: inherit; cursor: pointer; }
   .zona input[type=file]::file-selector-button:hover { border-color: var(--violeta); color: var(--violeta); }
 
+  .zona:has(input[type=file]:valid) {
+    border-style:solid; border-color:var(--apr-fg); background:var(--apr-bg); }
+  .zona:has(input[type=file]:valid) input[type=file] {
+    font-size:var(--t-base); color:var(--ink); font-weight:500; }
+  .zona:has(input[type=file]:valid)::after {
+    content:"Listo, ya elegiste la foto. Ahora aprieta Enviar el comprobante.";
+    font-size:var(--t-sm); font-weight:500; color:var(--apr-fg); }
+
+  .aviso { margin-block:var(--sp-4) 0; padding:var(--sp-3) var(--sp-4);
+    border-left:3px solid var(--apr-fg); border-radius:var(--radius);
+    background:var(--apr-bg); color:var(--apr-fg);
+    font-size:var(--t-base); font-weight:500; }
+
   .adjunto { display: flex; gap: var(--sp-4); align-items: flex-start;
     padding: var(--sp-4); border: 1px solid var(--rule); border-radius: var(--radius); }
   .adjunto__img { flex: 0 0 clamp(5rem, 8vw, 7rem); aspect-ratio: 3/4;

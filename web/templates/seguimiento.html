@@ -34,6 +34,16 @@
   <div class="stroke" role="presentation"></div>
 </header>
 
+{% with avisos = get_flashed_messages() %}
+{% if avisos %}
+<div class="wrap">
+  {% for aviso in avisos %}
+  <p class="aviso" role="status">{{ aviso }}</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
 <div class="wrap cols">
 
   <main class="main">
