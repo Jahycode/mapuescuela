@@ -10,6 +10,7 @@ application-local.properties
 # ===== Archivos subidos por usuarios (comprobantes = datos bancarios de personas) =====
 uploads/
 comprobantes/
+fotos/
 web/static/uploads/
 
 # ===== Python =====

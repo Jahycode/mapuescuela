@@ -11,6 +11,8 @@ public class Producto {
     private String marcaUso;
     private int precio;
     private int stock;
+    private String foto;
+    private boolean retirado;
 
     // Getters and Setters
     public int getId() {
@@ -83,5 +85,21 @@ public class Producto {
 
     public void setStock(int stock) {
         this.stock = stock;
+    }
+
+    public String getFoto() {
+        return foto;
+    }
+
+    public void setFoto(String foto) {
+        this.foto = foto;
+    }
+
+    public boolean isRetirado() {
+        return retirado;
+    }
+
+    public void setRetirado(boolean retirado) {
+        this.retirado = retirado;
     }
 }

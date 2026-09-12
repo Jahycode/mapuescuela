@@ -30,7 +30,9 @@ public class PedidoDAO {
                     origen    VARCHAR(300),
                     marca_uso VARCHAR(300),
                     precio    INT NOT NULL,
-                    stock     INT NOT NULL
+                    stock     INT NOT NULL,
+                    retirado BOOLEAN DEFAULT FALSE NOT NULL,
+                    foto      VARCHAR(120)
                 )
                 """);
 
@@ -102,6 +104,10 @@ public class PedidoDAO {
                     registrado_en      TIMESTAMP NOT NULL
                 )
                 """);
+
+                
+            st.execute("ALTER TABLE producto ADD COLUMN IF NOT EXISTS retirado BOOLEAN DEFAULT FALSE NOT NULL");
+            st.execute("ALTER TABLE producto ADD COLUMN IF NOT EXISTS foto VARCHAR(120)");
                 
 
             int cuantos;
@@ -120,41 +126,41 @@ public class PedidoDAO {
         /* nombre, categoría, condición, medida, precio, origen, marca de uso */
     private static final String[][] CATALOGO_INICIAL = {
         {"Máquina de coser Singer a pedal", "muebles", "restaurar", "78×90×45", "145000",
-         "La donó una señora de Machalí que la heredó de su madre.",
+         "La donó una señora de Peñaflor que la heredó de su madre.",
          "Cose, pero le falta la correa. La tapa tiene rayas."},
 
         {"Velador de madera con cajón", "muebles", "bueno", "55×40×38", "48000",
-         "Llegó en agosto de una casa en el centro de Rancagua.",
+         "Llegó en agosto de una casa en el centro de Talagante.",
          "Tiene una marca de vaso en la tapa, sale en la tercera foto."},
 
         {"Lote de 4 novelas chilenas", "libros", "nuevo", "Encomienda", "6500",
-         "De una mudanza en Graneros. Casi sin abrir.", null},
+         "De una mudanza en Malloco. Casi sin abrir.", null},
 
         {"Estante de siete repisas", "muebles", "bueno", "180×80×30", "72000",
          "Lo donó una biblioteca de barrio que cerró.",
          "Una repisa está apenas curvada por el peso."},
 
         {"Triciclo metálico rojo", "juguetes", "bueno", "2 a 5 años", "14000",
-         "De una familia de Rancagua, lo usaron dos hijos.",
+         "De una familia de Padre Hurtado, lo usaron dos hijos.",
          "La pintura está saltada en el manubrio."},
 
         {"Par de sillas de comedor", "muebles", "detalles", "90×45×45", "29000",
-         "Vienen de un comedor de Requínoa, son las dos que quedaban del juego.",
+         "Vienen de un comedor de El Monte, son las dos que quedaban del juego.",
          "Una tiene el asiento hundido, se arregla con una tabla."},
 
         {"Caja de 12 libros infantiles", "libros", "nuevo", "Encomienda", "12000",
          "De un jardín infantil que renovó su biblioteca.", null},
 
         {"Escritorio de pino, dos cajones", "muebles", "restaurar", "75×120×60", "41000",
-         "Estuvo veinte años en la misma casa en San Fernando.",
+         "Estuvo veinte años en la misma casa en Calera de Tango.",
          "La cubierta necesita lijado y barniz. Los cajones corren bien."},
 
         {"Silla de mimbre, respaldo alto", "muebles", "restaurar", "102×45×45", "25000",
-         "Llegó de una casa de veraneo en Pichilemu.",
+         "Llegó de una parcela en Isla de Maipo.",
          "Al mimbre del respaldo le falta un tramo."},
 
         {"Juego de 6 tazas de greda", "otros", "bueno", "Sin trizaduras", "18000",
-         "Las donó un taller de cerámica de Doñihue.", null}
+         "Las donó un taller de cerámica de Talagante.", null}
     };
 
     private void cargarCatalogoInicial() throws SQLException {
@@ -305,15 +311,19 @@ public class PedidoDAO {
         }
     }
 
-    public List<Producto> listarProductos() throws SQLException {
+    public List<Producto> listarProductos(boolean incluirRetirados) throws SQLException {
         List<Producto> productos = new ArrayList<>();
 
+        String sql = incluirRetirados
+                ? "SELECT * FROM producto ORDER BY id"
+                : "SELECT * FROM producto WHERE retirado = FALSE ORDER BY id";
+
         try (Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery("SELECT * FROM producto ORDER BY id")) {
-            
+             ResultSet rs = st.executeQuery(sql)) {
+
             while (rs.next()) {
                 productos.add(mapearProducto(rs));
-            }    
+            }
         }
         return productos;
     }
@@ -518,6 +528,9 @@ public class PedidoDAO {
         p.setMarcaUso(rs.getString("marca_uso"));
         p.setPrecio(rs.getInt("precio"));
         p.setStock(rs.getInt("stock"));
+        p.setRetirado(rs.getBoolean("retirado"));
+        p.setFoto(rs.getString("foto"));
+        
         return p;
     }
 
@@ -564,4 +577,68 @@ public class PedidoDAO {
             }
         }
     }
+
+        public int insertarProducto(Producto p) throws SQLException {
+        String sql = """
+            INSERT INTO producto
+                (nombre, categoria, condicion, medida, origen, marca_uso, precio, stock)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+            """;
+
+        try (PreparedStatement st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            st.setString(1, p.getNombre());
+            st.setString(2, p.getCategoria());
+            st.setString(3, p.getCondicion());
+            st.setString(4, p.getMedida());
+            st.setString(5, p.getOrigen());
+            st.setString(6, p.getMarcaUso());
+            st.setInt(7, p.getPrecio());
+            st.executeUpdate();
+
+            try (ResultSet rs = st.getGeneratedKeys()) {
+                rs.next();
+                return rs.getInt(1);
+            }
+        }
+    }
+
+    public boolean actualizarProducto(Producto p) throws SQLException {
+        String sql = """
+            UPDATE producto
+            SET nombre = ?, categoria = ?, condicion = ?, medida = ?,
+                origen = ?, marca_uso = ?, precio = ?
+            WHERE id = ?
+            """;
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, p.getNombre());
+            st.setString(2, p.getCategoria());
+            st.setString(3, p.getCondicion());
+            st.setString(4, p.getMedida());
+            st.setString(5, p.getOrigen());
+            st.setString(6, p.getMarcaUso());
+            st.setInt(7, p.getPrecio());
+            st.setInt(8, p.getId());
+            return st.executeUpdate() == 1;
+        }
+    }
+
+    public boolean marcarRetirado(int id, boolean retirado) throws SQLException {
+        try (PreparedStatement st = conn.prepareStatement(
+                "UPDATE producto SET retirado = ? WHERE id = ?")) {
+            st.setBoolean(1, retirado);
+            st.setInt(2, id);
+            return st.executeUpdate() == 1;
+        }
+    }
+
+    public boolean guardarFoto(int id, String archivo) throws SQLException {
+        try (PreparedStatement st = conn.prepareStatement(
+                "UPDATE producto SET foto = ? WHERE id = ?")) {
+            st.setString(1, archivo);
+            st.setInt(2, id);
+            return st.executeUpdate() == 1;
+        }
+    }
+
 }
