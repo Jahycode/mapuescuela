@@ -19,7 +19,7 @@ y evalúa, y me sirve de referencia directa cada vez que me trabe con algo.
 
 El profesor autorizó en clase usar solo REST, porque este es un servicio disciplinar y SOAP es
 bastante más complejo. Entonces todos mis servicios van a ser REST. SOAP lo dejo solo como
-comparación en la documentación, para mostrar que entiendo la diferencia.
+comparación en la documentación.
 
 ### ADR-003 · Las tareas automáticas van como external workers
 
@@ -34,17 +34,29 @@ información en dos partes y que después no me queden desincronizadas.
 ### ADR-004 · La web en Python y el web service en Java
 
 El curso deja libre la tecnología de la interfaz y la base de datos, pero exige que los web services
-sean en Java. Como en Python y SQL Server avanzo mucho más rápido, hago la web ahí y dejo Java
+sean en Java. Como en Python avanzo mucho más rápido, hago la web ahí y dejo Java
 solamente para el ws-pedidos, que es donde el curso lo pide. Me queda una parte en Java chica y bien
 delimitada, y de paso una integración real entre tres plataformas distintas, que es de lo que se
 trata el ramo.
 
-### ADR-005 · SQL Server para el negocio
+### ADR-005 · SQL Server para el negocio — **superado por H2**
 
 La base de datos quedó a libre elección y SQL Server es la que mejor manejo, así que los datos del
 negocio van ahí. Para la base del motor de Flowable voy a intentar lo mismo; si me consume más de un
 día configurarlo, me paso a MySQL siguiendo la guía del curso y sigo avanzando. Poder revisar el
 motor desde SSMS me sirve harto para depurar y para mostrar evidencia en los videos.
+
+**Qué pasó.** Terminé usando **H2 en modo archivo**, y no por un problema técnico con SQL Server sino
+por una razón que no había considerado al escribir esto: quien reciba el proyecto tiene que poder
+levantarlo. Con SQL Server hay que instalar un motor, crear la base, crear un usuario y configurar
+credenciales antes de que arranque nada. Con H2 la base es un archivo que se crea solo la primera vez
+que corre `ws-pedidos`, con las tablas y los datos de ejemplo dentro, y no pide instalar nada.
+
+Lo que perdí es SSMS para depurar; lo compenso con los `.http` de `docs/`, que consultan lo mismo por
+REST.
+
+Lo que queda: **la decisión de una base de datos no es solo cuál manejo mejor, sino qué tan fácil es
+que otro la levante.** Eso no aparecía en mi lista de criterios cuando escribí este ADR.
 
 ### ADR-006 · El motor es la fuente de la verdad
 
@@ -73,16 +85,6 @@ todas las pantallas pensando en una de escritorio. Aprovecho además que el pane
 funciona mejor así: en una pantalla ancha caben la lista de tareas y el detalle de la que eligió al
 mismo tiempo, y se puede resolver una tras otra sin navegar de ida y vuelta.
 
-Dejo constancia de que no es un olvido. El cliente va a llegar desde Instagram, y quien navega
-Instagram lo hace desde el teléfono, así que las pantallas públicas se van a ver angostas. Lo asumo a
-propósito, porque adaptarlas es trabajo que el ramo no evalúa. Lo único que sí hago es no fijar anchos
-en píxeles, sino usar un ancho máximo con márgenes flexibles, de modo que en una pantalla chica se vea
-apretado pero legible en vez de quedar cortado. Eso no cuesta nada y evita que se vea roto si alguien
-lo abre desde el celular.
-
-Cuando tenga contacto con la organización pienso preguntar desde dónde revisan los pedidos, porque si
-resulta que lo hacen del teléfono habría que revisar esta decisión.
-
 ### ADR-010 · Cómo trabajo con las herramientas de IA
 
 Uso varias herramientas generativas en paralelo y no una sola: Claude Design, Grok, ChatGPT y Stitch
@@ -94,8 +96,8 @@ que me gustó primero.
 Antes de pedir algo importante investigo por mi cuenta. Para el catálogo revisé guías y videos sobre
 diseño de páginas de catálogo y sobre construcción de paletas antes de escribir el primer prompt, porque
 quería dirigir la herramienta en vez de quedarme con lo primero que devolviera. Y cuando pido una vista
-nueva le entrego el modelo que ya tengo construido —el proceso, los estados del pedido, los endpoints
-existentes— para que se ajuste a lo que existe en lugar de proponer una aplicación distinta que después
+nueva le entrego el modelo que ya tengo construido el proceso, los estados del pedido, los endpoints
+existentes para que se ajuste a lo que existe en lugar de proponer una aplicación distinta que después
 habría que reconciliar.
 
 No doy una respuesta por cierta solo porque venga con seguridad. Estas herramientas se equivocan, y el

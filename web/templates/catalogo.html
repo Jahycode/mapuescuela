@@ -468,8 +468,12 @@ body {
         Ya encontraron casa
       </h2>
       <p class="seccion__nota">
-        Los últimos que se fueron. No están en venta y no vuelven:
-        quedan acá porque son la prueba de que esto funciona.
+        {% if idos_total > idos|length %}
+        Los últimos {{ idos|length }} que se fueron, de {{ idos_total }} en total.
+        {% else %}
+        Los que se fueron.
+        {% endif %}
+        No están en venta y no vuelven: quedan acá porque son la prueba de que esto funciona.
       </p>
     </div>
     <ul class="archivo__lista">

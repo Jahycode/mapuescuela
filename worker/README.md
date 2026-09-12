@@ -40,12 +40,10 @@ py -m venv .venv
 pip install -r requirements.txt
 ```
 
-## Lo que falta
+## Lo que ya resuelve
 
-Los cuatro handlers que no son el de inventario dejan constancia en pantalla pero todavía no llaman
-a nada, porque los endpoints que necesitan no existen aún en `ws-pedidos`. Se reconocen por la marca
-`[pendiente]` en el log.
+Los cinco handlers llaman a `ws-pedidos` de verdad. Al apagarlo con `Ctrl+C` devuelve a la cola el
+trabajo que tuviera reservado, y si uno falla lo reporta al motor —que descuenta un reintento— sin
+detener el ciclo de los demás.
 
-Falta también devolver los trabajos reservados al apagar el worker, capturar los fallos para que uno
-no detenga el ciclo completo, y leer la configuración desde el archivo de variables de entorno en vez
-de tenerla escrita en `config.py`.
+La configuración sale de variables de entorno, con valores por defecto que sirven en un computador.
