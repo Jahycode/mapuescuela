@@ -2,10 +2,17 @@ import os
 from datetime import datetime, timezone
 import requests
 
-FLOWABLE = os.environ.get("FLOWABLE", "http://localhost:8080/flowable-rest/service")
-AUTH = ("rest-admin", "test")
+# El external-job-api del worker cuelga de la raiz; todo lo demas va bajo /service.
+FLOWABLE = os.environ.get("FLOWABLE_BASE_URL", "http://localhost:8080/flowable-rest") + "/service"
+AUTH = (
+    os.environ.get("FLOWABLE_USER", "rest-admin"),
+    os.environ.get("FLOWABLE_PASS", "test"),
+)
 PROCESO = "ventaMapuescuela"
-PLAZO_PAGO = os.environ.get("PLAZO_PAGO", "PT2M")
+
+# 24 horas es el plazo real. PT2M sirve para ver el vencimiento en una demostracion,
+# pero como valor por defecto cancelaba pedidos solos a los dos minutos.
+PLAZO_PAGO = os.environ.get("PLAZO_PAGO", "PT24H")
 
 
 def arrancar_instancia(pedido_id, modalidad_entrega):

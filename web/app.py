@@ -2,6 +2,11 @@ import os
 import time
 from datetime import datetime
 
+from dotenv import load_dotenv
+
+# Antes de importar flowable_client: lee las variables al cargarse.
+load_dotenv()
+
 import requests
 from flask import (Flask, Response, abort, flash, redirect, render_template, request,
                    session, url_for)
@@ -121,6 +126,9 @@ MESES = ("ene", "feb", "mar", "abr", "may", "jun",
 
 # Desde cuando una tarea se muestra apurada o atrasada. El plazo de pago es de
 # 24 horas, asi que a las doce ya va la mitad del reloj corriendo.
+# Cuantos vendidos se muestran en el catalogo.
+IDOS_A_LA_VISTA = 8
+
 APURA_MIN = 4 * 60
 ATRASADO_MIN = 12 * 60
 
@@ -250,6 +258,11 @@ def pedidos():
 def catalogo():
     todos = productos()
     seleccion = session.get("seleccion", [])
+
+    # Los vendidos son prueba social, no un inventario: con cien la pagina se hace
+    # impasable. Se muestran los ultimos y el total dice el resto.
+    idos = [p for p in todos if p["stock"] == 0]
+    idos.sort(key=lambda p: p["id"], reverse=True)
     # Solo los que siguen disponibles: otra persona pudo llevarse alguno.
     elegidos = [p for p in todos if p["id"] in seleccion and p["stock"] > 0]
 
@@ -257,7 +270,8 @@ def catalogo():
         "catalogo.html",
         org=organizacion(),
         disponibles=[p for p in todos if p["stock"] > 0],
-        idos=[p for p in todos if p["stock"] == 0],
+        idos=idos[:IDOS_A_LA_VISTA],
+        idos_total=len(idos),
         seleccionados=[p["id"] for p in elegidos],
         elegidos=elegidos,
         total_elegido=sum(p["precio"] for p in elegidos),
