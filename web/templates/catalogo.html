@@ -21,22 +21,27 @@
   ul { list-style: none; padding: 0; }
 }
 
-/* ───────────── TOKENS (idénticos al resto del sistema) ───────────── */
+/* ───────────── TOKENS ─────────────
+   Paleta Mapuescuela: azul #3C66AE / #1F3864, verde #84C084 / #C0DE90,
+   amarillo #F2C230, blanco. Verde y amarillo nunca como color de letra. */
 @layer tokens {
   :root {
     /* ── Superficies ── */
-    --paper:#EEEDF3; --card:#FFFFFF; --bed:#E4E0EC;
-    --rule:#CFC9DA;  --rule-soft:#E3DFEA;
-    --ink:#1D1930;   --ink-2:#5D5670;
-    --violeta:#4B2A82; --violeta-hondo:#3A1F68; --violeta-suave:#F7F5FC;
-    --mostaza:#E8A81C;
+    --paper:#F1F4F9; --card:#FFFFFF; --bed:#E2E8F2;
+    --rule:#C6D1E3;  --rule-soft:#E0E7F1;
+    --ink:#15223B;   --ink-2:#4F5B72;
+    --violeta:#2F5490; --violeta-hondo:#1F3864; --violeta-suave:#F2F5FB;
+    --mostaza:#F2C230;
+
+    /* Rellenos de figura: verde del cerro y de los brotes. Solo fondo. */
+    --verde:#84C084; --verde-claro:#C0DE90;
 
     /* ── Estados: un solo par de nombres para todo el sistema ── */
-    --esp-fg:#8A4B10; --esp-bg:#FBEBD5;   /* esperando el pago · reservado · apura */
-    --rev-fg:#4B2A82; --rev-bg:#E6E1F3;   /* revisando */
-    --apr-fg:#1D6B4A; --apr-bg:#DCEDE3;   /* aprobado · listo */
+    --esp-fg:#7A4A08; --esp-bg:#FCEFCE;   /* esperando el pago · reservado · apura */
+    --rev-fg:#2F5490; --rev-bg:#E3EAF6;   /* revisando */
+    --apr-fg:#2A7030; --apr-bg:#E3F1E0;   /* aprobado · listo */
     --can-fg:#A32718; --can-bg:#FBE3DF;   /* cancelado · atrasado */
-    --ven-fg:#5D5670; --ven-bg:#E7E4EE;   /* vendido · encontró casa */
+    --ven-fg:#4F5B72; --ven-bg:#E6EAF1;   /* vendido · encontró casa */
 
     /* ── Tipografía ── */
     --display:"Bricolage Grotesque","Helvetica Neue",system-ui,sans-serif;
@@ -61,14 +66,11 @@
 /* ───────────── BASE ───────────── */
 @layer base {
   body {
-    font-family: var(--body); font-size: var(--t-base); line-height: 1.55;
+    font-family: var(--body); font-size: var(--t-base); line-height: 1.58;
     color: var(--ink); background-color: var(--paper);
-    background-image:
-      linear-gradient(to right,  rgba(35,26,63,.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(35,26,63,.05) 1px, transparent 1px);
-    background-size: 24px 24px;
   }
   a { color: var(--violeta); text-underline-offset: 2px; }
+  a:hover { color: var(--violeta-hondo); }
   :focus-visible { outline: 2px solid var(--violeta); outline-offset: 2px; }
   @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition-duration:.01ms !important; } }
 }
@@ -78,67 +80,71 @@
   .wrap { width:100%; max-width:var(--wrap); margin-inline:auto;
     padding-inline:clamp(var(--sp-4), 3vw, var(--sp-10)); }
 
-  /* ── PORTADA: banda violeta sólida, no fondo de papel ── */
+  /* ── PORTADA: banda azul profunda con el guñelve como marca de agua ── */
   .portada {
-    background-color:var(--violeta);
-    /* la cuadrícula del registro sigue, pero violeta sobre violeta */
-    background-image:
-      linear-gradient(to right,  rgba(255,255,255,.055) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,.055) 1px, transparent 1px);
-    background-size:24px 24px;
+    position:relative; overflow:hidden;
+    background-color:var(--violeta-hondo);
     color:#fff;
   }
+  /* La estrella de ocho puntas, tenue, detrás de todo */
+  .portada__marca { position:absolute; inset:auto -6rem -10rem auto;
+    width:clamp(20rem, 34vw, 34rem); opacity:.075; color:#fff; pointer-events:none; }
 
-  .portada__tira { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end;
-    gap:var(--sp-2) var(--sp-5); padding-block:var(--sp-3);
-    font-size:var(--t-sm); border-bottom:1px solid rgba(255,255,255,.14); }
-  .portada__tira a { color:#D3C9E6; text-decoration:none; }
-  .portada__tira a:hover { color:#fff; text-decoration:underline; }
-
-  .portada__in { display:grid; gap:clamp(var(--sp-6), 4vw, var(--sp-12));
-    grid-template-columns:minmax(0, 1fr) minmax(0, 26rem);
-    align-items:end; padding-block:var(--sp-10) var(--sp-10); }
+  .portada__in { position:relative; display:grid; gap:clamp(var(--sp-6), 4vw, var(--sp-12));
+    grid-template-columns:minmax(0, 1.35fr) minmax(0, 24rem);
+    align-items:end; padding-block:var(--sp-12) var(--sp-12); }
   @media (max-width:62rem) {
     .portada__in { grid-template-columns:minmax(0,1fr); align-items:start; }
   }
 
-  .antetitulo { font-family:var(--mono); font-size:var(--t-micro);
-    letter-spacing:.14em; text-transform:uppercase; color:#C9BCE0;
-    padding-bottom:var(--sp-4); }
+  .antetitulo { display:flex; align-items:center; gap:var(--sp-2);
+    font-family:var(--mono); font-size:var(--t-micro);
+    letter-spacing:.14em; text-transform:uppercase; color:#B8C9E4;
+    padding-bottom:var(--sp-5); }
+  .antetitulo svg { flex:0 0 10px; width:10px; color:var(--mostaza); }
 
-  .rotulo { font-family:var(--display); font-weight:800; font-size:var(--t-portada);
-    line-height:.88; letter-spacing:-.035em; font-stretch:92%; color:#fff; }
-  .rotulo small { display:block; font-size:.3em; font-weight:600; font-stretch:100%;
-    letter-spacing:.01em; color:#C9BCE0; margin-top:var(--sp-4); }
+  /* El logo hace de título: el nombre ya está dentro de la insignia */
+  .rotulo { display:flex; align-items:center; gap:clamp(var(--sp-5), 3vw, var(--sp-8)); }
+  .rotulo img { flex:0 0 auto; width:clamp(9rem, 17vw, 15rem); height:auto; aspect-ratio:1;
+    border-radius:50%; box-shadow:0 0 0 1px rgba(255,255,255,.25); }
+  .rotulo small { font-family:var(--display); font-weight:600; font-stretch:95%;
+    font-size:var(--t-portada); line-height:1; letter-spacing:-.03em; color:#fff;
+    padding-left:clamp(var(--sp-4), 2vw, var(--sp-5)); border-left:3px solid var(--mostaza); }
 
   /* La frase que explica de qué se trata esto */
   .tesis { font-size:var(--t-md); line-height:1.5; color:#fff;
-    padding-left:clamp(var(--sp-4), 2vw, var(--sp-6)); border-left:3px solid var(--mostaza); }
+    padding:var(--sp-1) 0 var(--sp-1) clamp(var(--sp-4), 2vw, var(--sp-6));
+    border-left:3px solid var(--mostaza); }
   .tesis b { font-weight:600; }
-  .tesis span { color:#D3C9E6; }
+  .tesis span { display:block; margin-top:var(--sp-3); color:#BFCFE8; font-size:var(--t-base); }
 
-  .trazo { height:4px; background:var(--mostaza); }
+  /* Cinta de tres bandas: azul, amarillo, verde — los colores del logo */
+  .trazo { height:5px; background:linear-gradient(90deg,
+    var(--violeta) 0 66.7%, var(--mostaza) 66.7% 88.9%, var(--verde) 88.9% 100%); }
 
-  /* Las tres reglas: alineadas con el resto del contenido, no pegadas al borde */
-  .reglas { border-bottom:1px solid var(--rule); }
+  /* Las tres reglas */
+  .reglas { background:var(--card); border-bottom:1px solid var(--rule); }
   .reglas__in { display:grid; gap:var(--sp-5) 0;
     grid-template-columns:repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-    padding-block:var(--sp-5); }
+    padding-block:var(--sp-6); }
   .reglas__in > div + div { padding-left:clamp(var(--sp-4), 2vw, var(--sp-6));
     border-left:1px solid var(--rule-soft); }
   .reglas__in > div + div + div { padding-left:clamp(var(--sp-4), 2vw, var(--sp-6)); }
-  .reglas p { font-size:var(--t-sm); color:var(--ink-2); margin-top:2px; }
+  .reglas p { font-size:var(--t-sm); color:var(--ink-2); margin-top:var(--sp-1);
+    max-width:34ch; text-wrap:pretty; }
   .reglas strong { color:var(--ink); font-weight:600; }
 
   /* Barra del registro */
-  .barra { border-bottom:1px solid var(--rule); background:var(--card); }
+  .barra { border-bottom:1px solid var(--rule); background:var(--violeta-suave); }
   .barra__in { display:grid; gap:var(--sp-4); padding-block:var(--sp-5); }
-  .cuentas { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--sp-2) var(--sp-6); }
+  .cuentas { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--sp-3) var(--sp-8); }
   .cuenta { display:flex; align-items:baseline; gap:var(--sp-2); }
-  .cuenta b { font-family:var(--mono); font-weight:500; font-size:1.35rem; line-height:1;
-    font-variant-numeric:tabular-nums; letter-spacing:-.03em; }
+  .cuenta b { font-family:var(--mono); font-weight:500; font-size:1.5rem; line-height:1;
+    font-variant-numeric:tabular-nums; letter-spacing:-.04em; color:var(--violeta-hondo);
+    border-bottom:3px solid var(--mostaza); padding-bottom:2px; }
   .cuenta span { font-size:var(--t-sm); color:var(--ink-2); }
-  .cuenta--sordo b, .cuenta--sordo span { color:var(--ink-2); }
+  .cuenta--sordo b { color:var(--ink-2); border-bottom-color:var(--rule); }
+  .cuenta--sordo span { color:var(--ink-2); }
 
   .controles { display:flex; flex-wrap:wrap; align-items:center;
     gap:var(--sp-3) var(--sp-6); padding-top:var(--sp-4); border-top:1px solid var(--rule-soft); }
@@ -146,7 +152,8 @@
   .chip { padding:var(--sp-2) 2px; font-size:var(--t-sm); font-weight:500; color:var(--ink-2);
     border-bottom:2px solid transparent; }
   .chip:hover { color:var(--ink); }
-  .chip[aria-pressed="true"] { color:var(--ink); font-weight:600; border-bottom-color:var(--mostaza); }
+  .chip[aria-pressed="true"] { color:var(--violeta-hondo); font-weight:600;
+    border-bottom-color:var(--mostaza); }
   .campo-sel { display:flex; align-items:center; gap:var(--sp-2); }
   select { font-size:var(--t-sm); padding:var(--sp-2) var(--sp-3); background:var(--card);
     border:1px solid var(--rule); border-radius:var(--radius); }
@@ -157,20 +164,25 @@
 @layer components {
   .seccion { padding-block:var(--sp-10) 0; }
   .seccion__cab { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between;
-    gap:var(--sp-3); padding-bottom:var(--sp-5); }
-  .seccion h2 { font-family:var(--display); font-weight:700; font-size:var(--t-lg);
-    letter-spacing:-.015em; }
-  .seccion__nota { font-size:var(--t-sm); color:var(--ink-2); max-width:56ch; }
+    gap:var(--sp-3); padding-bottom:var(--sp-5); border-bottom:2px solid var(--violeta-hondo);
+    margin-bottom:var(--sp-6); }
+  .seccion h2, .archivo h2 { display:flex; align-items:center; gap:var(--sp-3);
+    font-family:var(--display); font-weight:700; font-size:var(--t-lg); letter-spacing:-.02em; }
+  .seccion h2 svg, .archivo h2 svg { flex:0 0 .7em; width:.7em; color:var(--mostaza); }
+  .seccion__nota { font-size:var(--t-sm); color:var(--ink-2); max-width:56ch; text-wrap:pretty; }
 
   .rejilla { display:grid; gap:clamp(var(--sp-4), 2vw, var(--sp-6));
     grid-template-columns:repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); }
 
   .ficha { display:flex; flex-direction:column; background:var(--card);
-    border:1px solid var(--rule); border-radius:var(--radius); }
+    border:1px solid var(--rule); border-radius:var(--radius);
+    box-shadow:0 1px 0 var(--rule-soft); }
+  .ficha:hover { border-color:var(--violeta); }
 
   .ficha__cab { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-2);
-    padding:var(--sp-2) var(--sp-3); border-bottom:1px solid var(--rule-soft); }
-  .ficha__n { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
+    padding:var(--sp-2) var(--sp-3); background:var(--violeta-hondo); color:#fff; }
+  .ficha__n { font-family:var(--mono); font-size:var(--t-micro); letter-spacing:.06em;
+    color:#C3D2EA; }
   .ojo { font-size:var(--t-micro); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
     background:var(--mostaza); color:#1D1A14; padding:2px var(--sp-2); border-radius:var(--radius); }
   .insignia { font-size:var(--t-micro); font-weight:600; letter-spacing:.06em; text-transform:uppercase;
@@ -178,28 +190,34 @@
   .insignia--esperando { color:var(--esp-fg); background:var(--esp-bg); }
 
   .ficha__foto { position:relative; aspect-ratio:4/5; background:var(--bed); overflow:hidden; }
-  .ficha__fotos { position:absolute; inset:auto var(--sp-2) var(--sp-2) auto;
+  /* guñelve tenue en el hueco de la foto, para que no se lea como error */
+  .ficha__foto::after { content:""; position:absolute; inset:0;
+    background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z' fill='%231F3864' fill-opacity='.06'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:center; background-size:62%; }
+  .ficha__fotos { position:absolute; inset:auto var(--sp-2) var(--sp-2) auto; z-index:1;
     font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2);
-    background:rgba(255,255,255,.86); padding:1px var(--sp-2); border-radius:var(--radius); }
+    background:rgba(255,255,255,.9); padding:1px var(--sp-2); border-radius:var(--radius); }
   .ficha[data-estado="reservado"] .ficha__foto { opacity:.72; }
 
   .ficha__cuerpo { flex:1; display:flex; flex-direction:column; gap:var(--sp-3);
-    padding:var(--sp-3) var(--sp-4) var(--sp-4); }
+    padding:var(--sp-4); }
   .ficha__nom { font-family:var(--display); font-weight:600; font-size:var(--t-md);
-    line-height:1.15; letter-spacing:-.01em; text-wrap:balance; }
+    line-height:1.15; letter-spacing:-.015em; text-wrap:balance; }
 
-  .datos { display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-2) var(--sp-3); }
-  .datos dd { font-family:var(--mono); font-size:var(--t-sm); margin-top:1px; }
+  .datos { display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-2) var(--sp-3);
+    padding:var(--sp-3); background:var(--violeta-suave); border-radius:var(--radius); }
+  .datos dd { font-family:var(--mono); font-size:var(--t-sm); margin-top:1px; color:var(--ink); }
 
   /* De dónde vino: esto es lo que una tienda no puede decir */
-  .origen { font-size:var(--t-sm); color:var(--ink-2); padding-top:var(--sp-3);
-    border-top:1px solid var(--rule-soft); }
-  .marca-uso { font-size:var(--t-sm); color:var(--esp-fg); }
+  .origen { font-size:var(--t-sm); color:var(--ink-2); text-wrap:pretty; }
+  .marca-uso { font-size:var(--t-sm); color:var(--esp-fg); background:var(--esp-bg);
+    padding:var(--sp-2) var(--sp-3); border-left:3px solid var(--mostaza);
+    border-radius:var(--radius); text-wrap:pretty; }
 
-  .ficha__pie { margin-top:auto; padding-top:var(--sp-3); border-top:1px solid var(--rule-soft);
+  .ficha__pie { margin-top:auto; padding-top:var(--sp-4); border-top:1px solid var(--rule-soft);
     display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--sp-2); }
-  .precio { font-family:var(--mono); font-weight:500; font-size:1.1rem;
-    font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .precio { font-family:var(--mono); font-weight:500; font-size:1.15rem;
+    font-variant-numeric:tabular-nums; letter-spacing:-.03em; color:var(--violeta-hondo); }
   .libera { font-family:var(--mono); font-size:var(--t-micro); color:var(--esp-fg); }
 
   .vacio { grid-column:1/-1; padding:var(--sp-12) var(--sp-5); text-align:center;
@@ -211,74 +229,117 @@
 /* ───────────── EL ARCHIVO DE VENDIDOS ─────────────
    Formato distinto a propósito: no son ofertas, son registros. */
 @layer components {
-  .archivo { margin-top:var(--sp-12); padding-block:var(--sp-8) var(--sp-10);
-    border-top:1px solid var(--rule); }
-  .archivo__lista { display:grid; gap:var(--sp-3);
+  .archivo { margin-top:var(--sp-12); padding-block:var(--sp-8) var(--sp-10); }
+  .archivo__lista { display:grid; gap:var(--sp-2);
     grid-template-columns:repeat(auto-fill, minmax(min(100%, 21rem), 1fr)); }
 
   .idos { display:flex; gap:var(--sp-3); align-items:center;
     padding:var(--sp-2) var(--sp-3);
-    background:var(--card); border:1px solid var(--rule-soft); border-radius:var(--radius); }
+    background:var(--ven-bg); border:1px solid var(--rule-soft); border-radius:var(--radius); }
   .idos__foto { flex:0 0 2.75rem; aspect-ratio:1; background:var(--bed);
-    filter:grayscale(1); opacity:.55; overflow:hidden; }
+    filter:grayscale(1); opacity:.5; overflow:hidden; }
   .idos__datos { min-width:0; flex:1; }
   .idos__n { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
-  .idos__nom { font-size:var(--t-sm); font-weight:500; color:var(--ink-2);
+  .idos__nom { font-size:var(--t-sm); font-weight:500; color:var(--ven-fg);
     line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .idos__cuando { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2);
-    white-space:nowrap; }
+  .idos__cuando { font-family:var(--mono); font-size:var(--t-sm); color:var(--ven-fg);
+    font-variant-numeric:tabular-nums; white-space:nowrap; }
 }
 
 /* ───────────── PIEZAS ───────────── */
 @layer components {
-  .lbl { font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
+  .lbl { display:block; font-size:var(--t-micro); font-weight:600; letter-spacing:.1em;
     text-transform:uppercase; color:var(--ink-2); }
 
   .btn { display:inline-flex; align-items:center; justify-content:center;
-    padding:9px var(--sp-4); font-size:var(--t-sm); font-weight:600; border-radius:var(--radius);
+    padding:9px var(--sp-5); font-size:var(--t-sm); font-weight:600; border-radius:var(--radius);
     transition:background-color .15s ease, border-color .15s ease; }
   .btn--pri { background:var(--violeta); color:#fff; }
   .btn--pri:hover { background:var(--violeta-hondo); }
   .btn--sec { border:1px solid var(--rule); color:var(--ink); }
   .btn--sec:hover { border-color:var(--ink); }
 
-  .pie { margin-top:var(--sp-12); border-top:1px solid var(--rule); background:var(--card); }
-  .pie__rejilla { display:grid; gap:var(--sp-8);
+  .rotulo small span { display:block; margin-top:var(--sp-4);
+    font-family:var(--body); font-weight:400; font-size:var(--t-md);
+    line-height:1.5; letter-spacing:0; color:#BFCFE8; max-width:42ch; text-wrap:pretty; }
+
+  .donar { margin-top:var(--sp-12); }
+  .donar__in { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+    gap:var(--sp-5); padding:var(--sp-6) clamp(var(--sp-5), 3vw, var(--sp-8));
+    background:var(--card); border:1px solid var(--rule); border-radius:var(--radius);
+    border-left:3px solid var(--violeta); }
+  .donar h2 { font-family:var(--display); font-weight:600; font-size:var(--t-md);
+    line-height:1.2; margin-bottom:var(--sp-2); }
+  .donar p { font-size:var(--t-sm); color:var(--ink-2); max-width:54ch; text-wrap:pretty; }
+  .btn--donar { background:var(--mostaza); color:var(--ink); padding:12px var(--sp-6); }
+  .btn--donar:hover { background:#DCAE22; }
+
+  .pie { margin-top:var(--sp-8); background:var(--violeta-hondo); color:#fff;
+    position:relative; overflow:hidden; }
+  .pie::after { content:""; position:absolute; inset:auto -5rem -9rem auto;
+    width:clamp(16rem, 26vw, 26rem); aspect-ratio:1; opacity:.06; pointer-events:none;
+    background:#fff;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z'/%3E%3C/svg%3E") center/contain no-repeat;
+            mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z'/%3E%3C/svg%3E") center/contain no-repeat; }
+  .pie__rejilla { position:relative; display:grid; gap:var(--sp-8);
     grid-template-columns:repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-    padding-block:var(--sp-10); }
-  .pie p { font-size:var(--t-sm); color:var(--ink-2); max-width:46ch; }
-  .pie dd { font-family:var(--mono); font-size:var(--t-sm); color:var(--ink); margin-top:var(--sp-1); }
-  .pie strong { color:var(--ink); font-weight:600; }
+    padding-block:var(--sp-12); }
+  .pie .lbl { color:var(--mostaza); }
+  .pie p { font-size:var(--t-sm); color:#C3D2EA; max-width:46ch; text-wrap:pretty; }
+  .pie dd { font-family:var(--mono); font-size:var(--t-sm); color:#fff; margin-top:var(--sp-1); }
+  .pie strong { color:#fff; font-weight:600; }
 
   /* La regla del sistema, escrita para que se entienda */
-  .regla-numeros { border-top:1px solid var(--rule-soft); }
+  .regla-numeros { position:relative; border-top:1px solid rgba(255,255,255,.16); }
   .regla-numeros p { padding-block:var(--sp-5); max-width:70ch;
-    font-family:var(--mono); font-size:var(--t-sm); color:var(--ink-2); }
+    font-family:var(--mono); font-size:var(--t-sm); color:#A9BDDB; }
 }
 
-@layer utilities { [hidden]{ display:none !important; } }
+/* Fuera de capas a propósito: algunos visores inyectan
+   `html, body { background: transparent }` sin capa, y eso le gana al
+   @layer base. Solo repite el fondo de papel, nada más. */
+html { color-scheme: light; background-color:#F1F4F9; }
+body {
+  background-color:#F1F4F9;
+}
+
+@layer utilities {
+  [hidden]{ display:none !important; }
+  .oculto, .oculto-visual { position:absolute; width:1px; height:1px; overflow:hidden;
+    clip-path:inset(50%); white-space:nowrap; }
+}
 </style>
 </head>
 <body>
 
 <header class="portada">
-  <nav class="wrap portada__tira" aria-label="Contacto">
-    <a href="#">Instagram · @mapuescuela</a>
-    <a href="#">WhatsApp · +56 9 1234 5678</a>
-    <a href="#">Quiénes somos</a>
-    <a href="#">Quiero donar algo</a>
-  </nav>
+  <svg class="portada__marca" viewBox="0 0 100 100" aria-hidden="true">
+    <path d="M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z" fill="currentColor"></path>
+  </svg>
 
   <div class="wrap portada__in">
+    <h1 class="rotulo">
+        <img src="{{ url_for('static', filename='logo-mapuescuela.png') }}"
+             alt="Mapuescuela · educa-acción para el buen vivir" width="320" height="318">
+        <small>El registro
+          <span>Acá vamos anotando cada cosa que nos donan. A cada una le asignamos un
+            número y, cuando alguien se la lleva, la sacamos del registro.</span>
+        </small>
+    </h1>
+
     <div>
-      <p class="antetitulo">Objetos donados · Rancagua · desde 2019</p>
-      <h1 class="rotulo">Mapuescuela<small>El registro</small></h1>
+      <p class="antetitulo">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z" fill="currentColor"></path></svg>
+        Objetos donados · Padre Hurtado
+      </p>
+      <p class="tesis">
+      <b>Esto no es una tienda.</b> Todo lo que ves acá fue donado: un mueble que ya no cabía
+      en la casa, unos libros que alguien ya leyó o un juguete que se le pasó la edad.
+      <span>Nosotros revisamos cada cosa, le ponemos un precio y la ponemos a la venta. Una vez
+        que alguien se la lleva, ya no vuelve: hay una sola de cada una.</span>
+      <span>Lo que recaudamos se destina a financiar los talleres de Mapuescuela.</span>
+      </p>
     </div>
-    <p class="tesis">
-      <b>Esto no es una tienda.</b> Cada objeto de acá existe uno solo: alguien lo donó,
-      lo revisamos, le dimos un número y se vende una vez.
-      <span>No hay más unidades, no hay otra talla, no hay reposición. Si te gusta, es ese.</span>
-    </p>
   </div>
 </header>
 <div class="trazo" role="presentation"></div>
@@ -295,7 +356,7 @@
     </div>
     <div>
       <span class="lbl">Entrega</span>
-      <p><strong>Retiro en Rancagua.</strong> Libros y juguetes también van por encomienda.</p>
+      <p><strong>Retiro en Padre Hurtado.</strong> Libros y juguetes también van por encomienda.</p>
     </div>
   </div>
 </section>
@@ -328,7 +389,10 @@
 
   <section class="seccion">
     <div class="seccion__cab">
-      <h2>En el registro ahora</h2>
+      <h2>
+        <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z" fill="currentColor"></path></svg>
+        En el registro ahora
+      </h2>
       <p class="seccion__nota">
       </p>
     </div>
@@ -386,7 +450,10 @@
   {% if idos %}
   <section class="archivo" aria-labelledby="tit-archivo">
     <div class="seccion__cab">
-      <h2 id="tit-archivo">Ya encontraron casa</h2>
+      <h2 id="tit-archivo">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z" fill="currentColor"></path></svg>
+        Ya encontraron casa
+      </h2>
       <p class="seccion__nota">
         Los últimos que se fueron. No están en venta y no vuelven:
         quedan acá porque son la prueba de que esto funciona.
@@ -415,34 +482,41 @@
 
 </main>
 
+<section class="wrap donar" aria-label="Donar objetos">
+  <div class="donar__in">
+    <div>
+      <h2>¿Tienes algo para donar?</h2>
+      <p>
+        Recibimos muebles, libros, juguetes y utensilios en buen estado.
+        Escríbenos y coordinamos el retiro en Padre Hurtado y alrededores.
+      </p>
+    </div>
+    <a class="btn btn--donar" href="mailto:mapuescuela@gmail.com">Escribir a Mapuescuela</a>
+  </div>
+</section>
+
 <footer class="pie">
   <div class="wrap pie__rejilla">
     <div>
-      <span class="lbl">Para qué es la plata</span>
+      <span class="lbl">Quiénes somos</span>
       <p style="margin-top:var(--sp-2)">
-        Todo lo que juntamos vendiendo estos objetos donados financia el acompañamiento escolar de
-        <strong>34 jóvenes de Rancagua</strong> que dejaron el colegio. Nadie acá recibe sueldo por vender.
+        Mapuescuela es una agrupación de Padre Hurtado que hace
+        <strong>educa-acción para el buen vivir</strong>: talleres de telar mapuche, yoga,
+        fitopreparados y preparación de la PAES, presenciales y online. Vender lo que nos
+        donan es una de las formas de financiarlos.
       </p>
     </div>
     <dl>
-      <span class="lbl">Datos de la agrupación</span>
-      <dd>Agrupación Mapuescuela</dd>
-      <dd>RUT 65.123.456-7</dd>
-      <dd>Av. República 1180, Rancagua</dd>
+      <span class="lbl">Dónde estamos</span>
+      <dd>Fernando Santiván 166</dd>
+      <dd>Padre Hurtado, Santiago</dd>
     </dl>
     <dl>
       <span class="lbl">Escríbenos</span>
-      <dd>+56 9 1234 5678</dd>
-      <dd>contacto@mapuescuela.cl</dd>
-      <p style="margin-top:var(--sp-2)">Contestamos de lunes a viernes, de 9 a 20 horas.</p>
+      <dd>mapuescuela@gmail.com</dd>
+      <dd>Instagram · @mapuescuela</dd>
+      <p style="margin-top:var(--sp-2)">Somos pocas manos: a veces nos demoramos un día en contestar.</p>
     </dl>
-    <div>
-      <span class="lbl">¿Tienes algo que donar?</span>
-      <p style="margin-top:var(--sp-2)">
-        Recibimos muebles, libros y juguetes en buen estado o restaurables. Pasamos a buscarlos
-        en Rancagua y alrededores. Escríbenos con una foto y te decimos al tiro.
-      </p>
-    </div>
   </div>
   <div class="wrap regla-numeros">
   </div>

@@ -14,18 +14,19 @@
 @layer tokens {
   :root {
     /* ── Superficies ── */
-    --paper:#EEEDF3; --card:#FFFFFF; --bed:#E4E0EC;
-    --rule:#CFC9DA;  --rule-soft:#E3DFEA;
-    --ink:#1D1930;   --ink-2:#5D5670;
-    --violeta:#4B2A82; --violeta-hondo:#3A1F68; --violeta-suave:#F7F5FC;
-    --mostaza:#E8A81C;
+    --paper:#F1F4F9; --card:#FFFFFF; --bed:#E2E8F2;
+    --rule:#C6D1E3;  --rule-soft:#E0E7F1;
+    --ink:#15223B;   --ink-2:#4F5B72;
+    --violeta:#2F5490; --violeta-hondo:#1F3864; --violeta-suave:#F2F5FB;
+    --mostaza:#F2C230;
+    --verde:#84C084; --verde-claro:#C0DE90;
 
     /* ── Estados: un solo par de nombres para todo el sistema ── */
-    --esp-fg:#8A4B10; --esp-bg:#FBEBD5;   /* esperando el pago · reservado · apura */
-    --rev-fg:#4B2A82; --rev-bg:#E6E1F3;   /* revisando */
-    --apr-fg:#1D6B4A; --apr-bg:#DCEDE3;   /* aprobado · listo */
+    --esp-fg:#7A4A08; --esp-bg:#FCEFCE;   /* esperando el pago · reservado · apura */
+    --rev-fg:#2F5490; --rev-bg:#E3EAF6;   /* revisando */
+    --apr-fg:#2A7030; --apr-bg:#E3F1E0;   /* aprobado · listo */
     --can-fg:#A32718; --can-bg:#FBE3DF;   /* cancelado · atrasado */
-    --ven-fg:#5D5670; --ven-bg:#E7E4EE;   /* vendido · encontró casa */
+    --ven-fg:#4F5B72; --ven-bg:#E6EAF1;   /* vendido · encontró casa */
 
     /* ── Tipografía ── */
     --display:"Bricolage Grotesque","Helvetica Neue",system-ui,sans-serif;
@@ -54,10 +55,6 @@
     display: flex; flex-direction: column;
     font-family: var(--body); font-size: var(--t-base); line-height: 1.5;
     color: var(--ink); background-color: var(--paper);
-    background-image:
-      linear-gradient(to right,  rgba(35,26,63,.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(35,26,63,.05) 1px, transparent 1px);
-    background-size: 24px 24px;
   }
   a { color: var(--violeta); }
   :focus-visible { outline: 2px solid var(--violeta); outline-offset: 2px; }
@@ -69,9 +66,23 @@
   .wrap { width:100%; max-width:var(--wrap-ancho); margin-inline:auto;
     padding-inline:clamp(var(--sp-4), 2.5vw, var(--sp-8)); }
 
-  .tope { background:var(--card); border-bottom:1px solid var(--rule); flex:0 0 auto; }
+  .tope { background:var(--violeta-hondo); color:#fff; border-bottom:0; flex:0 0 auto; }
+  .tope a { color:#C3D2EA; }
+  .tope a:hover { color:#fff; }
+  .tope .marca { color:#fff; }
+  .tope .marca + p, .tope .lbl { color:#E3EAF6; }
+  .tope .btn--sec, .masthead .btn--sec {
+    background:var(--mostaza); border-color:var(--mostaza); color:var(--ink); font-weight:600; }
+  .tope .btn--sec:hover, .masthead .btn--sec:hover {
+    background:#DCAE22; border-color:#DCAE22; color:var(--ink); }
+  .tope .marca span { color:#fff; }
+  .tope .quien__ini { background:#fff; color:var(--violeta-hondo); }
+  .tope .quien span:last-child { color:#fff; }
   .tope__in { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
     gap:var(--sp-4); padding-block:var(--sp-4) var(--sp-3); }
+  .marca-sello { display:flex; align-items:center; gap:var(--sp-3); }
+  .sello { flex:0 0 auto; width:2.6rem; height:auto; aspect-ratio:1; border-radius:50%; }
+
   .marca { font-family:var(--display); font-weight:700; font-size:var(--t-md); letter-spacing:-.01em; }
   .marca span { color:var(--violeta); }
   .marca + p { font-size:var(--t-micro); font-weight:600; letter-spacing:.09em;
@@ -84,11 +95,10 @@
   .quien__ini { width:2.1rem; height:2.1rem; flex:0 0 auto; display:grid; place-items:center;
     border-radius:50%; background:var(--violeta); color:#fff;
     font-family:var(--display); font-weight:600; font-size:var(--t-sm); }
-  .quien > div { display:flex; align-items:center; gap:var(--sp-2); }
-  .quien select { font-size:var(--t-sm); padding:var(--sp-2) var(--sp-3);
-    border:1px solid var(--rule); border-radius:var(--radius); background:var(--card); }
+  .quien span:last-child { font-size:var(--t-sm); font-weight:600; }
 
-  .trazo { height:4px; background:var(--mostaza); flex:0 0 auto; }
+  .trazo { height:4px; flex:0 0 auto; background:linear-gradient(90deg,
+    var(--violeta) 0 66.7%, var(--mostaza) 66.7% 88.9%, var(--verde) 88.9% 100%); }
 
   /* Resumen: lo primero que mira al llegar */
   .resumen { background:var(--card); border-bottom:1px solid var(--rule); flex:0 0 auto; }
@@ -201,7 +211,7 @@
     background:var(--apr-bg); color:var(--apr-fg);
     font-size:var(--t-base); font-weight:500; }
 
-  .fases { display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--sp-4);
+  .fases { display:grid; grid-template-columns:repeat(4, 1fr); gap:var(--sp-4);
     list-style:none; padding:0; }
   .paso { display:grid; gap:var(--sp-2); }
   .paso__marca { display:flex; align-items:center; gap:var(--sp-2); }
@@ -309,6 +319,7 @@
   .chequeo label:has(:checked) > div > span { text-decoration:line-through; color:var(--ink-2); }
 
   .campo { display:grid; gap:var(--sp-2); }
+  .acciones form { display:grid; gap:var(--sp-5); }
   input[type=text], textarea, .campo select {
     padding:10px var(--sp-3); background:var(--card); color:var(--ink);
     border:1px solid var(--rule); border-radius:var(--radius); font-size:var(--t-base);
@@ -319,6 +330,14 @@
   .ayuda { font-size:var(--t-micro); color:var(--ink-2); }
 
   /* Acciones */
+
+  /* La estrella de ocho puntas marca las secciones, como en la portada */
+  h2.sub::before { content:""; display:inline-block; width:.62em; height:.62em;
+    margin-right:.5em; background:var(--mostaza);
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z'/%3E%3C/svg%3E") center/contain no-repeat;
+            mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z'/%3E%3C/svg%3E") center/contain no-repeat; }
+
+  /* Lo que decide algo irreversible lleva el borde amarillo */
   .acciones { display:grid; gap:var(--sp-3);
     padding-top:var(--sp-5); border-top:1px solid var(--rule); }
   .acciones__fila { display:flex; flex-wrap:wrap; gap:var(--sp-3); align-items:center; }

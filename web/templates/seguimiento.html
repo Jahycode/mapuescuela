@@ -13,23 +13,15 @@
 
 <header class="masthead">
   <div class="wrap masthead__inner">
-    <div>
+    <div class="marca-sello">
+      <img class="sello" src="{{ url_for('static', filename='logo-mapuescuela.png') }}"
+           alt="" width="320" height="318" aria-hidden="true">
+      <div>
       <p class="brand">Agrupación <span>Mapuescuela</span></p>
-      <p class="lbl" style="margin-top:6px">Seguimiento de tu pedido</p>
-      <p style="margin-top:var(--sp-2);font-size:var(--t-sm)">
-        <a href="{{ url_for('catalogo') }}">← Volver al registro</a>
-      </p>
+      </div>
     </div>
-    <dl class="masthead__meta">
-      <div>
-        <dt class="lbl">Pedido</dt>
-        <dd class="mono" style="font-size:var(--t-md);font-weight:500">MAP-{{ '%04d' % pedido.id }}</dd>
-      </div>
-      <div>
-        <dt class="lbl">Total</dt>
-        <dd class="mono" style="font-size:var(--t-md)">{{ pedido.montoTotal|plata }}</dd>
-      </div>
-    </dl>
+
+    <a class="btn btn--sec btn--sm" href="{{ url_for('catalogo') }}">← Volver al registro</a>
   </div>
   <div class="stroke" role="presentation"></div>
 </header>
@@ -83,14 +75,18 @@
         {% endif %}
       </div>
 
-      <div class="panel">
+      <div class="panel panel--clave">
         <div class="panel__head"><h2 class="sub">Datos para transferir</h2></div>
         <div class="panel__body apilar-4">
+          <p class="ejemplo">
+            <b>Datos de ejemplo.</b> La agrupación carga los suyos desde la pantalla de
+            administración; hasta entonces esta cuenta no recibe transferencias.
+          </p>
           <div class="datos">
             <div class="dato"><span class="lbl">Banco</span><span class="dato__v">Banco Estado</span></div>
             <div class="dato"><span class="lbl">Tipo de cuenta</span><span class="dato__v">Cuenta Corriente</span></div>
             <div class="dato"><span class="lbl">Número</span><span class="dato__v">12345678</span></div>
-            <div class="dato"><span class="lbl">RUT</span><span class="dato__v">65.123.456-7</span></div>
+            <div class="dato"><span class="lbl">RUT</span><span class="dato__v">11.111.111-1</span></div>
             <div class="dato"><span class="lbl">A nombre de</span><span class="dato__v">Agrupación Mapuescuela</span></div>
             <div class="dato dato--clave">
               <span class="lbl">Monto exacto</span>
@@ -159,11 +155,11 @@
           <ul class="lista">
             <li><span><strong>Transfieres desde tu banco</strong> el monto exacto, con el número del pedido en el mensaje.</span></li>
             <li><span><strong>Subes una foto del comprobante</strong> en esta misma página.</span></li>
-            <li><span><strong>Lo revisa una persona del equipo</strong>, no una máquina, de lunes a viernes entre 9 y 20 horas.</span></li>
+            <li><span><strong>Lo revisa una persona del equipo</strong>, no una máquina.</span></li>
             {% if pedido.modalidadEntrega == 'despacho' %}
             <li><span><strong>Coordinamos el despacho</strong> contigo: la dirección, la forma de envío y el costo.</span></li>
             {% else %}
-            <li><span><strong>Coordinamos el retiro</strong> en Rancagua, el día y la hora que te acomode.</span></li>
+            <li><span><strong>Coordinamos el retiro</strong> en Padre Hurtado, el día y la hora que te acomode.</span></li>
             {% endif %}
           </ul>
         </div>
@@ -175,7 +171,10 @@
   <aside class="aside">
 
     <section class="panel">
-      <div class="panel__head"><h2 class="sub">Tu pedido</h2></div>
+      <div class="panel__head">
+        <h2 class="sub">Tu pedido</h2>
+        <span class="mono" style="font-size:var(--t-sm);color:var(--ink-2)">MAP-{{ '%04d' % pedido.id }}</span>
+      </div>
       <div class="panel__body">
         {% for item in pedido['items'] %}
         <div class="objeto">
@@ -231,12 +230,11 @@
       <div class="panel__head"><h2 class="sub">Quiénes somos</h2></div>
       <div class="panel__body ficha-datos">
         <div><dt class="lbl">Nombre</dt><dd>Agrupación Mapuescuela</dd></div>
-        <div><dt class="lbl">RUT</dt><dd>65.123.456-7</dd></div>
-        <div><dt class="lbl">Dirección</dt><dd>Av. República 1180, Rancagua</dd></div>
+        <div><dt class="lbl">Dirección</dt><dd>Fernando Santiván 166, Padre Hurtado</dd></div>
         <div>
-          <dt class="lbl">Teléfono y WhatsApp</dt>
-          <dd>+56 9 1234 5678</dd>
-          <p>Te contestamos de lunes a viernes, de 9 a 20 horas.</p>
+          <dt class="lbl">Escríbenos</dt>
+          <dd>mapuescuela@gmail.com</dd>
+          <p>Somos pocas manos: a veces nos demoramos un día en contestar.</p>
         </div>
       </div>
     </section>

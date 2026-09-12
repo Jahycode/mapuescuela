@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 
 import requests
@@ -61,9 +62,23 @@ ETIQUETA_GRUPO = {
     "entrega": "Entrega",
 }
 
-# Los tres tramos que ve la voluntaria. Despacho y entrega son alternativas,
-# no pasos seguidos, asi que comparten el ultimo.
-TRAMO_DEL_GRUPO = {"comprobante": 0, "preparar": 1, "despacho": 2, "entrega": 2}
+# En que tramo de la barra cae cada tarea. Va por formKey y no por grupo:
+# los grupos existen para los iconos y agrupan de otra manera.
+TRAMO_DEL_FORM = {
+    "adjuntarComprobante": 0,
+    "revisionDelPago": 0,
+    "preparacionDelPedido": 1,
+    "avisoDeRetiroListo": 2,
+    "gestionDelDespacho": 2,
+    "registroDelRetiro": 3,
+    "despachoPorVoluntario": 3,
+    "datosDelEnvio": 3,
+}
+
+NOMBRES_DE_TRAMO = {
+    "retiro": ("Pago", "Preparación", "Listo para retirar", "Retiro"),
+    "despacho": ("Pago", "Preparación", "Despacho", "Entrega"),
+}
 
 # Los tres finales buenos del modelo. Los malos los escribe el worker.
 DESENLACE_DEL_FINAL = {
@@ -163,13 +178,14 @@ def pedidos():
 def catalogo():
     todos = productos()
     seleccion = session.get("seleccion", [])
-    elegidos = [p for p in todos if p["id"] in seleccion]
+    # Solo los que siguen disponibles: otra persona pudo llevarse alguno.
+    elegidos = [p for p in todos if p["id"] in seleccion and p["stock"] > 0]
 
     return render_template(
         "catalogo.html",
         disponibles=[p for p in todos if p["stock"] > 0],
         idos=[p for p in todos if p["stock"] == 0],
-        seleccionados=seleccion,
+        seleccionados=[p["id"] for p in elegidos],
         elegidos=elegidos,
         total_elegido=sum(p["precio"] for p in elegidos),
     )
@@ -197,11 +213,18 @@ def ver_checkout(error=None):
 
     elegidos = [por_id[i] for i in seleccion if i in por_id]
     disponibles = [p for p in elegidos if p["stock"] > 0]
+    tomados = [p for p in elegidos if p["stock"] == 0]
+
+    # Esta es la unica pantalla que avisa que un objeto se perdio, asi que
+    # es acá donde hay que sacarlo de la seleccion: si no, el catalogo lo
+    # sigue contando para siempre. Reasignar es lo que marca la sesion.
+    if tomados:
+        session["seleccion"] = [p["id"] for p in disponibles]
 
     return render_template(
         "checkout.html",
         elegidos=disponibles,
-        tomados=[p for p in elegidos if p["stock"] == 0],
+        tomados=tomados,
         total=sum(p["precio"] for p in disponibles),
         error=error,
     )
@@ -276,10 +299,24 @@ def cerrar_pedido(pedido_id, final):
     ).raise_for_status()
 
 
+def esperar_la_siguiente(instancia, segundos=6):
+    """Si el paso que sigue es automatico, el motor tarda en publicar la tarea
+    humana posterior. Esperamos acá en vez de mandar a la bandeja vacia."""
+    limite = time.monotonic() + segundos
+
+    while True:
+        siguiente = tarea_activa(instancia)
+        if siguiente:
+            return siguiente
+        if fin_del_proceso(instancia)["terminado"] or time.monotonic() >= limite:
+            return None
+        time.sleep(0.4)
+
+
 def seguir_en_el_pedido(instancia, pedido_id, hecho):
     """Deja abierta la siguiente tarea del mismo pedido. Si el proceso termino,
     escribe el desenlace en la base antes de soltar a la lista."""
-    siguiente = tarea_activa(instancia) if instancia else None
+    siguiente = esperar_la_siguiente(instancia) if instancia else None
 
     if siguiente:
         flash(f"{hecho} Sigue: «{siguiente['nombre']}».")
@@ -288,7 +325,7 @@ def seguir_en_el_pedido(instancia, pedido_id, hecho):
     fin = fin_del_proceso(instancia) if instancia else {"terminado": True, "final": None}
 
     if not fin["terminado"]:
-        flash(f"{hecho} El sistema está trabajando en el paso siguiente.")
+        flash(f"{hecho} El sistema sigue trabajando en el paso siguiente.")
         return redirect(url_for("bandeja", espera=1))
 
     cerrar_pedido(pedido_id, fin["final"])
@@ -305,10 +342,10 @@ def urgencia(espera_min):
     return "normal"
 
 
-def fases_del_pedido(grupo, modalidad):
-    """Los tres tramos por los que pasa todo pedido, y en cual va este."""
-    actual = TRAMO_DEL_GRUPO.get(grupo, 0)
-    nombres = ("Pago", "Preparación", "Despacho" if modalidad == "despacho" else "Retiro")
+def fases_del_pedido(form_key, modalidad):
+    """Los cuatro tramos por los que pasa todo pedido, y en cual va este."""
+    actual = TRAMO_DEL_FORM.get(form_key, 0)
+    nombres = NOMBRES_DE_TRAMO["despacho" if modalidad == "despacho" else "retiro"]
 
     return [
         {
@@ -348,7 +385,7 @@ def bandeja():
         detalle = requests.get(f"{WS_PEDIDOS}/pedidos/{pedido_id}", timeout=5).json()
         objetos = detalle.get("items", [])
         fases = fases_del_pedido(
-            seleccionada["grupo"], seleccionada["pedido"].get("modalidadEntrega")
+            seleccionada["form_key"], seleccionada["pedido"].get("modalidadEntrega")
         )
 
     return render_template(
@@ -359,7 +396,6 @@ def bandeja():
         objetos=objetos,
         fases=fases,
         voluntaria=session.get("voluntaria", VOLUNTARIAS[0]),
-        voluntarias=VOLUNTARIAS,
         error=ERRORES.get(request.args.get("error")),
         esperando=request.args.get("espera"),
     )
@@ -381,15 +417,6 @@ def historico():
         recaudado=sum(p["montoTotal"] for p in vendidos),
         perdidos=len(cerrados) - len(vendidos),
     )
-
-
-@app.post("/bandeja/quien")
-def cambiar_voluntaria():
-    """Quien esta atendiendo la bandeja. Se guarda en la sesion, como la seleccion del catalogo."""
-    elegida = request.form.get("voluntaria")
-    if elegida in VOLUNTARIAS:
-        session["voluntaria"] = elegida
-    return redirect(url_for("bandeja", tarea=request.form.get("tarea") or None))
 
 
 @app.post("/bandeja/<tarea_id>/completar")

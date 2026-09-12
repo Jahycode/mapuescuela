@@ -32,28 +32,23 @@
 
 <header class="tope">
   <div class="wrap tope__in">
-    <div>
+    <div class="marca-sello">
+      <img class="sello" src="{{ url_for('static', filename='logo-mapuescuela.png') }}"
+           alt="" width="320" height="318" aria-hidden="true">
+      <div>
       <p class="marca">Agrupación <span>Mapuescuela</span></p>
       <p>Tareas pendientes</p>
-      <p class="volver"><a href="{{ url_for('catalogo') }}">← Volver al registro</a></p>
+      </div>
     </div>
 
     <div class="tope__acciones">
+      <a class="btn btn--sec btn--sm" href="{{ url_for('catalogo') }}">← Volver al registro</a>
       <a class="btn btn--sec btn--sm" href="{{ url_for('historico') }}">Ver el histórico</a>
 
-      <form class="quien" method="post" action="{{ url_for('cambiar_voluntaria') }}">
+      <p class="quien">
         <span class="quien__ini" aria-hidden="true">{{ voluntaria|iniciales }}</span>
-        <div>
-          <label class="oculto" for="quien">Quién está trabajando</label>
-          <select id="quien" name="voluntaria">
-            {% for v in voluntarias %}
-            <option {% if v == voluntaria %}selected{% endif %}>{{ v }}</option>
-            {% endfor %}
-          </select>
-          <button class="btn btn--sec btn--sm">Cambiar</button>
-          <input type="hidden" name="tarea" value="{{ seleccionada.id if seleccionada else '' }}">
-        </div>
-      </form>
+        <span>{{ voluntaria }}</span>
+      </p>
     </div>
   </div>
 </header>
@@ -210,9 +205,6 @@
               <button class="btn btn--pri" name="decision" value="APROBADO">Aprobar el pago</button>
               <button class="btn btn--peligro" type="button" data-abre="no-aprobar">Cancelar el pedido</button>
             </div>
-            <p class="consecuencia">
-              Aprobar descuenta los objetos del registro y no se puede deshacer solo.
-            </p>
           </form>
 
           <dialog id="no-aprobar" class="modal" {% if error %}data-abrir{% endif %}>
@@ -253,9 +245,6 @@
               <button class="btn btn--pri" name="tipoDespacho" value="VOLUNTARIO">Lo lleva un voluntario</button>
               <button class="btn btn--sec" name="tipoDespacho" value="COURIER">Va por courier</button>
             </div>
-            <p class="consecuencia">
-              Con <b>courier</b> hay que registrar los datos del envío en el paso siguiente.
-            </p>
           </form>
 
         {% elif seleccionada.form_key == 'datosDelEnvio' %}
@@ -272,13 +261,11 @@
               <label class="lbl" for="direccion">Dirección de destino</label>
               <input type="text" id="direccion" name="direccion" required
                      placeholder="Calle, número, comuna" autocomplete="off">
-              <p class="ayuda">El cliente no la deja al reservar: hay que pedírsela.</p>
             </div>
 
             <div class="campo">
-              <label class="lbl" for="numeroSeguimiento">Número de seguimiento</label>
+              <label class="lbl" for="numeroSeguimiento">Número de seguimiento (opcional)</label>
               <input type="text" id="numeroSeguimiento" name="numeroSeguimiento" autocomplete="off">
-              <p class="ayuda">Opcional. Si el courier lo entrega después, déjalo vacío.</p>
             </div>
 
             {% if error %}<p class="consecuencia"><b>{{ error }}</b></p>{% endif %}

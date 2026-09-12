@@ -13,8 +13,12 @@
 
 <header class="tope">
   <div class="wrap tope__in">
-    <p class="marca">Agrupación <span>Mapuescuela</span></p>
-    <p class="ruta"><a href="{{ url_for('catalogo') }}">El registro</a> · <b>Reservar tu pedido</b></p>
+    <div class="marca-sello">
+      <img class="sello" src="{{ url_for('static', filename='logo-mapuescuela.png') }}"
+           alt="" width="320" height="318" aria-hidden="true">
+      <p class="marca">Agrupación <span>Mapuescuela</span></p>
+    </div>
+    <a class="btn btn--sec btn--sm" href="{{ url_for('catalogo') }}">← Volver al registro</a>
   </div>
 </header>
 <div class="trazo" role="presentation"></div>
@@ -194,9 +198,9 @@
         <div>
           <span class="lbl">Dónde queda la sede</span>
           <div class="sede" style="margin-top:var(--sp-3)">
-            <div><dt class="lbl">Dirección</dt><dd>Av. República 1180</dd></div>
-            <div><dt class="lbl">Comuna</dt><dd>Rancagua</dd></div>
-            <div><dt class="lbl">Horario</dt><dd>Lu a Vi, 10 a 18 hrs</dd></div>
+            <div><dt class="lbl">Dirección</dt><dd>Fernando Santiván 166</dd></div>
+            <div><dt class="lbl">Comuna</dt><dd>Padre Hurtado</dd></div>
+            <div><dt class="lbl">Horario</dt><dd>Coordinamos día y hora</dd></div>
           </div>
         </div>
 
@@ -240,9 +244,15 @@
         </div>
 
         <div style="display:grid;gap:var(--sp-3)">
+          {% if elegidos %}
           <button class="btn btn--pri btn--block" type="submit">
             Reservar y ver los datos para transferir
           </button>
+          {% else %}
+          <a class="btn btn--sec btn--block" href="{{ url_for('catalogo') }}">
+            Volver al registro y elegir otra cosa
+          </a>
+          {% endif %}
         </div>
       </div>
     </section>
@@ -251,15 +261,14 @@
       <div class="panel__head"><h2 class="sub">Quiénes somos</h2></div>
       <div class="panel__body confianza">
         <div><dt class="lbl">Nombre</dt><dd>Agrupación Mapuescuela</dd></div>
-        <div><dt class="lbl">RUT</dt><dd>65.123.456-7</dd></div>
+        <div><dt class="lbl">Dónde</dt><dd>Fernando Santiván 166, Padre Hurtado</dd></div>
         <div>
-          <dt class="lbl">Teléfono</dt>
-          <dd>+56 9 1234 5678</dd>
-          <p>Puedes llamarnos antes de reservar y te atendemos. De lunes a viernes, de 9 a 20 horas.</p>
+          <dt class="lbl">Escríbenos</dt>
+          <dd>mapuescuela@gmail.com</dd>
+          <p>Puedes preguntarnos lo que sea antes de reservar.</p>
         </div>
         <p>
-          Lo que juntamos vendiendo estos objetos donados financia el acompañamiento escolar
-          de 34 jóvenes de Rancagua que dejaron el colegio.
+          Lo que juntamos vendiendo estos objetos donados financia los talleres de Mapuescuela.
         </p>
       </div>
     </section>
