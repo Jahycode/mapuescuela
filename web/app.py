@@ -3,7 +3,8 @@ import time
 from datetime import datetime
 
 import requests
-from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
+from flask import (Flask, Response, abort, flash, redirect, render_template, request,
+                   session, url_for)
 from flowable_client import (
     arrancar_instancia,
     completar_tarea,
@@ -25,6 +26,13 @@ CONDICIONES = {
     "bueno": "Bueno",
     "detalles": "Con detalles",
     "restaurar": "Para restaurar",
+}
+
+CATEGORIAS = {
+    "muebles": "Muebles",
+    "libros": "Libros",
+    "juguetes": "Juguetes",
+    "otros": "Otros",
 }
 
 ROTULO_MEDIDA = {
@@ -399,6 +407,188 @@ def bandeja():
         error=ERRORES.get(request.args.get("error")),
         esperando=request.args.get("espera"),
     )
+
+
+@app.get("/objeto/<int:producto_id>/foto")
+def foto_objeto(producto_id):
+    """El navegador nunca le pide la imagen a ws-pedidos: la sirve la web, igual
+    que todo lo demas. Asi el cliente conoce una sola direccion.
+
+    La plantilla agrega ?v= con el nombre del archivo, que lleva la marca de tiempo
+    de la subida. Sin eso, cambiar la foto no cambiaria la direccion y el navegador
+    seguiria mostrando la vieja hasta que venza el cache."""
+    respuesta = requests.get(f"{WS_PEDIDOS}/productos/{producto_id}/foto", timeout=10)
+
+    if respuesta.status_code != 200:
+        abort(404)
+
+    return Response(
+        respuesta.content,
+        mimetype=respuesta.headers.get("Content-Type", "image/jpeg"),
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
+CAMPOS_OBJETO = ("nombre", "categoria", "condicion", "marcaUso")
+
+
+def dimensiones(medida):
+    """De '78×90×45' a ('78', '90', '45'). Si la medida no son numeros
+    —los libros dicen 'Encomienda'— devuelve las tres vacias."""
+    partes = [p.strip() for p in (medida or "").split("×")]
+
+    if not partes or not all(p.isdigit() for p in partes):
+        return ("", "", "")
+
+    return tuple((partes + ["", "", ""])[:3])
+
+
+def medida_del_formulario(actual=""):
+    """Alto, ancho y fondo en centimetros, en ese orden. Paro en el primero
+    que venga vacio: '78×45' se leeria como alto por ancho y seria mentira."""
+    valores = []
+
+    for campo in ("alto", "ancho", "fondo"):
+        valor = request.form.get(campo, "").strip()
+        if not valor.isdigit():
+            break
+        valores.append(valor)
+
+    # Sin numeros no borro lo que hubiera: puede decir 'Encomienda' o '2 a 5 anos'.
+    return "×".join(valores) if valores else actual
+
+
+def objeto_del_formulario(actual=None):
+    """Lo que llego escrito, listo para mandarselo a ws-pedidos."""
+    actual = actual or {}
+    datos = {c: request.form.get(c, "").strip() for c in CAMPOS_OBJETO}
+
+    datos["medida"] = medida_del_formulario(actual.get("medida", ""))
+
+    precio = request.form.get("precio", "").replace(".", "").strip()
+    datos["precio"] = int(precio) if precio.isdigit() else 0
+
+    return datos
+
+
+def guardar_la_foto(producto_id):
+    """Sube la foto si venia una. Devuelve el problema, o None si todo bien.
+    Va despues de crear el objeto: sin id no hay donde colgarla."""
+    archivo = request.files.get("foto")
+
+    if archivo is None or not archivo.filename:
+        return None
+
+    respuesta = requests.post(
+        f"{WS_PEDIDOS}/productos/{producto_id}/foto",
+        data=archivo.read(),
+        headers={"Content-Type": archivo.mimetype},
+        timeout=20,
+    )
+
+    if respuesta.status_code != 201:
+        return respuesta.json().get("error", "no se pudo guardar")
+    return None
+
+
+def ver_formulario(objeto=None, error=None, codigo=200):
+    alto, ancho, fondo = dimensiones(objeto.get("medida") if objeto else "")
+
+    return render_template(
+        "admin_objeto.html", objeto=objeto, error=error,
+        categorias=CATEGORIAS, condiciones=CONDICIONES,
+        alto=alto, ancho=ancho, fondo=fondo,
+    ), codigo
+
+
+@app.get("/admin/objetos/nuevo")
+def nuevo_objeto():
+    return ver_formulario()
+
+
+@app.post("/admin/objetos")
+def crear_objeto():
+    datos = objeto_del_formulario()
+    respuesta = requests.post(f"{WS_PEDIDOS}/productos", json=datos, timeout=5)
+
+    if respuesta.status_code != 201:
+        return ver_formulario(datos, respuesta.json().get("error"), 400)
+
+    creado = respuesta.json()
+    problema = guardar_la_foto(creado["id"])
+
+    aviso = f"«{creado['nombre']}» quedó en el registro con el N° {creado['id']:04d}."
+    flash(aviso + (f" La foto no se guardó: {problema}" if problema else ""))
+    return redirect(url_for("admin_objetos"))
+
+
+@app.get("/admin/objetos/<int:producto_id>")
+def editar_objeto(producto_id):
+    objetos = requests.get(
+        f"{WS_PEDIDOS}/productos", params={"incluirRetirados": "true"}, timeout=5
+    ).json()
+    objeto = next((o for o in objetos if o["id"] == producto_id), None)
+
+    if objeto is None:
+        abort(404)
+
+    return ver_formulario(objeto)
+
+
+@app.post("/admin/objetos/<int:producto_id>")
+def guardar_objeto(producto_id):
+    objetos = requests.get(
+        f"{WS_PEDIDOS}/productos", params={"incluirRetirados": "true"}, timeout=5
+    ).json()
+    actual = next((o for o in objetos if o["id"] == producto_id), None)
+
+    if actual is None:
+        abort(404)
+
+    datos = objeto_del_formulario(actual)
+    respuesta = requests.put(f"{WS_PEDIDOS}/productos/{producto_id}", json=datos, timeout=5)
+
+    if respuesta.status_code != 200:
+        return ver_formulario({**datos, "id": producto_id}, respuesta.json().get("error"), 400)
+
+    problema = guardar_la_foto(producto_id)
+
+    aviso = f"Guardé los cambios del N° {producto_id:04d}."
+    flash(aviso + (f" La foto no se guardó: {problema}" if problema else ""))
+    return redirect(url_for("admin_objetos"))
+
+
+@app.get("/admin/objetos")
+def admin_objetos():
+    """Todo el registro, incluidos los retirados, para administrarlo."""
+    objetos = requests.get(
+        f"{WS_PEDIDOS}/productos", params={"incluirRetirados": "true"}, timeout=5
+    ).json()
+    objetos.sort(key=lambda o: o["id"], reverse=True)
+
+    return render_template(
+        "admin_objetos.html",
+        objetos=objetos,
+        disponibles=sum(1 for o in objetos if o["stock"] > 0 and not o["retirado"]),
+        vendidos=sum(1 for o in objetos if o["stock"] == 0),
+        retirados=sum(1 for o in objetos if o["retirado"]),
+    )
+
+
+@app.post("/admin/objetos/<int:producto_id>/retiro")
+def retirar_objeto(producto_id):
+    """Retirar no borra: los pedidos viejos siguen apuntando a este objeto."""
+    retirado = request.form.get("retirado") == "si"
+
+    requests.post(
+        f"{WS_PEDIDOS}/productos/{producto_id}/retiro",
+        json={"retirado": retirado},
+        timeout=5,
+    ).raise_for_status()
+
+    flash("Objeto retirado del registro." if retirado
+          else "El objeto volvió al registro.")
+    return redirect(url_for("admin_objetos"))
 
 
 @app.get("/bandeja/historico")

@@ -255,7 +255,81 @@
   .hist__cuando { font-family:var(--mono); font-size:var(--t-micro);
     color:var(--ink-2); white-space:nowrap; }
 
-  .insignia--vendido { color:var(--apr-fg); background:var(--apr-bg); }
+  .editor { display:grid; gap:clamp(var(--sp-5), 3vw, var(--sp-8));
+    grid-template-columns:minmax(0, 1fr) minmax(0, 19rem); align-items:start; }
+  @media (max-width: 62rem) { .editor { grid-template-columns:minmax(0,1fr); } }
+
+  .vista-previa { display:grid; gap:var(--sp-3); position:sticky; top:var(--sp-5); }
+
+  .ficha-vp { background:var(--card); border:1px solid var(--rule);
+    border-radius:var(--radius); overflow:hidden; }
+  .ficha-vp__foto { position:relative; aspect-ratio:4/5; background:var(--bed);
+    display:grid; place-items:center;
+    background-size:cover; background-position:center; }
+  .ficha-vp__foto.tiene-foto .ficha-vp__falta { display:none; }
+  .ficha-vp__falta { font-size:var(--t-sm); color:var(--ink-2); }
+
+  .ficha-vp__cuerpo { display:grid; gap:var(--sp-2); padding:var(--sp-4); }
+  .ficha-vp__n { font-family:var(--mono); font-size:var(--t-sm); color:var(--ink-2); }
+  .ficha-vp__nom { font-family:var(--display); font-weight:600; font-size:var(--t-md);
+    line-height:1.2; text-wrap:balance; }
+  .ficha-vp__datos { display:grid; gap:var(--sp-1); font-size:var(--t-sm); }
+  .ficha-vp__datos div { display:flex; justify-content:space-between; gap:var(--sp-3); }
+  .ficha-vp__datos dd { text-align:right; color:var(--ink-2); }
+  .ficha-vp__precio { font-family:var(--mono); font-weight:600; font-size:var(--t-md);
+    padding-top:var(--sp-2); border-top:1px solid var(--rule-soft); }
+
+  .formulario { display:grid; gap:var(--sp-5);
+    padding:clamp(var(--sp-5), 3vw, var(--sp-8));
+    background:var(--card); border:1px solid var(--rule); border-radius:var(--radius); }
+  .formulario__par { display:grid; gap:var(--sp-5); grid-template-columns:1fr 1fr; }
+  .formulario__par:has(> [hidden]) { grid-template-columns:1fr; }
+  .medidas { display:flex; align-items:center; gap:var(--sp-2); }
+  .medidas input { width:100%; min-width:0; }
+  .medidas span { color:var(--ink-2); flex:0 0 auto; }
+  @media (max-width: 40rem) { .formulario__par { grid-template-columns:1fr; } }
+
+  .formulario textarea { min-height:0; resize:vertical; }
+  .formulario input[type=file] { font-size:var(--t-sm); }
+  .formulario .acciones__fila { margin-top:var(--sp-2); }
+
+  .foto-actual { display:flex; align-items:center; gap:var(--sp-4); }
+  .foto-actual img { width:5rem; aspect-ratio:4/5; object-fit:cover;
+    border:1px solid var(--rule); border-radius:var(--radius); }
+
+  .aviso--malo { border-left-color:var(--can-fg);
+    background:var(--can-bg); color:var(--can-fg); }
+
+  .obj { display:grid; grid-template-columns:auto minmax(0,1fr) auto auto auto;
+    gap:var(--sp-4); align-items:center;
+    padding:var(--sp-3) var(--sp-4);
+    background:var(--card); border:1px solid var(--rule); border-radius:var(--radius);
+    border-left-width:3px; border-left-style:solid; }
+  .obj[data-estado="disponible"] { border-left-color:var(--apr-fg); }
+  .obj[data-estado="vendido"]    { border-left-color:var(--ven-fg); }
+  .obj[data-estado="retirado"]   { border-left-color:var(--can-fg); }
+  .obj--vacio { border-left-color:var(--rule); color:var(--ink-2); }
+
+  .obj__foto { width:3.4rem; aspect-ratio:4/5; flex:0 0 auto; overflow:hidden;
+    background:var(--bed); border-radius:var(--radius); }
+  .obj__foto img { width:100%; height:100%; object-fit:cover; }
+
+  .obj__nom { font-weight:600; }
+  .obj__n { font-family:var(--mono); font-weight:500; color:var(--ink-2); margin-right:var(--sp-2); }
+  .obj__meta { font-size:var(--t-sm); color:var(--ink-2); margin-top:3px; }
+  .obj__meta b { color:var(--can-fg); font-weight:600; }
+  .obj__precio { font-family:var(--mono); font-weight:600; white-space:nowrap; }
+  .obj__acciones { display:flex; gap:var(--sp-2); align-items:center; }
+
+  .insignia--disponible { color:var(--apr-fg); background:var(--apr-bg); }
+  .insignia--vendido { color:var(--ven-fg); background:var(--ven-bg); }
+  .insignia--retirado { color:var(--can-fg); background:var(--can-bg); }
+
+  @media (max-width: 60rem) {
+    .obj { grid-template-columns:auto minmax(0,1fr); row-gap:var(--sp-3); }
+    .obj__acciones { grid-column:1 / -1; }
+  }
+
   .insignia--perdido { color:var(--can-fg); background:var(--can-bg); }
 
   @media (max-width: 60rem) {

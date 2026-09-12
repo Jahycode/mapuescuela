@@ -171,7 +171,8 @@
   .seccion h2 svg, .archivo h2 svg { flex:0 0 .7em; width:.7em; color:var(--mostaza); }
   .seccion__nota { font-size:var(--t-sm); color:var(--ink-2); max-width:56ch; text-wrap:pretty; }
 
-  .rejilla { display:grid; gap:clamp(var(--sp-4), 2vw, var(--sp-6));
+  /* Sin estirar: al abrir los detalles de una ficha, las de al lado no crecen con ella */
+  .rejilla { display:grid; gap:clamp(var(--sp-4), 2vw, var(--sp-6)); align-items:start;
     grid-template-columns:repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); }
 
   .ficha { display:flex; flex-direction:column; background:var(--card);
@@ -179,10 +180,6 @@
     box-shadow:0 1px 0 var(--rule-soft); }
   .ficha:hover { border-color:var(--violeta); }
 
-  .ficha__cab { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-2);
-    padding:var(--sp-2) var(--sp-3); background:var(--violeta-hondo); color:#fff; }
-  .ficha__n { font-family:var(--mono); font-size:var(--t-micro); letter-spacing:.06em;
-    color:#C3D2EA; }
   .ojo { font-size:var(--t-micro); font-weight:700; letter-spacing:.1em; text-transform:uppercase;
     background:var(--mostaza); color:#1D1A14; padding:2px var(--sp-2); border-radius:var(--radius); }
   .insignia { font-size:var(--t-micro); font-weight:600; letter-spacing:.06em; text-transform:uppercase;
@@ -190,6 +187,8 @@
   .insignia--esperando { color:var(--esp-fg); background:var(--esp-bg); }
 
   .ficha__foto { position:relative; aspect-ratio:4/5; background:var(--bed); overflow:hidden; }
+  .ficha__foto img { width:100%; height:100%; object-fit:cover; }
+  .idos__foto img { width:100%; height:100%; object-fit:cover; border-radius:var(--radius); }
   /* guñelve tenue en el hueco de la foto, para que no se lea como error */
   .ficha__foto::after { content:""; position:absolute; inset:0;
     background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z' fill='%231F3864' fill-opacity='.06'/%3E%3C/svg%3E");
@@ -209,7 +208,17 @@
   .datos dd { font-family:var(--mono); font-size:var(--t-sm); margin-top:1px; color:var(--ink); }
 
   /* De dónde vino: esto es lo que una tienda no puede decir */
-  .origen { font-size:var(--t-sm); color:var(--ink-2); text-wrap:pretty; }
+  .detalle { border-top:1px solid var(--rule-soft); }
+  .detalle summary { list-style:none; cursor:pointer; padding:var(--sp-3) 0;
+    display:flex; align-items:center; justify-content:space-between; gap:var(--sp-2);
+    font-size:var(--t-sm); font-weight:600; color:var(--violeta); }
+  .detalle summary::-webkit-details-marker { display:none; }
+  .detalle summary::after { content:"+"; font-family:var(--mono); font-size:var(--t-md);
+    line-height:1; color:var(--ink-2); }
+  .detalle[open] summary::after { content:"\2013"; }
+  .detalle summary:hover { color:var(--violeta-hondo); }
+  .detalle > :last-child { padding-bottom:var(--sp-3); }
+
   .marca-uso { font-size:var(--t-sm); color:var(--esp-fg); background:var(--esp-bg);
     padding:var(--sp-2) var(--sp-3); border-left:3px solid var(--mostaza);
     border-radius:var(--radius); text-wrap:pretty; }
@@ -239,7 +248,6 @@
   .idos__foto { flex:0 0 2.75rem; aspect-ratio:1; background:var(--bed);
     filter:grayscale(1); opacity:.5; overflow:hidden; }
   .idos__datos { min-width:0; flex:1; }
-  .idos__n { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2); }
   .idos__nom { font-size:var(--t-sm); font-weight:500; color:var(--ven-fg);
     line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .idos__cuando { font-family:var(--mono); font-size:var(--t-sm); color:var(--ven-fg);
@@ -322,8 +330,8 @@ body {
         <img src="{{ url_for('static', filename='logo-mapuescuela.png') }}"
              alt="Mapuescuela · educa-acción para el buen vivir" width="320" height="318">
         <small>El registro
-          <span>Acá vamos anotando cada cosa que nos donan. A cada una le asignamos un
-            número y, cuando alguien se la lleva, la sacamos del registro.</span>
+          <span>Acá vamos anotando cada cosa que nos donan, y cuando alguien se la
+            lleva, la sacamos del registro.</span>
         </small>
     </h1>
 
@@ -400,31 +408,34 @@ body {
     <ul class="rejilla">
       {% for p in disponibles %}
       <li class="ficha" id="objeto-{{ p.id }}" data-estado="disponible">
-        <div class="ficha__cab">
-          <span class="ficha__n">N° {{ '%04d' % p.id }}</span>
-        </div>
-
         <div class="ficha__foto">
+          {% if p.foto %}
+          <img src="{{ url_for('foto_objeto', producto_id=p.id, v=p.foto) }}" alt="{{ p.nombre }}" loading="lazy">
+          {% else %}
           <svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%">
             <rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/>
             <rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/>
             <rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/>
             <rect x="46" y="62" width="108" height="16" fill="#A79DBA"/>
           </svg>
+          {% endif %}
         </div>
 
         <div class="ficha__cuerpo">
           <h3 class="ficha__nom">{{ p.nombre }}</h3>
 
-          {% if p.condicion or p.medida %}
-          <dl class="datos">
-            {% if p.condicion %}<div><dt class="lbl">Estado</dt><dd>{{ p.condicion|etiqueta_condicion }}</dd></div>{% endif %}
-            {% if p.medida %}<div><dt class="lbl">{{ p.categoria|rotulo_medida }}</dt><dd>{{ p.medida }}</dd></div>{% endif %}
-          </dl>
-          {% endif %}
+          {% if p.condicion or p.medida or p.marcaUso %}
+          <details class="detalle">
+            <summary>Ver detalles</summary>
 
-          {% if p.origen %}<p class="origen">{{ p.origen }}</p>{% endif %}
-          {% if p.marcaUso %}<p class="marca-uso">{{ p.marcaUso }}</p>{% endif %}
+            <dl class="datos">
+              {% if p.condicion %}<div><dt class="lbl">Estado</dt><dd>{{ p.condicion|etiqueta_condicion }}</dd></div>{% endif %}
+              {% if p.medida %}<div><dt class="lbl">{{ p.categoria|rotulo_medida }}</dt><dd>{{ p.medida }}</dd></div>{% endif %}
+            </dl>
+
+            {% if p.marcaUso %}<p class="marca-uso">{{ p.marcaUso }}</p>{% endif %}
+          </details>
+          {% endif %}
 
           <div class="ficha__pie">
             <span class="precio">{{ p.precio|plata }}</span>
@@ -463,14 +474,17 @@ body {
       {% for p in idos %}
       <li class="idos">
         <div class="idos__foto">
+          {% if p.foto %}
+          <img src="{{ url_for('foto_objeto', producto_id=p.id, v=p.foto) }}" alt="" loading="lazy">
+          {% else %}
           <svg viewBox="0 0 200 250" aria-hidden="true" style="width:100%;height:100%">
             <rect x="46" y="78" width="108" height="86" fill="#C0B8CE"/>
             <rect x="46" y="164" width="14" height="42" fill="#AEA4C0"/>
             <rect x="140" y="164" width="14" height="42" fill="#AEA4C0"/>
           </svg>
+          {% endif %}
         </div>
         <div class="idos__datos">
-          <p class="idos__n">N° {{ '%04d' % p.id }}</p>
           <p class="idos__nom">{{ p.nombre }}</p>
         </div>
         <span class="idos__cuando">{{ p.precio|plata }}</span>

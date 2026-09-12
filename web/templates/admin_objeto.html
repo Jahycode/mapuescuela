@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if objeto and objeto.id %}Editar N° {{ '%04d' % objeto.id }}{% else %}Cargar un objeto{% endif %} · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='bandeja.css') }}">
+</head>
+<body>
+
+<header class="tope">
+  <div class="wrap tope__in">
+    <div class="marca-sello">
+      <img class="sello" src="{{ url_for('static', filename='logo-mapuescuela.png') }}"
+           alt="" width="320" height="318" aria-hidden="true">
+      <div>
+      <p class="marca">Agrupación <span>Mapuescuela</span></p>
+      <p>{% if objeto and objeto.id %}Editar el N° {{ '%04d' % objeto.id }}{% else %}Cargar un objeto{% endif %}</p>
+      </div>
+    </div>
+
+    <div class="tope__acciones">
+      <a class="btn btn--sec btn--sm" href="{{ url_for('admin_objetos') }}">← Volver a los objetos</a>
+    </div>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+
+<div class="wrap hist-seccion">
+
+  <div class="hist-cab">
+    <h2 class="sub">{% if objeto and objeto.id %}Editar «{{ objeto.nombre }}»{% else %}Un objeto nuevo{% endif %}</h2>
+  </div>
+
+  {% if error %}
+  <p class="aviso aviso--malo" role="alert"><b>No se pudo guardar.</b> {{ error }}</p>
+  {% endif %}
+
+  <div class="editor">
+
+  <form class="formulario" method="post" enctype="multipart/form-data"
+        action="{% if objeto and objeto.id %}{{ url_for('guardar_objeto', producto_id=objeto.id) }}{% else %}{{ url_for('crear_objeto') }}{% endif %}">
+
+    <div class="campo">
+      <label class="lbl" for="nombre">Qué es</label>
+      <input type="text" id="nombre" name="nombre" required maxlength="120" autocomplete="off"
+             placeholder="Velador de madera con cajón"
+             value="{{ objeto.nombre if objeto else '' }}">
+    </div>
+
+    <div class="formulario__par">
+      <div class="campo">
+        <label class="lbl" for="categoria">Categoría</label>
+        <select id="categoria" name="categoria" required>
+          {% for codigo, etiqueta in categorias.items() %}
+          <option value="{{ codigo }}" {% if objeto and objeto.categoria == codigo %}selected{% endif %}>{{ etiqueta }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="campo">
+        <label class="lbl" for="condicion">En qué estado está</label>
+        <select id="condicion" name="condicion" required>
+          {% for codigo, etiqueta in condiciones.items() %}
+          <option value="{{ codigo }}" {% if objeto and objeto.condicion == codigo %}selected{% endif %}>{{ etiqueta }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="formulario__par">
+      <div class="campo">
+        <label class="lbl" for="precio">Precio</label>
+        <input type="text" id="precio" name="precio" required inputmode="numeric" autocomplete="off"
+               placeholder="48000" value="{{ objeto.precio if objeto and objeto.precio else '' }}">
+      </div>
+
+      <div class="campo" id="campo-medida">
+        <label class="lbl" for="alto">Medida en centímetros (opcional)</label>
+        <div class="medidas">
+          <input type="number" id="alto" name="alto" min="1" max="999" placeholder="Alto"
+                 inputmode="numeric" value="{{ alto }}">
+          <span aria-hidden="true">×</span>
+          <input type="number" id="ancho" name="ancho" min="1" max="999" placeholder="Ancho"
+                 inputmode="numeric" value="{{ ancho }}">
+          <span aria-hidden="true">×</span>
+          <input type="number" id="fondo" name="fondo" min="1" max="999" placeholder="Fondo"
+                 inputmode="numeric" value="{{ fondo }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="campo">
+      <label class="lbl" for="marcaUso">Detalles y marcas de uso</label>
+      <textarea id="marcaUso" name="marcaUso" maxlength="300" rows="3"
+                placeholder="Tiene una marca de vaso en la tapa. Los cajones corren bien.">{{ objeto.marcaUso if objeto and objeto.marcaUso else '' }}</textarea>
+    </div>
+
+    <div class="campo">
+      <label class="lbl" for="foto">La foto</label>
+
+      {% if objeto and objeto.foto %}
+      <div class="foto-actual">
+        <img src="{{ url_for('foto_objeto', producto_id=objeto.id, v=objeto.foto) }}" alt="">
+        <p class="ayuda">Ya tiene una. Si eliges otra, la reemplaza.</p>
+      </div>
+      {% endif %}
+
+      <input type="file" id="foto" name="foto" accept="image/png,image/jpeg">
+      <p class="ayuda">JPG o PNG, hasta 5 MB. Opcional, pero sin foto casi nadie compra.</p>
+    </div>
+
+    <div class="acciones__fila">
+      <button class="btn btn--pri">
+        {% if objeto and objeto.id %}Guardar los cambios{% else %}Cargar al registro{% endif %}
+      </button>
+      <a class="btn btn--sec" href="{{ url_for('admin_objetos') }}">Cancelar</a>
+    </div>
+
+  </form>
+
+  <aside class="vista-previa" aria-label="Cómo se va a ver">
+    <p class="lbl">Así se va a ver en el registro</p>
+
+    <article class="ficha-vp">
+      <div id="vp-foto"
+           class="ficha-vp__foto{% if objeto and objeto.foto %} tiene-foto{% endif %}"
+           {% if objeto and objeto.foto %}style="background-image:url('{{ url_for('foto_objeto', producto_id=objeto.id, v=objeto.foto) }}')"{% endif %}>
+        <span class="ficha-vp__falta">Sin foto</span>
+      </div>
+
+      <div class="ficha-vp__cuerpo">
+        <p class="ficha-vp__n">N° {% if objeto and objeto.id %}{{ '%04d' % objeto.id }}{% else %}____{% endif %}</p>
+        <h3 class="ficha-vp__nom" id="vp-nombre">Sin nombre todavía</h3>
+
+        <dl class="ficha-vp__datos">
+          <div><dt class="lbl">Estado</dt><dd id="vp-condicion">—</dd></div>
+          <div><dt class="lbl">Medida</dt><dd id="vp-medida">—</dd></div>
+        </dl>
+
+        <p class="ficha-vp__precio" id="vp-precio">—</p>
+      </div>
+    </article>
+
+  </aside>
+
+  </div>
+
+</div>
+
+<script>
+  const formulario = document.querySelector(".formulario");
+  const marco = document.getElementById("vp-foto");
+  const eco = {
+    nombre: document.getElementById("vp-nombre"),
+    precio: document.getElementById("vp-precio"),
+    condicion: document.getElementById("vp-condicion"),
+    medida: document.getElementById("vp-medida"),
+  };
+
+  const plata = (valor) => {
+    const limpio = String(valor).replace(/\D/g, "");
+    return limpio ? "$" + Number(limpio).toLocaleString("es-CL") : "—";
+  };
+
+  const pintar = () => {
+    eco.nombre.textContent = formulario.nombre.value.trim() || "Sin nombre todavía";
+    eco.precio.textContent = plata(formulario.precio.value);
+    eco.condicion.textContent = formulario.condicion.selectedOptions[0].text;
+    const partes = [];
+    for (const campo of ["alto", "ancho", "fondo"]) {
+      const valor = formulario[campo].value.trim();
+      if (!valor) break;
+      partes.push(valor);
+    }
+    eco.medida.textContent = partes.length ? partes.join("×") + " cm" : "—";
+  };
+
+  const campoMedida = document.getElementById("campo-medida");
+
+  const acomodarMedida = () => {
+    const esMueble = formulario.categoria.value === "muebles";
+    campoMedida.hidden = !esMueble;
+
+    // Un campo escondido igual se manda: si deja de aplicar, se vacia.
+    if (!esMueble) {
+      for (const campo of ["alto", "ancho", "fondo"]) formulario[campo].value = "";
+    }
+  };
+
+  // Solo digitos, y con el punto de miles puesto mientras se escribe.
+  const precio = document.getElementById("precio");
+  const conPuntos = (valor) => {
+    const digitos = String(valor).replace(/\D/g, "");
+    return digitos ? Number(digitos).toLocaleString("es-CL") : "";
+  };
+  precio.addEventListener("input", () => { precio.value = conPuntos(precio.value); });
+
+  formulario.addEventListener("input", pintar);
+  formulario.addEventListener("change", () => { acomodarMedida(); pintar(); });
+
+  let dibujada = null;
+  document.getElementById("foto").addEventListener("change", (evento) => {
+    const archivo = evento.target.files[0];
+    if (!archivo) return;
+
+    if (dibujada) URL.revokeObjectURL(dibujada);
+    dibujada = URL.createObjectURL(archivo);
+
+    marco.style.backgroundImage = `url("${dibujada}")`;
+    marco.classList.add("tiene-foto");
+  });
+
+  precio.value = conPuntos(precio.value);
+
+  acomodarMedida();
+  pintar();
+</script>
+
+</body>
+</html>

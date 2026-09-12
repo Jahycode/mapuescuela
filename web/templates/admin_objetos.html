@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El registro por dentro · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='bandeja.css') }}">
+</head>
+<body>
+
+<header class="tope">
+  <div class="wrap tope__in">
+    <div class="marca-sello">
+      <img class="sello" src="{{ url_for('static', filename='logo-mapuescuela.png') }}"
+           alt="" width="320" height="318" aria-hidden="true">
+      <div>
+      <p class="marca">Agrupación <span>Mapuescuela</span></p>
+      <p>Los objetos</p>
+      </div>
+    </div>
+
+    <div class="tope__acciones">
+      <a class="btn btn--sec btn--sm" href="{{ url_for('bandeja') }}">← Volver a las tareas</a>
+      <a class="btn btn--pri btn--sm" href="{{ url_for('nuevo_objeto') }}">Cargar un objeto</a>
+    </div>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+
+{% with avisos = get_flashed_messages() %}
+{% if avisos %}
+<div class="wrap">
+  {% for aviso in avisos %}
+  <p class="aviso" role="status">{{ aviso }}</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+
+<section class="resumen" aria-label="Resumen del registro">
+  <div class="wrap resumen__in">
+    <div class="cifra">
+      <b>{{ disponibles }}</b>
+      <span>en venta ahora</span>
+    </div>
+    <div class="cifra">
+      <b>{{ vendidos }}</b>
+      <span>{% if vendidos == 1 %}vendido{% else %}vendidos{% endif %}</span>
+    </div>
+    {% if retirados %}
+    <div class="cifra cifra--tarde">
+      <b>{{ retirados }}</b>
+      <span>{% if retirados == 1 %}retirado{% else %}retirados{% endif %}</span>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+
+<div class="wrap hist-seccion">
+
+  <div class="hist-cab">
+    <h2 class="sub">Todo el registro</h2>
+    <span class="lbl">Lo último que cargaste, primero</span>
+  </div>
+
+  <div class="hist-lista">
+    {% for o in objetos %}
+    {% set estado = 'retirado' if o.retirado else ('vendido' if o.stock == 0 else 'disponible') %}
+    <article class="obj" data-estado="{{ estado }}">
+
+      <div class="obj__foto">
+        {% if o.foto %}
+        <img src="{{ url_for('foto_objeto', producto_id=o.id, v=o.foto) }}" alt="" loading="lazy">
+        {% endif %}
+      </div>
+
+      <div>
+        <p class="obj__nom"><span class="obj__n">N° {{ '%04d' % o.id }}</span> {{ o.nombre }}</p>
+        <p class="obj__meta">
+          {{ o.categoria }} · {{ o.condicion|etiqueta_condicion }}{% if o.medida %} · {{ o.medida }}{% endif %}
+          {% if not o.foto %} · <b>sin foto</b>{% endif %}
+        </p>
+      </div>
+
+      <span class="insignia insignia--{{ estado }}">
+        {% if estado == 'retirado' %}Retirado{% elif estado == 'vendido' %}Vendido{% else %}En venta{% endif %}
+      </span>
+
+      <span class="obj__precio">{{ o.precio|plata }}</span>
+
+      <div class="obj__acciones">
+        <a class="btn btn--sec btn--sm" href="{{ url_for('editar_objeto', producto_id=o.id) }}">Editar</a>
+
+        {% if o.stock > 0 %}
+        <form method="post" action="{{ url_for('retirar_objeto', producto_id=o.id) }}">
+          <input type="hidden" name="retirado" value="{{ 'no' if o.retirado else 'si' }}">
+          <button class="btn {{ 'btn--sec' if o.retirado else 'btn--peligro' }} btn--sm">
+            {{ 'Volver a publicar' if o.retirado else 'Retirar' }}
+          </button>
+        </form>
+        {% endif %}
+      </div>
+
+    </article>
+    {% else %}
+    <div class="obj obj--vacio">
+      <div>
+        <p class="obj__nom">El registro está vacío</p>
+        <p class="obj__meta">Carga el primer objeto con el botón de arriba.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+</body>
+</html>
