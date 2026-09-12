@@ -71,6 +71,17 @@
   .tope a:hover { color:#fff; }
   .tope .marca { color:#fff; }
   .tope .marca + p, .tope .lbl { color:#E3EAF6; }
+  /* Navegar no es actuar: las secciones van como enlaces, y el amarillo
+     se reserva para los botones que hacen algo. */
+  .tope__nav { display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-1); }
+  .tope__nav a { padding:var(--sp-2) var(--sp-3); border-radius:var(--radius);
+    font-size:var(--t-sm); font-weight:600; color:#C3D2EA; text-decoration:none;
+    white-space:nowrap; }
+  .tope__nav a:hover { color:#fff; background:rgba(255,255,255,.10); }
+  .tope__nav a[aria-current="page"] { color:var(--violeta-hondo); background:var(--mostaza); }
+  .tope__salida { margin-left:var(--sp-3); border-left:1px solid rgba(255,255,255,.22);
+    padding-left:var(--sp-4) !important; }
+
   .tope .btn--sec, .masthead .btn--sec {
     background:var(--mostaza); border-color:var(--mostaza); color:var(--ink); font-weight:600; }
   .tope .btn--sec:hover, .masthead .btn--sec:hover {
@@ -299,6 +310,10 @@
 
   .aviso--malo { border-left-color:var(--can-fg);
     background:var(--can-bg); color:var(--can-fg); }
+  .aviso--pendiente { border-left-color:var(--esp-fg);
+    background:var(--esp-bg); color:var(--esp-fg); }
+
+  .separador { border:0; border-top:1px solid var(--rule-soft); margin-block:var(--sp-2); }
 
   .obj { display:grid; grid-template-columns:auto minmax(0,1fr) auto auto auto;
     gap:var(--sp-4); align-items:center;
@@ -394,7 +409,10 @@
 
   .campo { display:grid; gap:var(--sp-2); }
   .acciones form { display:grid; gap:var(--sp-5); }
-  input[type=text], textarea, .campo select {
+  /* Por tipo y no solo type=text: el correo es email y las medidas son number,
+     y sin nombrarlos caen en el estilo por defecto del navegador. */
+  input[type=text], input[type=email], input[type=number], input[type=tel],
+  input[type=url], input[type=search], textarea, .campo select {
     padding:10px var(--sp-3); background:var(--card); color:var(--ink);
     border:1px solid var(--rule); border-radius:var(--radius); font-size:var(--t-base);
     font-family:inherit; width:100%;

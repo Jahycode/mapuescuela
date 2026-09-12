@@ -1,0 +1,13 @@
+{# Las secciones internas. Cada pantalla define `seccion` antes de incluirlo. #}
+<nav class="tope__nav" aria-label="Secciones">
+  <a href="{{ url_for('bandeja') }}"
+     {% if seccion == 'tareas' %}aria-current="page"{% endif %}>Tareas</a>
+  <a href="{{ url_for('admin_objetos') }}"
+     {% if seccion == 'objetos' %}aria-current="page"{% endif %}>Objetos</a>
+  <a href="{{ url_for('admin_organizacion') }}"
+     {% if seccion == 'agrupacion' %}aria-current="page"{% endif %}>La agrupación</a>
+  <a href="{{ url_for('historico') }}"
+     {% if seccion == 'historico' %}aria-current="page"{% endif %}>Histórico</a>
+
+  <a class="tope__salida" href="{{ url_for('catalogo') }}">Ver el sitio ↗</a>
+</nav>

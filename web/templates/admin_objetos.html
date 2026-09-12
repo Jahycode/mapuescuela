@@ -23,7 +23,8 @@
     </div>
 
     <div class="tope__acciones">
-      <a class="btn btn--sec btn--sm" href="{{ url_for('bandeja') }}">← Volver a las tareas</a>
+      {% set seccion = "objetos" %}
+      {% include "_nav.html" %}
       <a class="btn btn--pri btn--sm" href="{{ url_for('nuevo_objeto') }}">Cargar un objeto</a>
     </div>
   </div>

@@ -78,16 +78,18 @@
       <div class="panel panel--clave">
         <div class="panel__head"><h2 class="sub">Datos para transferir</h2></div>
         <div class="panel__body apilar-4">
+          {% if not org.banco or not org.numeroCuenta %}
           <p class="ejemplo">
-            <b>Datos de ejemplo.</b> La agrupación carga los suyos desde la pantalla de
-            administración; hasta entonces esta cuenta no recibe transferencias.
+            <b>Datos de ejemplo.</b> La agrupación todavía no carga su cuenta, así que
+            esta no recibe transferencias.
           </p>
+          {% endif %}
           <div class="datos">
-            <div class="dato"><span class="lbl">Banco</span><span class="dato__v">Banco Estado</span></div>
-            <div class="dato"><span class="lbl">Tipo de cuenta</span><span class="dato__v">Cuenta Corriente</span></div>
-            <div class="dato"><span class="lbl">Número</span><span class="dato__v">12345678</span></div>
-            <div class="dato"><span class="lbl">RUT</span><span class="dato__v">11.111.111-1</span></div>
-            <div class="dato"><span class="lbl">A nombre de</span><span class="dato__v">Agrupación Mapuescuela</span></div>
+            <div class="dato"><span class="lbl">Banco</span><span class="dato__v">{{ org.banco or 'Banco Estado' }}</span></div>
+            <div class="dato"><span class="lbl">Tipo de cuenta</span><span class="dato__v">{{ org.tipoCuenta or 'Cuenta Corriente' }}</span></div>
+            <div class="dato"><span class="lbl">Número</span><span class="dato__v">{{ org.numeroCuenta or '12345678' }}</span></div>
+            {% if org.rut %}<div class="dato"><span class="lbl">RUT</span><span class="dato__v">{{ org.rut }}</span></div>{% endif %}
+            <div class="dato"><span class="lbl">A nombre de</span><span class="dato__v">{{ org.titular or org.nombre }}</span></div>
             <div class="dato dato--clave">
               <span class="lbl">Monto exacto</span>
               <span class="dato__v">{{ pedido.montoTotal|plata }}</span>
@@ -159,7 +161,7 @@
             {% if pedido.modalidadEntrega == 'despacho' %}
             <li><span><strong>Coordinamos el despacho</strong> contigo: la dirección, la forma de envío y el costo.</span></li>
             {% else %}
-            <li><span><strong>Coordinamos el retiro</strong> en Padre Hurtado, el día y la hora que te acomode.</span></li>
+            <li><span><strong>Coordinamos el retiro</strong> en {{ org.comuna }}, el día y la hora que te acomode.</span></li>
             {% endif %}
           </ul>
         </div>
@@ -229,11 +231,11 @@
     <section class="panel">
       <div class="panel__head"><h2 class="sub">Quiénes somos</h2></div>
       <div class="panel__body ficha-datos">
-        <div><dt class="lbl">Nombre</dt><dd>Agrupación Mapuescuela</dd></div>
-        <div><dt class="lbl">Dirección</dt><dd>Fernando Santiván 166, Padre Hurtado</dd></div>
+        <div><dt class="lbl">Nombre</dt><dd>{{ org.nombre }}</dd></div>
+        <div><dt class="lbl">Dirección</dt><dd>{{ org.direccion }}, {{ org.comuna }}</dd></div>
         <div>
           <dt class="lbl">Escríbenos</dt>
-          <dd>mapuescuela@gmail.com</dd>
+          <dd>{{ org.correo }}</dd>
           <p>Somos pocas manos: a veces nos demoramos un día en contestar.</p>
         </div>
       </div>

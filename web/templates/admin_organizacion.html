@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Datos de la agrupación · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='bandeja.css') }}">
+</head>
+<body>
+
+<header class="tope">
+  <div class="wrap tope__in">
+    <div class="marca-sello">
+      <img class="sello" src="{{ url_for('static', filename='logo-mapuescuela.png') }}"
+           alt="" width="320" height="318" aria-hidden="true">
+      <div>
+      <p class="marca">Agrupación <span>Mapuescuela</span></p>
+      <p>Datos de la agrupación</p>
+      </div>
+    </div>
+
+    <div class="tope__acciones">
+      {% set seccion = "agrupacion" %}
+      {% include "_nav.html" %}
+    </div>
+  </div>
+</header>
+<div class="trazo" role="presentation"></div>
+
+
+{% with avisos = get_flashed_messages() %}
+{% if avisos %}
+<div class="wrap">
+  {% for aviso in avisos %}
+  <p class="aviso" role="status">{{ aviso }}</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+
+<div class="wrap hist-seccion">
+
+  <div class="hist-cab">
+    <h2 class="sub">Lo que ve quien compra</h2>
+  </div>
+
+  {% if error %}
+  <p class="aviso aviso--malo" role="alert"><b>No se pudo guardar.</b> {{ error }}</p>
+  {% endif %}
+
+  {% if not org.banco or not org.numeroCuenta %}
+  <p class="aviso aviso--pendiente" role="status">
+    <b>Falta la cuenta para transferir.</b> Mientras esté vacía, la página del pedido
+    muestra datos de ejemplo y avisa que esa cuenta no recibe transferencias.
+  </p>
+  {% endif %}
+
+  <form class="formulario" method="post" action="{{ url_for('guardar_organizacion') }}">
+
+    <p class="lbl">Quiénes son</p>
+
+    <div class="campo">
+      <label class="lbl" for="nombre">Nombre</label>
+      <input type="text" id="nombre" name="nombre" required maxlength="120"
+             value="{{ org.nombre or '' }}">
+    </div>
+
+    <div class="campo">
+      <label class="lbl" for="lema">Lema</label>
+      <input type="text" id="lema" name="lema" maxlength="160"
+             placeholder="educa-acción para el buen vivir" value="{{ org.lema or '' }}">
+    </div>
+
+    <div class="formulario__par">
+      <div class="campo">
+        <label class="lbl" for="direccion">Dirección</label>
+        <input type="text" id="direccion" name="direccion" maxlength="200"
+               placeholder="Fernando Santiván 166" value="{{ org.direccion or '' }}">
+      </div>
+
+      <div class="campo">
+        <label class="lbl" for="comuna">Comuna</label>
+        <input type="text" id="comuna" name="comuna" maxlength="80"
+               placeholder="Padre Hurtado" value="{{ org.comuna or '' }}">
+      </div>
+    </div>
+
+    <div class="formulario__par">
+      <div class="campo">
+        <label class="lbl" for="correo">Correo</label>
+        <input type="email" id="correo" name="correo" maxlength="120"
+               placeholder="mapuescuela@gmail.com" value="{{ org.correo or '' }}">
+      </div>
+
+      <div class="campo">
+        <label class="lbl" for="instagram">Instagram</label>
+        <input type="text" id="instagram" name="instagram" maxlength="60"
+               placeholder="@mapuescuela" value="{{ org.instagram or '' }}">
+      </div>
+    </div>
+
+    <hr class="separador">
+
+    <p class="lbl">La cuenta para transferir</p>
+    <p class="ayuda">
+      Es lo que el cliente lee para pagar. Déjala vacía si todavía no la quieres publicar.
+    </p>
+
+    <div class="formulario__par">
+      <div class="campo">
+        <label class="lbl" for="banco">Banco</label>
+        <input type="text" id="banco" name="banco" maxlength="80"
+               placeholder="Banco Estado" value="{{ org.banco or '' }}">
+      </div>
+
+      <div class="campo">
+        <label class="lbl" for="tipoCuenta">Tipo de cuenta</label>
+        <select id="tipoCuenta" name="tipoCuenta">
+          <option value="">—</option>
+          {% for tipo in tipos %}
+          <option value="{{ tipo }}" {% if org.tipoCuenta == tipo %}selected{% endif %}>{{ tipo }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="formulario__par">
+      <div class="campo">
+        <label class="lbl" for="numeroCuenta">Número de cuenta</label>
+        <input type="text" id="numeroCuenta" name="numeroCuenta" maxlength="40"
+               inputmode="numeric" autocomplete="off" value="{{ org.numeroCuenta or '' }}">
+      </div>
+
+      <div class="campo">
+        <label class="lbl" for="rut">RUT</label>
+        <input type="text" id="rut" name="rut" maxlength="20" autocomplete="off"
+               placeholder="65.123.456-7" value="{{ org.rut or '' }}">
+      </div>
+    </div>
+
+    <div class="campo">
+      <label class="lbl" for="titular">A nombre de</label>
+      <input type="text" id="titular" name="titular" maxlength="120"
+             placeholder="Agrupación Mapuescuela" value="{{ org.titular or '' }}">
+    </div>
+
+    <div class="acciones__fila">
+      <button class="btn btn--pri">Guardar</button>
+      <a class="btn btn--sec" href="{{ url_for('bandeja') }}">Cancelar</a>
+    </div>
+
+  </form>
+
+</div>
+
+</body>
+</html>

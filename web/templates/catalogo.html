@@ -338,14 +338,14 @@ body {
     <div>
       <p class="antetitulo">
         <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 2 59 34 82 18 68 41 98 50 68 59 82 82 59 66 50 98 41 66 18 82 32 59 2 50 32 41 18 18 41 34Z" fill="currentColor"></path></svg>
-        Objetos donados · Padre Hurtado
+        Objetos donados · {{ org.comuna or 'Chile' }}
       </p>
       <p class="tesis">
       <b>Esto no es una tienda.</b> Todo lo que ves acá fue donado: un mueble que ya no cabía
       en la casa, unos libros que alguien ya leyó o un juguete que se le pasó la edad.
       <span>Nosotros revisamos cada cosa, le ponemos un precio y la ponemos a la venta. Una vez
         que alguien se la lleva, ya no vuelve: hay una sola de cada una.</span>
-      <span>Lo que recaudamos se destina a financiar los talleres de Mapuescuela.</span>
+      <span>Lo que recaudamos se destina a financiar los talleres de {{ org.nombre.replace('Agrupación ', '') }}.</span>
       </p>
     </div>
   </div>
@@ -364,7 +364,7 @@ body {
     </div>
     <div>
       <span class="lbl">Entrega</span>
-      <p><strong>Retiro en Padre Hurtado.</strong> Libros y juguetes también van por encomienda.</p>
+      <p><strong>Retiro en {{ org.comuna or 'la sede' }}.</strong> Libros y juguetes también van por encomienda.</p>
     </div>
   </div>
 </section>
@@ -502,10 +502,10 @@ body {
       <h2>¿Tienes algo para donar?</h2>
       <p>
         Recibimos muebles, libros, juguetes y utensilios en buen estado.
-        Escríbenos y coordinamos el retiro en Padre Hurtado y alrededores.
+        Escríbenos y coordinamos el retiro en {{ org.comuna or 'tu comuna' }} y alrededores.
       </p>
     </div>
-    <a class="btn btn--donar" href="mailto:mapuescuela@gmail.com">Escribir a Mapuescuela</a>
+    <a class="btn btn--donar" href="mailto:{{ org.correo }}">Escribir a {{ org.nombre.replace('Agrupación ', '') }}</a>
   </div>
 </section>
 
@@ -514,21 +514,21 @@ body {
     <div>
       <span class="lbl">Quiénes somos</span>
       <p style="margin-top:var(--sp-2)">
-        Mapuescuela es una agrupación de Padre Hurtado que hace
-        <strong>educa-acción para el buen vivir</strong>: talleres de telar mapuche, yoga,
+        {{ org.nombre.replace('Agrupación ', '') }} es una agrupación de {{ org.comuna }} que hace
+        <strong>{{ org.lema }}</strong>: talleres de telar mapuche, yoga,
         fitopreparados y preparación de la PAES, presenciales y online. Vender lo que nos
         donan es una de las formas de financiarlos.
       </p>
     </div>
     <dl>
       <span class="lbl">Dónde estamos</span>
-      <dd>Fernando Santiván 166</dd>
-      <dd>Padre Hurtado, Santiago</dd>
+      <dd>{{ org.direccion }}</dd>
+      <dd>{{ org.comuna }}</dd>
     </dl>
     <dl>
       <span class="lbl">Escríbenos</span>
-      <dd>mapuescuela@gmail.com</dd>
-      <dd>Instagram · @mapuescuela</dd>
+      <dd>{{ org.correo }}</dd>
+      {% if org.instagram %}<dd>Instagram · {{ org.instagram }}</dd>{% endif %}
       <p style="margin-top:var(--sp-2)">Somos pocas manos: a veces nos demoramos un día en contestar.</p>
     </dl>
   </div>

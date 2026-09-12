@@ -42,9 +42,8 @@
     </div>
 
     <div class="tope__acciones">
-      <a class="btn btn--sec btn--sm" href="{{ url_for('catalogo') }}">← Volver al registro</a>
-      <a class="btn btn--sec btn--sm" href="{{ url_for('admin_objetos') }}">Los objetos</a>
-      <a class="btn btn--sec btn--sm" href="{{ url_for('historico') }}">Ver el histórico</a>
+      {% set seccion = "tareas" %}
+      {% include "_nav.html" %}
 
       <p class="quien">
         <span class="quien__ini" aria-hidden="true">{{ voluntaria|iniciales }}</span>

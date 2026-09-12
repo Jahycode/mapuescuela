@@ -106,6 +106,23 @@ public class PedidoDAO {
                 """);
 
                 
+            st.execute("""
+                CREATE TABLE IF NOT EXISTS organizacion (
+                    id             INT PRIMARY KEY,
+                    nombre         VARCHAR(120) NOT NULL,
+                    lema           VARCHAR(160),
+                    direccion      VARCHAR(200),
+                    comuna         VARCHAR(80),
+                    correo         VARCHAR(120),
+                    instagram      VARCHAR(60),
+                    banco          VARCHAR(80),
+                    tipo_cuenta    VARCHAR(40),
+                    numero_cuenta  VARCHAR(40),
+                    rut            VARCHAR(20),
+                    titular        VARCHAR(120)
+                )
+                """);
+
             st.execute("ALTER TABLE producto ADD COLUMN IF NOT EXISTS retirado BOOLEAN DEFAULT FALSE NOT NULL");
             st.execute("ALTER TABLE producto ADD COLUMN IF NOT EXISTS foto VARCHAR(120)");
                 
@@ -119,6 +136,14 @@ public class PedidoDAO {
             if (cuantos == 0) {
                 cargarCatalogoInicial();
                 System.out.println("Catálogo inicial cargado: " + CATALOGO_INICIAL.length + " objetos.");
+            }
+
+            try (ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM organizacion")) {
+                rs.next();
+                if (rs.getInt(1) == 0) {
+                    sembrarOrganizacion();
+                    System.out.println("Datos de la agrupación cargados. La cuenta va vacía.");
+                }
             }
         }
     }
@@ -637,6 +662,73 @@ public class PedidoDAO {
                 "UPDATE producto SET foto = ? WHERE id = ?")) {
             st.setString(1, archivo);
             st.setInt(2, id);
+            return st.executeUpdate() == 1;
+        }
+    }
+
+    /* Solo lo que se puede comprobar en su Facebook y en sus afiches.
+       La cuenta va vacia a proposito: la carga la agrupacion. */
+    private void sembrarOrganizacion() throws SQLException {
+        String sql = """
+            INSERT INTO organizacion (id, nombre, lema, direccion, comuna, correo, instagram)
+            VALUES (1, ?, ?, ?, ?, ?, ?)
+            """;
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, "Agrupación Mapuescuela");
+            st.setString(2, "educa-acción para el buen vivir");
+            st.setString(3, "Fernando Santiván 166");
+            st.setString(4, "Padre Hurtado");
+            st.setString(5, "mapuescuela@gmail.com");
+            st.setString(6, "@mapuescuela");
+            st.executeUpdate();
+        }
+    }
+
+    public Organizacion buscarOrganizacion() throws SQLException {
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery("SELECT * FROM organizacion WHERE id = 1")) {
+
+            if (!rs.next()) {
+                return null;
+            }
+
+            Organizacion o = new Organizacion();
+            o.setNombre(rs.getString("nombre"));
+            o.setLema(rs.getString("lema"));
+            o.setDireccion(rs.getString("direccion"));
+            o.setComuna(rs.getString("comuna"));
+            o.setCorreo(rs.getString("correo"));
+            o.setInstagram(rs.getString("instagram"));
+            o.setBanco(rs.getString("banco"));
+            o.setTipoCuenta(rs.getString("tipo_cuenta"));
+            o.setNumeroCuenta(rs.getString("numero_cuenta"));
+            o.setRut(rs.getString("rut"));
+            o.setTitular(rs.getString("titular"));
+            return o;
+        }
+    }
+
+    public boolean actualizarOrganizacion(Organizacion o) throws SQLException {
+        String sql = """
+            UPDATE organizacion
+            SET nombre = ?, lema = ?, direccion = ?, comuna = ?, correo = ?, instagram = ?,
+                banco = ?, tipo_cuenta = ?, numero_cuenta = ?, rut = ?, titular = ?
+            WHERE id = 1
+            """;
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, o.getNombre());
+            st.setString(2, o.getLema());
+            st.setString(3, o.getDireccion());
+            st.setString(4, o.getComuna());
+            st.setString(5, o.getCorreo());
+            st.setString(6, o.getInstagram());
+            st.setString(7, o.getBanco());
+            st.setString(8, o.getTipoCuenta());
+            st.setString(9, o.getNumeroCuenta());
+            st.setString(10, o.getRut());
+            st.setString(11, o.getTitular());
             return st.executeUpdate() == 1;
         }
     }

@@ -23,7 +23,8 @@
     </div>
 
     <div class="tope__acciones">
-      <a class="btn btn--sec btn--sm" href="{{ url_for('bandeja') }}">← Volver a las tareas</a>
+      {% set seccion = "historico" %}
+      {% include "_nav.html" %}
     </div>
   </div>
 </header>

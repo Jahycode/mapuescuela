@@ -198,8 +198,8 @@
         <div>
           <span class="lbl">Dónde queda la sede</span>
           <div class="sede" style="margin-top:var(--sp-3)">
-            <div><dt class="lbl">Dirección</dt><dd>Fernando Santiván 166</dd></div>
-            <div><dt class="lbl">Comuna</dt><dd>Padre Hurtado</dd></div>
+            <div><dt class="lbl">Dirección</dt><dd>{{ org.direccion }}</dd></div>
+            <div><dt class="lbl">Comuna</dt><dd>{{ org.comuna }}</dd></div>
             <div><dt class="lbl">Horario</dt><dd>Coordinamos día y hora</dd></div>
           </div>
         </div>
@@ -260,15 +260,15 @@
     <section class="panel">
       <div class="panel__head"><h2 class="sub">Quiénes somos</h2></div>
       <div class="panel__body confianza">
-        <div><dt class="lbl">Nombre</dt><dd>Agrupación Mapuescuela</dd></div>
-        <div><dt class="lbl">Dónde</dt><dd>Fernando Santiván 166, Padre Hurtado</dd></div>
+        <div><dt class="lbl">Nombre</dt><dd>{{ org.nombre }}</dd></div>
+        <div><dt class="lbl">Dónde</dt><dd>{{ org.direccion }}, {{ org.comuna }}</dd></div>
         <div>
           <dt class="lbl">Escríbenos</dt>
-          <dd>mapuescuela@gmail.com</dd>
+          <dd>{{ org.correo }}</dd>
           <p>Puedes preguntarnos lo que sea antes de reservar.</p>
         </div>
         <p>
-          Lo que juntamos vendiendo estos objetos donados financia los talleres de Mapuescuela.
+          Lo que juntamos vendiendo estos objetos donados financia los talleres de {{ org.nombre.replace('Agrupación ', '') }}.
         </p>
       </div>
     </section>

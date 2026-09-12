@@ -28,6 +28,8 @@ CONDICIONES = {
     "restaurar": "Para restaurar",
 }
 
+TIPOS_DE_CUENTA = ("Cuenta Corriente", "Cuenta Vista", "Cuenta RUT", "Cuenta de Ahorro")
+
 CATEGORIAS = {
     "muebles": "Muebles",
     "libros": "Libros",
@@ -191,6 +193,7 @@ def catalogo():
 
     return render_template(
         "catalogo.html",
+        org=organizacion(),
         disponibles=[p for p in todos if p["stock"] > 0],
         idos=[p for p in todos if p["stock"] == 0],
         seleccionados=[p["id"] for p in elegidos],
@@ -231,6 +234,7 @@ def ver_checkout(error=None):
 
     return render_template(
         "checkout.html",
+        org=organizacion(),
         elegidos=disponibles,
         tomados=tomados,
         total=sum(p["precio"] for p in disponibles),
@@ -290,7 +294,9 @@ def seguimiento(pedido_id):
     instancia = pedido.get("processInstanceId")
     tarea = tarea_activa(instancia) if instancia else None
 
-    return render_template("seguimiento.html", pedido=pedido, tarea=tarea)
+    return render_template(
+        "seguimiento.html", pedido=pedido, tarea=tarea, org=organizacion()
+    )
 
 
 def cerrar_pedido(pedido_id, final):
@@ -456,6 +462,40 @@ def medida_del_formulario(actual=""):
 
     # Sin numeros no borro lo que hubiera: puede decir 'Encomienda' o '2 a 5 anos'.
     return "×".join(valores) if valores else actual
+
+
+def organizacion():
+    """Los datos de la agrupacion. Viven en ws-pedidos, no en las plantillas."""
+    return requests.get(f"{WS_PEDIDOS}/organizacion", timeout=5).json()
+
+
+CAMPOS_ORGANIZACION = (
+    "nombre", "lema", "direccion", "comuna", "correo", "instagram",
+    "banco", "tipoCuenta", "numeroCuenta", "rut", "titular",
+)
+
+
+@app.get("/admin/organizacion")
+def admin_organizacion():
+    return render_template(
+        "admin_organizacion.html", org=organizacion(),
+        tipos=TIPOS_DE_CUENTA, error=None,
+    )
+
+
+@app.post("/admin/organizacion")
+def guardar_organizacion():
+    datos = {c: request.form.get(c, "").strip() for c in CAMPOS_ORGANIZACION}
+    respuesta = requests.put(f"{WS_PEDIDOS}/organizacion", json=datos, timeout=5)
+
+    if respuesta.status_code != 200:
+        return render_template(
+            "admin_organizacion.html", org=datos, tipos=TIPOS_DE_CUENTA,
+            error=respuesta.json().get("error"),
+        ), 400
+
+    flash("Datos de la agrupación guardados.")
+    return redirect(url_for("admin_organizacion"))
 
 
 def objeto_del_formulario(actual=None):
