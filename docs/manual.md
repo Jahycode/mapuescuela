@@ -13,8 +13,8 @@ avisando qué toca hacer** con cada pedido, uno por uno, hasta que se entrega.
 La dirección de las tareas es `/bandeja`. También hay un enlace al final del catálogo que dice
 **«Entrar a las tareas»**.
 
-Eliges tu nombre y escribes tu clave. Todo lo que hagas después queda firmado con ese nombre — por
-eso importa entrar con el tuyo y no con el de otra.
+Eliges tu nombre y escribes tu clave. Todo lo que hagas después queda firmado con ese nombre por
+eso importa entrar con el tuyo y no con el de otra persona.
 
 Cuando termines, el botón **Salir** está arriba a la derecha, junto a tus iniciales.
 
@@ -29,8 +29,8 @@ qué objetos lleva el pedido y cuánto es.
 Cada tarea tiene un color de urgencia. **Apura** después de cuatro horas esperando, **Atrasado**
 después de doce.
 
-Arriba de cada pedido hay una barra con cuatro tramos —Pago, Preparación, y los dos últimos según sea
-retiro o despacho— que muestra en cuál va.
+Arriba de cada pedido hay una barra con cuatro tramos Pago, Preparación, y los dos últimos según sea
+retiro o despacho que muestra en cuál va.
 
 Al cerrar una tarea, el sistema te deja directamente en la siguiente del mismo pedido. No hay que
 buscarla.
@@ -85,7 +85,7 @@ sepas que está pendiente, pero no tiene botón.
 En **Objetos**, el botón amarillo *Cargar un objeto*.
 
 Mientras escribes, a la derecha se va armando la ficha tal como va a verse en el catálogo. Si eliges
-una foto, la ves ahí mismo antes de guardar — sirve para saber cómo queda recortada.
+una foto, la ves ahí mismo antes de guardar sirve para saber cómo queda recortada.
 
 Lo que pide:
 
@@ -109,7 +109,7 @@ En **Objetos** está todo el registro, lo último cargado primero, con su estado
 **Editar** sirve para corregir cualquier cosa en cualquier momento, incluso de algo ya vendido.
 
 **Retirar** lo saca del catálogo sin borrarlo: se usa cuando un objeto se rompió, lo regalaron o ya
-no está. Se puede volver a publicar cuando quieras. Un objeto **vendido** no se retira — ese ya se
+no está. Se puede volver a publicar cuando quieras. Un objeto **vendido** no se retira ese ya se
 fue, y marcarlo como retirado haría parecer que ustedes lo sacaron.
 
 ---
