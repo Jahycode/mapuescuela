@@ -301,6 +301,8 @@
   .regla-numeros { position:relative; border-top:1px solid rgba(255,255,255,.16); }
   .regla-numeros p { padding-block:var(--sp-5); max-width:70ch;
     font-family:var(--mono); font-size:var(--t-sm); color:#A9BDDB; }
+  .regla-numeros a { color:#C3D2EA; }
+  .regla-numeros a:hover { color:#fff; }
 }
 
 /* Fuera de capas a propósito: algunos visores inyectan
@@ -533,6 +535,9 @@ body {
     </dl>
   </div>
   <div class="wrap regla-numeros">
+    <p>
+      <a href="{{ url_for('bandeja') }}">Entrar a las tareas</a> · solo para quienes atienden los pedidos
+    </p>
   </div>
 </footer>
 

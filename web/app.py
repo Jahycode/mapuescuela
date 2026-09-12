@@ -55,7 +55,15 @@ GRUPOS_TAREA = {
 }
 
 # Quienes atienden la bandeja. Cada accion queda firmada con este nombre.
-VOLUNTARIAS = ("Ana Millán", "Diego Paredes", "Rosa Yáñez")
+# Quienes atienden la bandeja, con su clave. No es un sistema de autenticacion:
+# no hay hash, ni roles, ni recuperacion. Es una llave para que la pantalla que
+# aprueba pagos no quede abierta a quien tenga el link. Cambiarlo por una tabla
+# de usuarios seria reemplazar este diccionario y la comparacion de mas abajo.
+VOLUNTARIAS = {
+    "Ana Millán": "ana",
+    "Diego Paredes": "diego",
+    "Rosa Yáñez": "rosa",
+}
 # Las dos formas de entrega que el proceso sabe manejar.
 MODALIDADES = ("retiro", "despacho")
 
@@ -167,6 +175,60 @@ def fecha(marca):
 
     momento = datetime.fromisoformat(marca[:19])
     return f"{momento.day} {MESES[momento.month - 1]}, {momento:%H:%M}"
+
+
+def destino_seguro(ruta):
+    """Solo rutas de esta aplicacion. Un 'volver' que empiece con http:// o con //
+    mandaria a otro sitio, y el enlace lo escribe quien quiera."""
+    if ruta and ruta.startswith("/") and not ruta.startswith("//"):
+        return ruta
+    return url_for("bandeja")
+
+
+@app.before_request
+def pedir_la_llave():
+    """Todo lo interno pide la llave; el catalogo y la pagina del pedido no.
+    Va por prefijo y en un solo lugar: con un decorador por ruta, la que se
+    agregue manana queda abierta y nadie se entera."""
+    if not (request.path.startswith("/bandeja") or request.path.startswith("/admin")):
+        return None
+
+    if "voluntaria" in session:
+        return None
+
+    # full_path deja un '?' colgando cuando no hay parametros.
+    return redirect(url_for("entrar", volver=request.full_path.rstrip("?")))
+
+
+@app.get("/entrar")
+def entrar():
+    return render_template(
+        "entrar.html", voluntarias=VOLUNTARIAS, elegida=None, error=None,
+        volver=request.args.get("volver", ""),
+    )
+
+
+@app.post("/entrar")
+def validar_la_llave():
+    quien = request.form.get("voluntaria", "")
+    clave = request.form.get("clave", "")
+
+    if not clave or VOLUNTARIAS.get(quien) != clave:
+        return render_template(
+            "entrar.html", voluntarias=VOLUNTARIAS, elegida=quien,
+            error="Esa clave no es. Intenta de nuevo.",
+            volver=request.form.get("volver", ""),
+        ), 401
+
+    session["voluntaria"] = quien
+    return redirect(destino_seguro(request.form.get("volver")))
+
+
+@app.post("/salir")
+def salir():
+    """Devuelve a la entrada y no al catalogo: lo normal al salir es que entre otra."""
+    session.pop("voluntaria", None)
+    return redirect(url_for("entrar"))
 
 
 @app.errorhandler(requests.RequestException)
@@ -409,7 +471,7 @@ def bandeja():
         seleccionada=seleccionada,
         objetos=objetos,
         fases=fases,
-        voluntaria=session.get("voluntaria", VOLUNTARIAS[0]),
+        voluntaria=session["voluntaria"],
         error=ERRORES.get(request.args.get("error")),
         esperando=request.args.get("espera"),
     )
@@ -677,7 +739,7 @@ def revisar_pago(tarea_id):
         return redirect(url_for("bandeja", tarea=tarea_id, error="mensaje"))
 
     revision = {
-        "revisor": session.get("voluntaria", VOLUNTARIAS[0]),
+        "revisor": session["voluntaria"],
         "decision": "APROBADO" if aprobado else "CANCELADO",
     }
     if mensaje:

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrar · Mapuescuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='bandeja.css') }}">
+</head>
+<body class="pagina-entrar">
+
+<main class="entrar">
+
+  <img class="entrar__sello" src="{{ url_for('static', filename='logo-mapuescuela.png') }}"
+       alt="Mapuescuela" width="320" height="318">
+
+  <div class="entrar__caja">
+    <h1 class="entrar__titulo">Las tareas de Mapuescuela</h1>
+    <p class="entrar__nota">Esta parte es para quienes atienden los pedidos.</p>
+
+    {% if error %}
+    <p class="aviso aviso--malo" role="alert">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" class="entrar__forma">
+      <input type="hidden" name="volver" value="{{ volver }}">
+
+      <div class="campo">
+        <label class="lbl" for="voluntaria">Quién eres</label>
+        <select id="voluntaria" name="voluntaria" required>
+          {% for nombre in voluntarias %}
+          <option {% if nombre == elegida %}selected{% endif %}>{{ nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="campo">
+        <label class="lbl" for="clave">Clave</label>
+        <input type="password" id="clave" name="clave" required autocomplete="current-password">
+      </div>
+
+      <button class="btn btn--pri btn--block">Entrar</button>
+    </form>
+  </div>
+
+  <p class="entrar__pie">
+    <a href="{{ url_for('catalogo') }}">← Ir al registro</a>
+  </p>
+
+</main>
+
+</body>
+</html>

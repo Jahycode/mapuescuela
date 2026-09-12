@@ -45,10 +45,11 @@
       {% set seccion = "tareas" %}
       {% include "_nav.html" %}
 
-      <p class="quien">
+      <form class="quien" method="post" action="{{ url_for('salir') }}">
         <span class="quien__ini" aria-hidden="true">{{ voluntaria|iniciales }}</span>
         <span>{{ voluntaria }}</span>
-      </p>
+        <button class="tope__salir">Salir</button>
+      </form>
     </div>
   </div>
 </header>

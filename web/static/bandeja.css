@@ -73,6 +73,26 @@
   .tope .marca + p, .tope .lbl { color:#E3EAF6; }
   /* Navegar no es actuar: las secciones van como enlaces, y el amarillo
      se reserva para los botones que hacen algo. */
+  .tope__salir { font-size:var(--t-sm); font-weight:600; color:#C3D2EA;
+    padding:var(--sp-2) var(--sp-3); border-radius:var(--radius); }
+  .tope__salir:hover { color:#fff; background:rgba(255,255,255,.10); }
+
+  /* La pantalla de entrada */
+  .pagina-entrar { min-height:100dvh; display:grid; place-items:center;
+    background:var(--violeta-hondo); padding:var(--sp-6); }
+  .entrar { display:grid; justify-items:center; gap:var(--sp-5); width:min(24rem, 100%); }
+  .entrar__sello { width:6rem; height:auto; aspect-ratio:1; border-radius:50%; }
+  .entrar__caja { width:100%; display:grid; gap:var(--sp-4);
+    padding:clamp(var(--sp-5), 4vw, var(--sp-8));
+    background:var(--card); border-radius:var(--radius); }
+  .entrar__titulo { font-family:var(--display); font-weight:700; font-size:var(--t-lg);
+    line-height:1.15; letter-spacing:-.02em; text-wrap:balance; }
+  .entrar__nota { font-size:var(--t-sm); color:var(--ink-2); margin-top:calc(var(--sp-2) * -1); }
+  .entrar__forma { display:grid; gap:var(--sp-4); }
+  .entrar__pie { font-size:var(--t-sm); }
+  .entrar__pie a { color:#C3D2EA; }
+  .entrar__pie a:hover { color:#fff; }
+
   .tope__nav { display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-1); }
   .tope__nav a { padding:var(--sp-2) var(--sp-3); border-radius:var(--radius);
     font-size:var(--t-sm); font-weight:600; color:#C3D2EA; text-decoration:none;
