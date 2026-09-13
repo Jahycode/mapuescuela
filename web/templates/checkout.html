@@ -65,7 +65,7 @@
         {% if tomados|length == 1 %}Uno de tus objetos ya no está disponible.
         {% else %}Algunos de tus objetos ya no están disponibles.{% endif %}
       </b>
-      Mientras mirabas, otra persona alcanzó a reservar
+      Mientras mirabas, otra persona alcanzó a pagar
       {% for p in tomados %}«{{ p.nombre }}»{% if not loop.last %}, {% endif %}{% endfor %}.
       Cada objeto existe uno solo, así que no lo podemos reponer. El resto de tu pedido sigue en pie.
     </div>
@@ -78,8 +78,8 @@
           <li class="umbral" data-ahora="1">
             <div>
               <strong>Ahora reservas, y no pagas.</strong>
-              <p>Cuando aprietes el botón, apartamos estos objetos a tu nombre y salen del registro.
-              En esta página no se cobra nada y no pedimos datos de tarjeta.</p>
+              <p>Solo nos dices quién eres y cómo quieres recibirlo. En esta página no se cobra
+              nada y no pedimos datos de tarjeta.</p>
             </div>
           </li>
           <li class="umbral">
@@ -101,14 +101,15 @@
         <div class="aviso">
           <b>Si no transfieres, no pasa nada malo.</b>
           <p style="margin-top:var(--sp-2);font-size:var(--t-sm);color:var(--ink-2)">
-            Al cumplirse las 24 horas los objetos vuelven al registro y quedan disponibles para
-            otra persona. No hay multa, no hay cargo y no queda anotado en tu contra en ninguna parte.
+            Al cumplirse las 24 horas el pedido se cancela solo. No hay multa, no hay cargo y no
+            queda anotado en tu contra en ninguna parte.
           </p>
         </div>
 
         <p class="consecuencia">
-          <b>Ojo con una cosa:</b> hasta que aprietes el botón, esto no está apartado.
-          Cada objeto es uno solo, así que otra persona podría reservarlo antes que tú.
+          <b>Ojo con una cosa:</b> el objeto se aparta recién cuando confirmamos tu pago. Cada uno
+          es único, así que conviene no dejarlo para después: si otra persona alcanza a pagar antes,
+          te avisamos y no se te cobra nada.
         </p>
       </div>
     </section>
