@@ -54,8 +54,23 @@
 <div class="wrap hist-seccion">
 
   <div class="hist-cab">
-    <h2 class="sub">Pedidos cerrados</h2>
-    <span class="lbl">Lo más reciente, primero</span>
+    <h2 class="sub">Pedidos cerrados{% if periodo %} · {{ periodo }}{% endif %}</h2>
+
+    <form class="hist-filtro" method="get" action="{{ url_for('historico') }}">
+      <label class="lbl" for="periodo">Período</label>
+      <select id="periodo" name="periodo" onchange="this.form.submit()">
+        <option value="">Todo el historial</option>
+        {% for a in anios %}
+        <optgroup label="{{ a.anio }}">
+          <option value="{{ a.anio }}" {{ 'selected' if elegido == a.anio }}>Todo {{ a.anio }}</option>
+          {% for m in a.meses %}
+          <option value="{{ m.valor }}" {{ 'selected' if elegido == m.valor }}>{{ m.nombre }}</option>
+          {% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+      <noscript><button class="btn btn--sec btn--sm">Ver</button></noscript>
+    </form>
   </div>
 
   <div class="hist-lista">
@@ -81,8 +96,13 @@
     {% else %}
     <div class="hist hist--vacio">
       <div>
+        {% if elegido %}
+        <p class="hist__pedido">No hay pedidos cerrados en {{ periodo }}</p>
+        <p class="hist__motivo">Prueba con otro período, o vuelve a «Todo el historial».</p>
+        {% else %}
         <p class="hist__pedido">Todavía no hay nada cerrado</p>
         <p class="hist__motivo">Acá van a quedar los pedidos entregados y los que se perdieron.</p>
+        {% endif %}
       </div>
     </div>
     {% endfor %}

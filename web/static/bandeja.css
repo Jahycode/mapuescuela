@@ -264,8 +264,21 @@
   .modal::backdrop { background:rgb(29 25 48 / .45); }
   .modal form { display:grid; gap:var(--sp-4); }
 
+  .comprobante { display:block; position:relative; background:var(--bed);
+    border-top:1px solid var(--rule); }
+  .comprobante img { display:block; width:100%; max-height:26rem; object-fit:contain; }
+  .comprobante__abrir { position:absolute; right:var(--sp-3); bottom:var(--sp-3);
+    padding:var(--sp-1) var(--sp-3); font-size:var(--t-micro); font-weight:600;
+    color:#fff; background:rgb(29 25 48 / .72); border-radius:var(--radius); }
+  .comprobante:hover .comprobante__abrir { background:rgb(29 25 48 / .92); }
+
   .hist-seccion { padding-block:var(--sp-6) var(--sp-10); display:grid; gap:var(--sp-4); }
-  .hist-cab { display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp-3); }
+  .hist-cab { display:flex; align-items:center; justify-content:space-between;
+    gap:var(--sp-3); flex-wrap:wrap; }
+
+  .hist-filtro { display:flex; align-items:center; gap:var(--sp-2); }
+  .hist-filtro select { font-size:var(--t-sm); padding:var(--sp-2) var(--sp-3);
+    border:1px solid var(--rule); border-radius:var(--radius); background:var(--card); }
   .hist-lista { display:grid; gap:var(--sp-3); }
 
   .hist { display:grid; grid-template-columns:minmax(0,1fr) auto auto;
@@ -376,15 +389,6 @@
   .par { display:grid; gap:var(--sp-5);
     grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); align-items:start; }
   @media (max-width:80rem) { .par { grid-template-columns:minmax(0,1fr); } }
-
-  .comprobante { border:1px solid var(--rule); border-radius:var(--radius); overflow:hidden; }
-  .comprobante__img { aspect-ratio:3/4; background:var(--bed);
-    display:grid; place-items:center; gap:var(--sp-2); text-align:center; padding:var(--sp-5); }
-  .comprobante__img span { font-family:var(--mono); font-size:var(--t-sm); color:var(--ink-2); }
-  .comprobante__pie { display:flex; align-items:center; justify-content:space-between;
-    gap:var(--sp-2); padding:var(--sp-2) var(--sp-3); border-top:1px solid var(--rule-soft); }
-  .comprobante__pie span { font-family:var(--mono); font-size:var(--t-micro); color:var(--ink-2);
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 }
 
 /* ───────────── PIEZAS COMPARTIDAS ───────────── */

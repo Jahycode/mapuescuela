@@ -178,6 +178,27 @@
           </div>
         </div>
 
+        {% if seleccionada.form_key == 'revisionDelPago' %}
+        <div class="panel">
+          <div class="panel__head">
+            <h3 class="sub">El comprobante</h3>
+            {% if comprobante %}<span class="lbl">Subido el {{ comprobante.subidoEn|fecha }}</span>{% endif %}
+          </div>
+          {% if comprobante %}
+          {% set imagen = url_for('ver_comprobante', pedido_id=seleccionada.pedido.id) %}
+          <a class="comprobante" href="{{ imagen }}" target="_blank" rel="noopener">
+            <img src="{{ imagen }}" alt="Comprobante que subió {{ seleccionada.pedido.clienteNombre }}">
+            <span class="comprobante__abrir">Abrir en grande</span>
+          </a>
+          {% else %}
+          <div class="panel__body">
+            <p class="ayuda">Este pedido no tiene ningún comprobante cargado. Conviene escribirle
+            antes de decidir.</p>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
         <div class="panel">
           <div class="panel__head">
             <h3 class="sub">Los objetos</h3>

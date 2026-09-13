@@ -19,7 +19,7 @@ from flowable_client import (
     tareas_pendientes,
 )
 
-WS_PEDIDOS = os.environ.get("WS_PEDIDOS", "http://localhost:9090")
+WS_PEDIDOS = os.environ.get("WS_PEDIDOS", "http://127.0.0.1:9090")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "clave-solo-para-desarrollo")
@@ -123,6 +123,9 @@ ROTULO_DESENLACE = {
 
 MESES = ("ene", "feb", "mar", "abr", "may", "jun",
          "jul", "ago", "sep", "oct", "nov", "dic")
+
+MESES_LARGOS = ("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
 
 # Desde cuando una tarea se muestra apurada o atrasada. El plazo de pago es de
 # 24 horas, asi que a las doce ya va la mitad del reloj corriendo.
@@ -447,6 +450,18 @@ def fases_del_pedido(form_key, modalidad):
     ]
 
 
+def ultimo_comprobante(pedido_id):
+    """El ultimo que subio el cliente: puede subir varios si el primero salio mal,
+    y ws-pedidos los devuelve del mas nuevo al mas viejo."""
+    respuesta = requests.get(f"{WS_PEDIDOS}/pedidos/{pedido_id}/comprobantes", timeout=5)
+
+    if respuesta.status_code != 200:
+        return None
+
+    lista = respuesta.json()
+    return lista[0] if lista else None
+
+
 @app.get("/bandeja")
 def bandeja():
     """Las tareas pendientes: el motor dice cuales son, ws-pedidos de que tratan"""
@@ -470,6 +485,7 @@ def bandeja():
     # Los objetos solo se piden cuando hay una tarea abierta: la lista no los usa.
     objetos = []
     fases = []
+    comprobante = None
     if seleccionada:
         pedido_id = seleccionada["pedido_id"]
         detalle = requests.get(f"{WS_PEDIDOS}/pedidos/{pedido_id}", timeout=5).json()
@@ -477,6 +493,8 @@ def bandeja():
         fases = fases_del_pedido(
             seleccionada["form_key"], seleccionada["pedido"].get("modalidadEntrega")
         )
+        if seleccionada["form_key"] == "revisionDelPago":
+            comprobante = ultimo_comprobante(pedido_id)
 
     return render_template(
         "bandeja.html",
@@ -485,9 +503,26 @@ def bandeja():
         seleccionada=seleccionada,
         objetos=objetos,
         fases=fases,
+        comprobante=comprobante,
         voluntaria=session["voluntaria"],
         error=ERRORES.get(request.args.get("error")),
         esperando=request.args.get("espera"),
+    )
+
+
+@app.get("/bandeja/pedido/<int:pedido_id>/comprobante")
+def ver_comprobante(pedido_id):
+    """Va bajo /bandeja a proposito: un comprobante es la transferencia de una
+    persona, con su banco y su cuenta. Lo ve quien tiene la llave y nadie mas."""
+    respuesta = requests.get(f"{WS_PEDIDOS}/pedidos/{pedido_id}/comprobante", timeout=10)
+
+    if respuesta.status_code != 200:
+        abort(404)
+
+    return Response(
+        respuesta.content,
+        mimetype=respuesta.headers.get("Content-Type", "image/jpeg"),
+        headers={"Cache-Control": "private, max-age=300"},
     )
 
 
@@ -707,11 +742,46 @@ def retirar_objeto(producto_id):
     return redirect(url_for("admin_objetos"))
 
 
+def periodos_cerrados(pedidos_cerrados):
+    """Los meses que de verdad tienen algo cerrado, agrupados por ano y de lo mas
+    nuevo a lo mas viejo. Salen de los datos: un mes sin pedidos no aparece."""
+    claves = {(p.get("desenlaceEn") or "")[:7] for p in pedidos_cerrados}
+    anios = []
+
+    for clave in sorted((c for c in claves if len(c) == 7), reverse=True):
+        anio = clave[:4]
+        if not anios or anios[-1]["anio"] != anio:
+            anios.append({"anio": anio, "meses": []})
+        anios[-1]["meses"].append(
+            {"valor": clave, "nombre": MESES_LARGOS[int(clave[5:7]) - 1]})
+
+    return anios
+
+
+def nombre_del_periodo(clave):
+    """'2026-09' -> 'septiembre de 2026'; '2026' -> 'todo 2026'."""
+    if len(clave) == 4:
+        return f"todo {clave}"
+    return f"{MESES_LARGOS[int(clave[5:7]) - 1].lower()} de {clave[:4]}"
+
+
 @app.get("/bandeja/historico")
 def historico():
     """Lo que ya termino: las ventas cerradas y las que se perdieron."""
     cerrados = [p for p in pedidos() if p.get("desenlace")]
     cerrados.sort(key=lambda p: p.get("desenlaceEn") or "", reverse=True)
+
+    anios = periodos_cerrados(cerrados)
+    validos = {a["anio"] for a in anios} | {m["valor"] for a in anios for m in a["meses"]}
+
+    # El periodo lo escribe la direccion; uno que no existe se ignora.
+    elegido = request.args.get("periodo", "")
+    if elegido not in validos:
+        elegido = ""
+
+    if elegido:
+        cerrados = [p for p in cerrados
+                    if (p.get("desenlaceEn") or "").startswith(elegido)]
 
     vendidos = [p for p in cerrados if p["desenlace"] in VENTAS_CERRADAS]
 
@@ -722,6 +792,9 @@ def historico():
         vendidos=len(vendidos),
         recaudado=sum(p["montoTotal"] for p in vendidos),
         perdidos=len(cerrados) - len(vendidos),
+        anios=anios,
+        elegido=elegido,
+        periodo=nombre_del_periodo(elegido) if elegido else "",
     )
 
 
