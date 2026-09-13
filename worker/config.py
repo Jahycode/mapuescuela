@@ -6,7 +6,7 @@ load_dotenv()
 
 # El external-job-api cuelga de la raiz, no de /service como el resto de la API.
 FLOWABLE = os.environ.get("FLOWABLE_BASE_URL", "http://localhost:8080/flowable-rest")
-WS_PEDIDOS = os.environ.get("WS_PEDIDOS", "http://localhost:9090")
+WS_PEDIDOS = os.environ.get("WS_PEDIDOS", "http://127.0.0.1:9090")
 
 AUTH = (
     os.environ.get("FLOWABLE_USER", "rest-admin"),
