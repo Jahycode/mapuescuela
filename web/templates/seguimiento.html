@@ -58,14 +58,13 @@
         </div>
 
         {% if paso == 'adjuntarComprobante' %}
-        <h1 class="titular">
-          Guardamos
-          {% if pedido['items']|length == 1 %}tu objeto{% else %}tus {{ pedido['items']|length }} objetos{% endif %}
-          a tu nombre por 24 horas
-        </h1>
+        {% set uno = pedido['items']|length == 1 %}
+        <h1 class="titular">Transfiere y sube el comprobante</h1>
         <p class="lead lead--grande">
-          Nadie más los puede comprar mientras corra el plazo. Transfiere los
-          {{ pedido.montoTotal|plata }} y después sube una foto del comprobante acá mismo.
+          Una vez que aprobemos el pago, {{ 'el objeto queda reservado' if uno else 'los objetos quedan reservados' }}
+          para ti y {{ 'sale' if uno else 'salen' }} del registro. Tienes 24 horas para transferir los
+          {{ pedido.montoTotal|plata }} y subir acá la foto del comprobante. Mientras tanto,
+          {{ 'sigue publicado' if uno else 'siguen publicados' }}, así que mejor no dejarlo para después.
         </p>
         {% else %}
         <h1 class="titular">En qué va tu pedido</h1>
